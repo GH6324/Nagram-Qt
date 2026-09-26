@@ -1,4 +1,5 @@
 #include "nagram/menu/actions.h"
+#include "nagram/menu/repeat.h"
 
 #include "ui/widgets/menu/menu.h"
 #include "ui/widgets/menu/menu_item_base.h"
@@ -19,8 +20,14 @@ void Tag(QAction *action, ActionId id) {
 	action->setProperty(kActionIdProperty, static_cast<int>(id));
 }
 
-void Apply(Ui::PopupMenu *menu) {
+void Apply(
+		Ui::PopupMenu *menu,
+		HistoryItem *item,
+		Window::SessionController *controller) {
 	Expects(menu != nullptr);
+	if (item && controller) {
+		InsertRepeatActions(menu, item, controller);
+	}
 	const auto config = ForDevice().Get(kMenuConfig);
 	const auto optionHeld = (QGuiApplication::keyboardModifiers()
 		& Qt::AltModifier) != 0;
