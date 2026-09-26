@@ -12,5 +12,7 @@ namespace Nagram::Chats {
 [[nodiscard]] bool HidePreview(bool folder, bool savedMessages);
 [[nodiscard]] QString HiddenPreviewText(bool folder);
 [[nodiscard]] bool HideStories();
+[[nodiscard]] bool ShowArchiveInFolders();
+[[nodiscard]] bool HideFolderUnreadCounters();
 
 } // namespace Nagram::Chats
