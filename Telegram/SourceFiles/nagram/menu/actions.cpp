@@ -1,6 +1,7 @@
 #include "nagram/menu/actions.h"
 #include "nagram/menu/repeat.h"
 #include "nagram/menu/batch.h"
+#include "nagram/menu/media.h"
 
 #include "ui/widgets/menu/menu.h"
 #include "ui/widgets/menu/menu_item_base.h"
@@ -32,8 +33,13 @@ void Apply(
 		if (item) {
 			InsertRepeatActions(menu, item, controller);
 		}
-		InsertBatchActions(menu, item, controller,
-			std::move(selected), std::move(selectAuthor));
+		if (item || !selected.empty()) {
+			InsertBatchActions(menu, item, controller,
+				std::move(selected), std::move(selectAuthor));
+		}
+		if (item) {
+			InsertMediaInfoAction(menu, item, controller);
+		}
 	}
 	const auto config = ForDevice().Get(kMenuConfig);
 	const auto optionHeld = (QGuiApplication::keyboardModifiers()
