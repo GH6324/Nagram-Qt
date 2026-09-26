@@ -43,6 +43,10 @@ namespace Main {
 class Session;
 } // namespace Main
 
+namespace Nagram {
+class ListRefresher;
+} // namespace Nagram
+
 namespace Ui {
 class IconButton;
 class PopupMenu;
@@ -128,6 +132,7 @@ enum class WidgetState {
 };
 
 class InnerWidget final : public Ui::RpWidget {
+	friend class Nagram::ListRefresher;
 public:
 	using ChatsFilterTagsKey = int64;
 
