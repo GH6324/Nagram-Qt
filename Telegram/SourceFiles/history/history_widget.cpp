@@ -123,6 +123,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "history/view/controls/history_view_voice_record_bar.h"
 #include "history/view/controls/history_view_webpage_processor.h"
 #include "history/view/reactions/history_view_reactions_button.h"
+#include "nagram/compose/buttons.h"
 #include "history/view/history_view_chat_section.h"
 #include "history/view/history_view_cursor_state.h"
 #include "history/view/history_view_service_message.h"
@@ -678,6 +679,17 @@ HistoryWidget::HistoryWidget(
 	_botCommandStart->addClickHandler([=] { startBotCommand(); });
 
 	_topShadow->hide();
+	Nagram::Compose::ButtonsChanged(
+	) | rpl::on_next([=] {
+		updateCmdStartShown();
+		refreshSendGiftToggle();
+		checkMessagesTTL();
+		updateSendButtonType();
+		updateControlsVisibility();
+		updateFieldSize();
+		updateControlsGeometry();
+		updateAiButtonVisibility();
+	}, lifetime());
 
 	_attachDragAreas = DragArea::SetupDragAreaToContainer(
 		this,
@@ -3908,6 +3920,7 @@ void HistoryWidget::refreshSendGiftToggle() {
 		| Type::Limited
 		| Type::Unique;
 	const auto has = user
+		&& !Nagram::Compose::Hidden(Nagram::Compose::kHideGiftButton)
 		&& _canSendMessages
 		&& !user->isServiceUser()
 		&& !user->isSelf()
@@ -4233,13 +4246,15 @@ void HistoryWidget::updateControlsVisibility() {
 			_botCommandStart->hide();
 		} else if (_kbReplyTo) {
 			_kbScroll->hide();
-			_tabbedSelectorToggle->show();
+			_tabbedSelectorToggle->setVisible(!Nagram::Compose::Hidden(
+				Nagram::Compose::kHideEmojiButton));
 			_botKeyboardHide->hide();
 			_botKeyboardShow->hide();
 			_botCommandStart->hide();
 		} else {
 			_kbScroll->hide();
-			_tabbedSelectorToggle->show();
+			_tabbedSelectorToggle->setVisible(!Nagram::Compose::Hidden(
+				Nagram::Compose::kHideEmojiButton));
 			_botKeyboardHide->hide();
 			if (_keyboard->hasMarkup()) {
 				_botKeyboardShow->show();
@@ -4253,7 +4268,8 @@ void HistoryWidget::updateControlsVisibility() {
 			_replaceMedia->show();
 			_attachToggle->hide();
 		} else {
-			_attachToggle->show();
+			_attachToggle->setVisible(!Nagram::Compose::Hidden(
+				Nagram::Compose::kHideAttachButton));
 		}
 		if (_botMenu.button) {
 			_botMenu.button->show();
@@ -4308,7 +4324,8 @@ void HistoryWidget::updateControlsVisibility() {
 			}
 		}
 		if (_sendAs) {
-			_sendAs->show();
+			_sendAs->setVisible(!Nagram::Compose::Hidden(
+				Nagram::Compose::kHideSendAsButton));
 		}
 		updateFieldPlaceholder();
 
@@ -6690,6 +6707,8 @@ bool HistoryWidget::isChoosingTheme() const {
 
 bool HistoryWidget::isMuteUnmute() const {
 	return _peer
+		&& !Nagram::Compose::Hidden(
+			Nagram::Compose::kHideChannelMuteButton)
 		&& ((_peer->isBroadcast() && !_peer->asChannel()->canPostMessages())
 			|| (_peer->isGigagroup() && !Data::CanSendAnything(_peer))
 			|| _peer->isRepliesChat()
@@ -6701,7 +6720,8 @@ bool HistoryWidget::isSearching() const {
 }
 
 bool HistoryWidget::showRecordButton() const {
-	return (_recordAvailability != Webrtc::RecordAvailability::None)
+	return !Nagram::Compose::Hidden(Nagram::Compose::kHideRecordingButton)
+		&& (_recordAvailability != Webrtc::RecordAvailability::None)
 		&& !_voiceRecordBar->isListenState()
 		&& !_voiceRecordBar->isRecordingByAnotherBar()
 		&& !hasSendableContent()
@@ -6804,7 +6824,8 @@ bool HistoryWidget::updateCmdStartShown() {
 		? _peer->asUser()
 		: nullptr;
 	auto cmdStartShown = false;
-	if (_history
+	if (!Nagram::Compose::Hidden(Nagram::Compose::kHideBotCommandButton)
+		&& _history
 		&& _peer
 		&& (false
 			|| (_peer->isChat() && !_peer->asChat()->botCommands().empty())
@@ -6823,7 +6844,8 @@ bool HistoryWidget::updateCmdStartShown() {
 	constexpr auto kSmallMenuAfter = 10;
 	const auto commandsChanged = (_cmdStartShown != cmdStartShown);
 	auto buttonChanged = false;
-	if (!bot
+	if (Nagram::Compose::Hidden(Nagram::Compose::kHideBotMenu)
+		|| !bot
 		|| (bot->botInfo->botMenuButtonUrl.isEmpty()
 			&& bot->botInfo->commands.empty())) {
 		buttonChanged = (_botMenu.button != nullptr);
@@ -7083,7 +7105,8 @@ void HistoryWidget::toggleKeyboard(bool manual) {
 	if (_botKeyboardHide->isHidden()
 		&& canWriteMessage()
 		&& !_showAnimation) {
-		_tabbedSelectorToggle->show();
+		_tabbedSelectorToggle->setVisible(!Nagram::Compose::Hidden(
+			Nagram::Compose::kHideEmojiButton));
 	} else {
 		_tabbedSelectorToggle->hide();
 	}
@@ -7258,7 +7281,8 @@ bool HistoryWidget::textExceedsMaxSize() const {
 }
 
 void HistoryWidget::updateAiButtonVisibility() {
-	const auto hidden = !hasEnoughLinesForAi()
+	const auto hidden = Nagram::Compose::Hidden(Nagram::Compose::kHideAiButton)
+		|| !hasEnoughLinesForAi()
 		|| !_send->isVisible()
 		|| !_field->isVisible();
 	if (_aiButton->isHidden() == hidden) {
@@ -7423,10 +7447,14 @@ void HistoryWidget::moveFieldControls() {
 		_replaceMedia->moveToLeft(left, buttonsBottom);
 	}
 	_attachToggle->moveToLeft(left, buttonsBottom);
-	left += _attachToggle->width();
+	if (_replaceMedia || !_attachToggle->isHidden()) {
+		left += _attachToggle->width();
+	}
 	if (_sendAs) {
 		_sendAs->moveToLeft(left, buttonsBottom);
-		left += _sendAs->width();
+		if (!_sendAs->isHidden()) {
+			left += _sendAs->width();
+		}
 	}
 	const auto fieldTop = bottom - fieldHeight() - st::historySendPadding;
 	_field->moveToLeft(left, fieldTop);
@@ -7441,7 +7469,9 @@ void HistoryWidget::moveFieldControls() {
 	_voiceRecordBar->moveToLeft(0, bottom - _voiceRecordBar->height());
 	_tabbedSelectorToggle->moveToRight(right, buttonsBottom);
 	_botKeyboardHide->moveToRight(right, buttonsBottom);
-	right += _botKeyboardHide->width();
+	if (_kbShown || !_tabbedSelectorToggle->isHidden()) {
+		right += _botKeyboardHide->width();
+	}
 	_botKeyboardShow->moveToRight(right, buttonsBottom);
 	_botCommandStart->moveToRight(right, buttonsBottom);
 	if (_silent) {
@@ -7504,14 +7534,16 @@ void HistoryWidget::moveFieldControls() {
 void HistoryWidget::updateFieldSize() {
 	const auto kbShowShown = _history && !_kbShown && _keyboard->hasMarkup();
 	auto fieldWidth = width()
-		- _attachToggle->width()
+		- ((_replaceMedia || !_attachToggle->isHidden())
+			? _attachToggle->width() : 0)
 		- st::historySendRight
 		- _send->width()
-		- _tabbedSelectorToggle->width();
+		- ((_kbShown || !_tabbedSelectorToggle->isHidden())
+			? _tabbedSelectorToggle->width() : 0);
 	if (_botMenu.button) {
 		fieldWidth -= st::historyBotMenuSkip + _botMenu.button->width();
 	}
-	if (_sendAs) {
+	if (_sendAs && !_sendAs->isHidden()) {
 		fieldWidth -= _sendAs->width();
 	}
 	if (kbShowShown) {
@@ -8804,7 +8836,8 @@ void HistoryWidget::updateBotKeyboard(History *h, bool force) {
 					showKeyboardHideButton();
 				} else {
 					_kbScroll->hide();
-					_tabbedSelectorToggle->show();
+					_tabbedSelectorToggle->setVisible(!Nagram::Compose::Hidden(
+						Nagram::Compose::kHideEmojiButton));
 					_botKeyboardHide->hide();
 				}
 				_botKeyboardShow->hide();
@@ -8828,7 +8861,8 @@ void HistoryWidget::updateBotKeyboard(History *h, bool force) {
 		} else {
 			if (!_showAnimation) {
 				_kbScroll->hide();
-				_tabbedSelectorToggle->show();
+				_tabbedSelectorToggle->setVisible(!Nagram::Compose::Hidden(
+					Nagram::Compose::kHideEmojiButton));
 				_botKeyboardHide->hide();
 				_botKeyboardShow->show();
 				_botCommandStart->hide();
@@ -8847,7 +8881,8 @@ void HistoryWidget::updateBotKeyboard(History *h, bool force) {
 	} else {
 		if (!_scroll->isHidden()) {
 			_kbScroll->hide();
-			_tabbedSelectorToggle->show();
+			_tabbedSelectorToggle->setVisible(!Nagram::Compose::Hidden(
+				Nagram::Compose::kHideEmojiButton));
 			_botKeyboardHide->hide();
 			_botKeyboardShow->hide();
 			_botCommandStart->setVisible(!_editMsgId);
@@ -9646,7 +9681,8 @@ Ui::PinnedBar *HistoryWidget::visiblePinnedBar() const {
 }
 
 void HistoryWidget::checkMessagesTTL() {
-	if (!_peer || !_peer->messagesTTL()) {
+	if (Nagram::Compose::Hidden(Nagram::Compose::kHideAutoDeleteButton)
+		|| !_peer || !_peer->messagesTTL()) {
 		if (_ttlInfo) {
 			_ttlInfo = nullptr;
 			updateControlsGeometry();
