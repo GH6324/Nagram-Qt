@@ -4055,6 +4055,12 @@ TextForMimeData HistoryItem::clipboardText() const {
 		: TextForMimeData::WithExpandedLinks(translatedText());
 }
 
+void HistoryItem::nagramToggleOriginalShown() {
+	_nagramOriginalShown = !_nagramOriginalShown;
+	history()->owner().requestItemViewRefresh(this);
+	history()->owner().requestItemResize(this);
+}
+
 bool HistoryItem::changeViewsCount(int count) {
 	const auto views = Get<HistoryMessageViews>();
 	if (!views
