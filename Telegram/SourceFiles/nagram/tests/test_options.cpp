@@ -85,6 +85,8 @@ void TestOptions() {
 	Require(Menu::ValidQuickRating(QString(64, u'x'))
 		&& !Menu::ValidQuickRating(QString(65, u'x')),
 		"quick rating length limit");
+	Require(Menu::ReadVisibility({}, ActionId::SelectBetween)
+		== Visibility::Hide, "select between action default");
 	const auto oldReading = QByteArray(
 		R"({"version":1,"states":{"E21":"show","E23":"show"}})");
 	Require(Menu::ValidateConfig(oldReading), "old menu config valid");

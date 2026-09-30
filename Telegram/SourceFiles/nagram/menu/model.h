@@ -32,6 +32,7 @@ enum class ActionId : int {
 	FilterAuthor = 23,
 	DeleteDownload = 25,
 	QuickRating = 26,
+	SelectBetween = 27,
 };
 
 enum class Visibility { Show, Hide, WithOption };
@@ -41,7 +42,7 @@ struct Entry {
 	const char *titleKey;
 };
 
-inline constexpr auto kEntries = std::array<Entry, 25>({{
+inline constexpr auto kEntries = std::array<Entry, 26>({{
 	{ ActionId::Reply, "lng_nagram_menu_reply" },
 	{ ActionId::Edit, "lng_nagram_menu_edit" },
 	{ ActionId::Copy, "lng_nagram_menu_copy" },
@@ -67,6 +68,7 @@ inline constexpr auto kEntries = std::array<Entry, 25>({{
 	{ ActionId::FilterAuthor, "lng_nagram_filter_author_hide" },
 	{ ActionId::DeleteDownload, "lng_nagram_menu_delete_download" },
 	{ ActionId::QuickRating, "lng_nagram_menu_quick_rating" },
+	{ ActionId::SelectBetween, "lng_nagram_menu_select_between" },
 }});
 
 [[nodiscard]] Visibility DefaultVisibility(ActionId id);

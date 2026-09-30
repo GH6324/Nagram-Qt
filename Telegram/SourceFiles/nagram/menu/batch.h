@@ -18,6 +18,6 @@ void InsertBatchActions(
 	HistoryItem *item,
 	Window::SessionController *controller,
 	MessageIdsList selected,
-	Fn<void(HistoryItem*)> selectAuthor);
+	Fn<void(HistoryItem*)> select);
 
 } // namespace Nagram::Menu

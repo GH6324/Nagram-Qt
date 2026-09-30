@@ -63,6 +63,7 @@ QString Title(Menu::ActionId id) {
 	case Menu::ActionId::FilterAuthor: return tr::lng_nagram_filter_author_hide(tr::now);
 	case Menu::ActionId::DeleteDownload: return tr::lng_nagram_menu_delete_download(tr::now);
 	case Menu::ActionId::QuickRating: return tr::lng_nagram_menu_quick_rating(tr::now);
+	case Menu::ActionId::SelectBetween: return tr::lng_nagram_menu_select_between(tr::now);
 	default: return QString();
 	}
 }
@@ -102,6 +103,7 @@ const style::icon *Icon(Menu::ActionId id) {
 	case Menu::ActionId::FilterAuthor: return &st::menuIconBlock;
 	case Menu::ActionId::DeleteDownload: return &st::menuIconClear;
 	case Menu::ActionId::QuickRating: return &st::menuIconReply;
+	case Menu::ActionId::SelectBetween: return &st::menuIconSelect;
 	default: return &st::menuIconChatBubble;
 	}
 }

@@ -201,6 +201,7 @@ Telegram/cmake/td_lang.cmake. Every key uses the lng_nagram_ prefix.
 "lng_nagram_menu_quick_rating_second" = "Quick rating text 2";
 "lng_nagram_menu_quick_rating_placeholder" = "Text to put in the reply draft";
 "lng_nagram_menu_quick_rating_empty" = "Not set";
+"lng_nagram_menu_select_between" = "Select messages in between";
 "lng_nagram_menu_reading" = "Show original / converted text";
 "lng_nagram_menu_media_filename" = "File name";
 "lng_nagram_menu_media_type" = "Type";

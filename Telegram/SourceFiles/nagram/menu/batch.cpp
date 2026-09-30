@@ -195,7 +195,7 @@ void InsertBatchActions(
 		HistoryItem *item,
 		Window::SessionController *controller,
 		MessageIdsList selected,
-		Fn<void(HistoryItem*)> selectAuthor) {
+		Fn<void(HistoryItem*)> select) {
 	if (!menu || !controller) {
 		return;
 	}
@@ -208,13 +208,18 @@ void InsertBatchActions(
 				controller->show(Box(BatchBox, controller, selected, sourceId));
 			}));
 	}
-	if (item && selectAuthor && item->canBeSelected()) {
+	if (selected.size() > 1 && select) {
+		Insert(menu, position++, ActionId::SelectBetween,
+			tr::lng_nagram_menu_select_between(tr::now),
+			crl::guard(controller, [=] { select(nullptr); }));
+	}
+	if (item && select && item->canBeSelected()) {
 		const auto itemId = item->fullId();
 		Insert(menu, position, ActionId::SelectSender,
 			tr::lng_nagram_menu_select_sender(tr::now),
 			crl::guard(controller, [=] {
 				if (const auto current = controller->session().data().message(itemId)) {
-					selectAuthor(current);
+					select(current);
 				}
 			}));
 	}

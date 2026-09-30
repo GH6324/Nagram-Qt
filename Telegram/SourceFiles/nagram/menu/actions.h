@@ -21,6 +21,6 @@ void Apply(
 	HistoryItem *item,
 	Window::SessionController *controller,
 	MessageIdsList selected,
-	Fn<void(HistoryItem*)> selectAuthor);
+	Fn<void(HistoryItem*)> select); // nullptr selects everything between
 
 } // namespace Nagram::Menu
