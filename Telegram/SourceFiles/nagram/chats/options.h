@@ -115,6 +115,37 @@ inline const auto kRecentChatsList = Option<QString>{
 	Category::Chats, "lng_nagram_recent_chats",
 	static_cast<unsigned>(Flag::Hidden), ValidRecentChats };
 
+inline constexpr auto kMaximumReadingPositions = 100;
+
+[[nodiscard]] inline bool ValidReadingPositions(const QString &value) {
+	if (value.isEmpty()) {
+		return true;
+	}
+	const auto entries = value.split(u',');
+	if (entries.size() > kMaximumReadingPositions) {
+		return false;
+	}
+	for (const auto &entry : entries) {
+		const auto parts = entry.split(u':');
+		auto peerOk = false;
+		auto msgOk = false;
+		if (parts.size() != 2
+			|| !parts[0].toULongLong(&peerOk) || !peerOk
+			|| parts[1].toLongLong(&msgOk) <= 0 || !msgOk) {
+			return false;
+		}
+	}
+	return true;
+}
+
+inline constexpr auto kSaveReadingPosition = Option<bool>{
+	"nagram.saveReadingPosition", Scope::Device, false,
+	Category::Chats, "lng_nagram_save_reading_position" };
+inline const auto kReadingPositions = Option<QString>{
+	"nagram.readingPositions", Scope::Account, QString(),
+	Category::Chats, "lng_nagram_save_reading_position",
+	static_cast<unsigned>(Flag::Hidden), ValidReadingPositions };
+
 inline void RegisterOptions(Registry &registry) {
 	Expects(registry.Add(kCompactList));
 	Expects(registry.Add(kPreviewLines));
@@ -136,6 +167,8 @@ inline void RegisterOptions(Registry &registry) {
 	Expects(registry.Add(kDisableScrollToNextTopic));
 	Expects(registry.Add(kRecentChats));
 	Expects(registry.Add(kRecentChatsList));
+	Expects(registry.Add(kSaveReadingPosition));
+	Expects(registry.Add(kReadingPositions));
 }
 
 } // namespace Nagram::Chats

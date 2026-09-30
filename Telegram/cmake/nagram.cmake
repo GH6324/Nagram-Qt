@@ -19,6 +19,7 @@ set(nagram_sources
     nagram/chats/startup_folder.cpp
     nagram/chats/sort.cpp
     nagram/chats/recent_chats.cpp
+    nagram/chats/reading_position.cpp
     nagram/chats/managed_folders.cpp
     nagram/interface/roundness.cpp
     nagram/settings/interface.cpp

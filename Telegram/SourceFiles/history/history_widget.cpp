@@ -128,6 +128,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "nagram/compose/confirm.h"
 #include "nagram/compose/format_toolbar.h"
 #include "nagram/compose/placeholder.h"
+#include "nagram/chats/reading_position.h"
 #include "history/view/history_view_chat_section.h"
 #include "history/view/history_view_cursor_state.h"
 #include "history/view/history_view_service_message.h"
@@ -3360,6 +3361,9 @@ void HistoryWidget::showHistory(
 		refreshSendGiftToggle();
 		refreshSendAsToggle();
 
+		_showAtMsgId = Nagram::Chats::RestoreReadingPosition(
+			_history,
+			_showAtMsgId);
 		if (_showAtMsgId == ShowAtUnreadMsgId) {
 			if (_history->scrollTopItem) {
 				_showAtMsgId = _history->showAtMsgId;

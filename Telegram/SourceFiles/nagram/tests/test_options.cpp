@@ -138,7 +138,12 @@ void TestOptions() {
 		"unknown refresh option");
 	auto chats = Registry();
 	Chats::RegisterOptions(chats);
-	Require(chats.All().size() == 20, "chat option count");
+	Require(chats.All().size() == 22, "chat option count");
+	Require(Chats::ValidReadingPositions(QString::fromLatin1("5:10,7:1"))
+		&& !Chats::ValidReadingPositions(QString::fromLatin1("5:0"))
+		&& !Chats::ValidReadingPositions(QString::fromLatin1("5"))
+		&& chats.HasFlag(Chats::kReadingPositions.key, Flag::Hidden),
+		"reading positions format");
 	Require(Chats::ValidRecentChats(QString())
 		&& Chats::ValidRecentChats(QString::fromLatin1("1,2,3"))
 		&& !Chats::ValidRecentChats(QString::fromLatin1("1,,2"))
