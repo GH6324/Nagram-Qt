@@ -95,6 +95,7 @@ QString MainMenuActionTitle(const QString &id) {
 	if (id == u"calls"_q) return tr::lng_nagram_main_menu_action_calls(tr::now);
 	if (id == u"savedMessages"_q) return tr::lng_nagram_main_menu_action_saved_messages(tr::now);
 	if (id == u"recentChats"_q) return tr::lng_nagram_recent_chats(tr::now);
+	if (id == u"downloads"_q) return tr::lng_nagram_downloads(tr::now);
 	if (id == u"settings"_q) return tr::lng_nagram_main_menu_action_settings(tr::now);
 	return tr::lng_nagram_main_menu_action_night_mode(tr::now);
 }

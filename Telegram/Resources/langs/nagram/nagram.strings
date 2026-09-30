@@ -118,6 +118,14 @@ Telegram/cmake/td_lang.cmake. Every key uses the lng_nagram_ prefix.
 "lng_nagram_disable_video_autoplay" = "Disable video autoplay in chats";
 "lng_nagram_gif_playback_controls" = "Show GIF playback controls";
 "lng_nagram_mp4_file_preview" = "Keep video preview for MP4 files";
+"lng_nagram_small_gifs" = "Show GIFs smaller";
+"lng_nagram_sticker_panel_scale" = "Sticker panel size";
+"lng_nagram_downloads_in_main_menu" = "Show Downloads in the main menu";
+"lng_nagram_downloads" = "Downloads";
+"lng_nagram_auto_download" = "Automatic download";
+"lng_nagram_block_executable_auto_download" = "Do not auto-download executables";
+"lng_nagram_block_archive_auto_download" = "Do not auto-download archives";
+"lng_nagram_auto_download_note" = "Applies on top of Telegram's automatic download rules, judged by file extension. Files you open or save yourself are not affected.";
 "lng_nagram_privacy" = "Privacy and profile";
 "lng_nagram_hide_my_phone" = "Hide my phone number";
 "lng_nagram_hide_read_time" = "Hide read time hints";

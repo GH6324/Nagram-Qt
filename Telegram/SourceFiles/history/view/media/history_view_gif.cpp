@@ -9,6 +9,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 
 #include "apiwrap.h"
 #include "nagram/media/options.h"
+#include "nagram/media/extras.h"
 #include "api/api_transcribes.h"
 #include "lang/lang_keys.h"
 #include "mainwindow.h"
@@ -373,7 +374,7 @@ QSize Gif::countThumbSize(int &inOutWidthMax) const {
 		} else if (_data->isVideoMessage()) {
 			return st::maxVideoMessageSize;
 		}
-		return st::maxGifSize;
+		return Nagram::Media::GifMaxSize(st::maxGifSize);
 	}();
 	const auto size = style::ConvertScale(videoSize());
 	if (hostedInstantView) {

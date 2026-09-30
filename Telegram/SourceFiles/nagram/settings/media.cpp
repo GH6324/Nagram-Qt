@@ -3,6 +3,7 @@
 #include "nagram/media/options.h"
 #include "nagram/media/sticker_catalog.h"
 #include "nagram/settings/home.h"
+#include "nagram/settings/restart.h"
 #include "lang/lang_keys.h"
 #include "settings/settings_builder.h"
 #include "settings/settings_common_session.h"
@@ -71,6 +72,26 @@ void StickerScaleBox(not_null<Ui::GenericBox*> box) {
 	}
 	group->setChangedCallback([=](int value) {
 		Expects(ForDevice().Set(Media::kStickerScale, value));
+		box->closeBox();
+	});
+}
+
+void PanelScaleBox(
+		not_null<Ui::GenericBox*> box,
+		not_null<Window::SessionController*> controller) {
+	box->setTitle(tr::lng_nagram_sticker_panel_scale());
+	const auto group = std::make_shared<Ui::RadiobuttonGroup>(
+		ForDevice().Get(Media::kStickerPanelScale));
+	for (auto value = 50; value <= 200; value += 25) {
+		box->addRow(object_ptr<Ui::Radiobutton>(
+			box, group, value, QString::number(value) + '%',
+			st::settingsSendType), st::settingsSendTypePadding);
+	}
+	group->setChangedCallback([=](int value) {
+		if (ForDevice().Get(Media::kStickerPanelScale) != value) {
+			Expects(ForDevice().Set(Media::kStickerPanelScale, value));
+			ShowRestartPrompt(controller);
+		}
 		box->closeBox();
 	});
 }
@@ -168,6 +189,39 @@ const auto kMeta = BuildHelper({
 		tr::lng_nagram_mp4_file_preview(),
 		u"nagram/media/mp4-file-preview"_q,
 		{ u"MP4"_q, u"file"_q, u"preview"_q });
+	AddToggle(builder, Media::kSmallGifs,
+		tr::lng_nagram_small_gifs(),
+		u"nagram/media/small-gifs"_q,
+		{ u"GIF"_q, u"size"_q, u"small"_q });
+	builder.addButton({
+		.id = u"nagram/media/sticker-panel-scale"_q,
+		.title = tr::lng_nagram_sticker_panel_scale(),
+		.st = &st::settingsButtonNoIcon,
+		.label = ForDevice().Value(Media::kStickerPanelScale)
+			| rpl::map([](int value) {
+				return QString::number(value) + '%';
+			}),
+		.onClick = [=] { controller->show(Box(PanelScaleBox, controller)); },
+		.keywords = { u"sticker"_q, u"panel"_q, u"size"_q },
+	});
+	AddToggle(builder, Media::kDownloadsInMainMenu,
+		tr::lng_nagram_downloads_in_main_menu(),
+		u"nagram/media/downloads-main-menu"_q,
+		{ u"downloads"_q, u"main menu"_q });
+	builder.addSubsectionTitle({
+		.id = u"nagram/media/auto-download"_q,
+		.title = tr::lng_nagram_auto_download(),
+		.keywords = { u"auto download"_q },
+	});
+	AddToggle(builder, Media::kBlockExecutableAutoDownload,
+		tr::lng_nagram_block_executable_auto_download(),
+		u"nagram/media/block-executables"_q,
+		{ u"exe"_q, u"auto download"_q });
+	AddToggle(builder, Media::kBlockArchiveAutoDownload,
+		tr::lng_nagram_block_archive_auto_download(),
+		u"nagram/media/block-archives"_q,
+		{ u"zip"_q, u"archive"_q, u"auto download"_q });
+	builder.addDividerText(tr::lng_nagram_auto_download_note());
 	builder.addButton({
 		.id = u"nagram/media/sticker-catalog"_q,
 		.title = tr::lng_nagram_catalog_title(),

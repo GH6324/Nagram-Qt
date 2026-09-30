@@ -7,6 +7,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 #include "chat_helpers/stickers_list_widget.h"
 #include "nagram/media/options.h"
+#include "nagram/media/extras.h"
 
 #include "base/options.h"
 #include "base/timer_rpl.h"
@@ -586,7 +587,7 @@ StickersListWidget::SectionInfo StickersListWidget::sectionInfoByOffset(
 int StickersListWidget::countDesiredHeight(int newWidth) {
 	const auto minSize = _isEffects
 		? st::stickerEffectWidthMin
-		: st::stickerPanWidthMin;
+		: Nagram::Media::StickerPanelCell(st::stickerPanWidthMin);
 	if (newWidth < 2 * minSize) {
 		return 0;
 	}

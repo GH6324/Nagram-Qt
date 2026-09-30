@@ -45,6 +45,27 @@ inline constexpr auto kMp4FilePreview = Option<bool>{
 	"nagram.mp4FilePreview", Scope::Device, false,
 	Category::Media, "lng_nagram_mp4_file_preview" };
 
+inline constexpr auto kSmallGifs = Option<bool>{
+	"nagram.smallGifs", Scope::Device, false,
+	Category::Media, "lng_nagram_small_gifs",
+	static_cast<unsigned>(Flag::RefreshMessageView) };
+inline constexpr auto kStickerPanelScale = Option<int>{
+	"nagram.stickerPanelScale", Scope::Device, 100,
+	Category::Media, "lng_nagram_sticker_panel_scale",
+	static_cast<unsigned>(Flag::RequiresRestart),
+	[](const int &value) {
+		return value >= 50 && value <= 200 && value % 25 == 0;
+	} };
+inline constexpr auto kDownloadsInMainMenu = Option<bool>{
+	"nagram.downloadsInMainMenu", Scope::Device, false,
+	Category::Media, "lng_nagram_downloads_in_main_menu" };
+inline constexpr auto kBlockExecutableAutoDownload = Option<bool>{
+	"nagram.blockExecutableAutoDownload", Scope::Device, false,
+	Category::Media, "lng_nagram_block_executable_auto_download" };
+inline constexpr auto kBlockArchiveAutoDownload = Option<bool>{
+	"nagram.blockArchiveAutoDownload", Scope::Device, false,
+	Category::Media, "lng_nagram_block_archive_auto_download" };
+
 inline void RegisterOptions(Registry &registry) {
 	Expects(registry.Add(kStickerScale));
 	Expects(registry.Add(kHideStickerTime));
@@ -57,6 +78,11 @@ inline void RegisterOptions(Registry &registry) {
 	Expects(registry.Add(kDisableVideoAutoplay));
 	Expects(registry.Add(kGifPlaybackControls));
 	Expects(registry.Add(kMp4FilePreview));
+	Expects(registry.Add(kSmallGifs));
+	Expects(registry.Add(kStickerPanelScale));
+	Expects(registry.Add(kDownloadsInMainMenu));
+	Expects(registry.Add(kBlockExecutableAutoDownload));
+	Expects(registry.Add(kBlockArchiveAutoDownload));
 }
 
 } // namespace Nagram::Media

@@ -16,7 +16,7 @@ namespace Nagram::Interface {
 
 inline constexpr auto kMainMenuIds = std::array{
 	"profile", "bots", "newGroup", "newChannel", "contacts", "calls",
-	"savedMessages", "recentChats", "settings", "nightMode",
+	"savedMessages", "recentChats", "downloads", "settings", "nightMode",
 };
 
 [[nodiscard]] QString MainMenuActionTitle(const QString &id);
