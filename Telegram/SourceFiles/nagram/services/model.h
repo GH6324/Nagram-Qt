@@ -3,9 +3,14 @@
 #include "nagram/core/options.h"
 
 #include <QtCore/QJsonObject>
+#include <QtCore/QJsonDocument>
+#include <QtCore/QStringList>
+#include <QtCore/QUrlQuery>
 #include <QtCore/QUrl>
 
 #include <optional>
+#include <utility>
+#include <vector>
 
 namespace Nagram {
 
@@ -55,5 +60,23 @@ struct ServiceDefinition {
 	const QString &id);
 [[nodiscard]] QString CredentialAccount(const ServiceDefinition &service);
 [[nodiscard]] QUrl ServiceEndpoint(const ServiceDefinition &service);
+
+struct TranslationCall {
+	QJsonDocument body;
+	QUrlQuery query;
+};
+
+[[nodiscard]] bool TranslationProtocol(const QString &protocol);
+[[nodiscard]] TranslationCall BuildTranslationCall(
+	const ServiceDefinition &service,
+	const QStringList &texts,
+	const QString &to);
+[[nodiscard]] std::optional<QStringList> ParseTranslationResult(
+	const ServiceDefinition &service,
+	const QByteArray &body,
+	int expected);
+[[nodiscard]] std::vector<std::pair<QByteArray, QByteArray>> AuthHeaders(
+	const ServiceDefinition &service,
+	const QByteArray &secret);
 
 } // namespace Nagram

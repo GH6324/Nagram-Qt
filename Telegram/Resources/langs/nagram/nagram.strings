@@ -340,6 +340,12 @@ Telegram/cmake/td_lang.cmake. Every key uses the lng_nagram_ prefix.
 "lng_nagram_quick_reply_insert" = "Insert quick reply {index}";
 "lng_nagram_config_changed_error" = "Settings changed while this editor was open. Reopen the service and try again.";
 "lng_nagram_service_add_deepl" = "Add DeepL translation";
+"lng_nagram_service_add_google" = "Add Google Cloud Translation";
+"lng_nagram_service_add_microsoft" = "Add Microsoft Translator";
+"lng_nagram_service_add_yandex" = "Add Yandex Translate";
+"lng_nagram_service_formality" = "Formality (more, less, prefer_more, prefer_less; empty for default)";
+"lng_nagram_service_region" = "Azure region (empty for global)";
+"lng_nagram_service_folder" = "Folder ID (empty if the key is bound to a folder)";
 "lng_nagram_service_add_openai" = "Add OpenAI-compatible translation";
 "lng_nagram_service_add_transcription" = "Add OpenAI-compatible transcription";
 "lng_nagram_service_audio_filter" = "Audio (*.flac *.mp3 *.mp4 *.mpeg *.mpga *.m4a *.ogg *.wav *.webm)";

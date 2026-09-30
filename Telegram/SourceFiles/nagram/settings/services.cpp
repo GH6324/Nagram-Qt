@@ -274,35 +274,23 @@ void ServiceTestBox(
 		box->addButton(tr::lng_nagram_service_test_translation(), [=] {
 			stop();
 			result->setText(tr::lng_nagram_service_testing(tr::now));
-			const auto body = service.protocol == u"deepl"_q
-				? QJsonObject{
-					{ u"text"_q, QJsonArray{ u"Hello, world!"_q } },
-					{ u"target_lang"_q, u"ZH"_q },
-				} : QJsonObject{
-					{ u"model"_q, service.model },
-					{ u"messages"_q, QJsonArray{ QJsonObject{
-						{ u"role"_q, u"user"_q },
-						{ u"content"_q, u"Translate 'Hello, world!' to Chinese."_q },
-					} } },
-				};
-			request->json(service, body, crl::guard(box, [=](ServiceResult response) {
+			const auto call = BuildTranslationCall(
+				service,
+				{ u"Hello, world!"_q },
+				u"zh"_q);
+			request->json(service, call.body, call.query, crl::guard(box, [=](ServiceResult response) {
 				if (response.error != ServiceError::None) {
 					status(std::move(response));
 					return;
 				}
-				const auto root = QJsonDocument::fromJson(response.body).object();
-				const auto entries = root.value(service.protocol == u"deepl"_q
-					? u"translations"_q : u"choices"_q).toArray();
-				const auto first = entries.isEmpty()
-					? QJsonObject() : entries[0].toObject();
-				const auto text = service.protocol == u"deepl"_q
-					? first.value(u"text"_q).toString()
-					: first.value(u"message"_q).toObject()
-						.value(u"content"_q).toString();
-				if (text.isEmpty() || text.size() > 16384) {
+				const auto values = ParseTranslationResult(
+					service,
+					response.body,
+					1);
+				if (!values || values->front().size() > 16384) {
 					status({ .error = ServiceError::Response });
 				} else {
-					result->setText(text);
+					result->setText(values->front());
 				}
 			}));
 		});
@@ -383,6 +371,13 @@ void ServiceBox(
 	const auto openai = original.protocol == u"openai"_q;
 	const auto translation = original.kind == ServiceKind::Translation;
 	const auto model = openai ? add(tr::lng_nagram_service_model(), original.model) : nullptr;
+	const auto option = (original.protocol == u"deepl"_q)
+		? add(tr::lng_nagram_service_formality(), original.model)
+		: (original.protocol == u"microsoft"_q)
+		? add(tr::lng_nagram_service_region(), original.model)
+		: (original.protocol == u"yandex"_q)
+		? add(tr::lng_nagram_service_folder(), original.model)
+		: nullptr;
 	const auto system = openai && translation
 		? add(tr::lng_nagram_service_system_prompt(), original.systemPrompt, true) : nullptr;
 	const auto prompt = openai ? add(tr::lng_nagram_service_prompt(), original.prompt, true) : nullptr;
@@ -412,7 +407,11 @@ void ServiceBox(
 		service.name = name->getLastText().trimmed();
 		service.baseUrl = QUrl(url->getLastText().trimmed(), QUrl::StrictMode);
 		service.endpoint = endpoint->getLastText().trimmed();
-		service.model = model ? model->getLastText().trimmed() : QString();
+		service.model = model
+			? model->getLastText().trimmed()
+			: option
+			? option->getLastText().trimmed()
+			: QString();
 		service.systemPrompt = system ? system->getLastText() : QString();
 		service.prompt = prompt ? prompt->getLastText() : QString();
 		service.language = language ? language->getLastText().trimmed() : QString();
@@ -552,18 +551,38 @@ void ServicesBox(not_null<Ui::GenericBox*> box, QJsonObject initial) {
 				});
 			}
 		}
-		for (const auto type : { 0, 1, 2 }) {
-			const auto deepl = type == 1;
-			const auto transcription = type == 2;
-			add(transcription ? tr::lng_nagram_service_add_transcription(tr::now)
-				: deepl ? tr::lng_nagram_service_add_deepl(tr::now)
-				: tr::lng_nagram_service_add_openai(tr::now), [=] {
+		struct Template {
+			QString title;
+			ServiceKind kind = ServiceKind::Translation;
+			QString protocol;
+			QString baseUrl;
+			QString endpoint;
+		};
+		const auto templates = std::vector<Template>{
+			{ tr::lng_nagram_service_add_openai(tr::now), ServiceKind::Translation,
+				u"openai"_q, u"https://api.openai.com/v1/"_q, u"chat/completions"_q },
+			{ tr::lng_nagram_service_add_deepl(tr::now), ServiceKind::Translation,
+				u"deepl"_q, u"https://api.deepl.com/v2/"_q, u"translate"_q },
+			{ tr::lng_nagram_service_add_google(tr::now), ServiceKind::Translation,
+				u"google"_q, u"https://translation.googleapis.com/"_q,
+				u"language/translate/v2"_q },
+			{ tr::lng_nagram_service_add_microsoft(tr::now), ServiceKind::Translation,
+				u"microsoft"_q, u"https://api.cognitive.microsofttranslator.com/"_q,
+				u"translate"_q },
+			{ tr::lng_nagram_service_add_yandex(tr::now), ServiceKind::Translation,
+				u"yandex"_q, u"https://translate.api.cloud.yandex.net/"_q,
+				u"translate/v2/translate"_q },
+			{ tr::lng_nagram_service_add_transcription(tr::now), ServiceKind::Transcription,
+				u"openai"_q, u"https://api.openai.com/v1/"_q, u"audio/transcriptions"_q },
+		};
+		for (const auto &entry : templates) {
+			add(entry.title, [=] {
 				auto service = ServiceDefinition{
 					.id = QUuid::createUuid().toString(QUuid::WithoutBraces),
-					.kind = transcription ? ServiceKind::Transcription : ServiceKind::Translation,
-					.protocol = deepl ? u"deepl"_q : u"openai"_q,
-					.baseUrl = QUrl(deepl ? u"https://api.deepl.com/v2/"_q : u"https://api.openai.com/v1/"_q),
-					.endpoint = deepl ? u"translate"_q : transcription ? u"audio/transcriptions"_q : u"chat/completions"_q,
+					.kind = entry.kind,
+					.protocol = entry.protocol,
+					.baseUrl = QUrl(entry.baseUrl),
+					.endpoint = entry.endpoint,
 					.credentialRef = QUuid::createUuid().toString(QUuid::WithoutBraces),
 				};
 				box->uiShow()->showBox(Box(ServiceBox, current, std::move(service), changed));

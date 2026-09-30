@@ -82,9 +82,10 @@ std::optional<QNetworkRequest> ServiceRequest::prepare(
 			done({ .error = ServiceError::Credential });
 			return std::nullopt;
 		}
-		request.setRawHeader("Authorization",
-			(service.protocol == u"deepl"_q ? "DeepL-Auth-Key " : "Bearer ")
-			+ credential.secret);
+		for (auto &[name, value] : AuthHeaders(service, credential.secret)) {
+			request.setRawHeader(name, value);
+			value.fill('\0');
+		}
 		credential.secret.fill('\0');
 	}
 	return request;
@@ -94,7 +95,15 @@ void ServiceRequest::json(
 		const ServiceDefinition &service,
 		const QJsonObject &body,
 		Fn<void(ServiceResult)> done) {
-	const auto bytes = QJsonDocument(body).toJson(QJsonDocument::Compact);
+	json(service, QJsonDocument(body), QUrlQuery(), std::move(done));
+}
+
+void ServiceRequest::json(
+		const ServiceDefinition &service,
+		const QJsonDocument &body,
+		const QUrlQuery &query,
+		Fn<void(ServiceResult)> done) {
+	const auto bytes = body.toJson(QJsonDocument::Compact);
 	if (bytes.size() > kMaximumJson) {
 		cancel();
 		done({ .error = ServiceError::TooLarge });
@@ -103,6 +112,11 @@ void ServiceRequest::json(
 	auto request = prepare(service, done);
 	if (!request) {
 		return;
+	}
+	if (!query.isEmpty()) {
+		auto url = request->url();
+		url.setQuery(query);
+		request->setUrl(url);
 	}
 	request->setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
 	start(_network.post(*request, bytes), std::move(done));

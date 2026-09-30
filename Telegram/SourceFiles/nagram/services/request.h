@@ -39,6 +39,11 @@ public:
 		const ServiceDefinition &service,
 		const QJsonObject &body,
 		Fn<void(ServiceResult)> done);
+	void json(
+		const ServiceDefinition &service,
+		const QJsonDocument &body,
+		const QUrlQuery &query,
+		Fn<void(ServiceResult)> done);
 	void models(
 		const ServiceDefinition &service,
 		Fn<void(ServiceResult)> done);

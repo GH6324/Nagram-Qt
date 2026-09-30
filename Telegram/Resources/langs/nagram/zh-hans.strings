@@ -336,6 +336,12 @@
 "lng_nagram_quick_reply_insert" = "插入快捷回复 {index}";
 "lng_nagram_config_changed_error" = "编辑期间设置发生了变化。请重新打开服务后再试。";
 "lng_nagram_service_add_deepl" = "添加 DeepL 翻译";
+"lng_nagram_service_add_google" = "添加 Google Cloud 翻译";
+"lng_nagram_service_add_microsoft" = "添加 Microsoft 翻译";
+"lng_nagram_service_add_yandex" = "添加 Yandex 翻译";
+"lng_nagram_service_formality" = "正式程度（more、less、prefer_more、prefer_less；留空为默认）";
+"lng_nagram_service_region" = "Azure 区域（全局资源留空）";
+"lng_nagram_service_folder" = "Folder ID（密钥已绑定目录时留空）";
 "lng_nagram_service_add_openai" = "添加 OpenAI 兼容翻译";
 "lng_nagram_service_add_transcription" = "添加 OpenAI 兼容转写";
 "lng_nagram_service_audio_filter" = "音频 (*.flac *.mp3 *.mp4 *.mpeg *.mpga *.m4a *.ogg *.wav *.webm)";
