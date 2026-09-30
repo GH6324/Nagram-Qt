@@ -64,6 +64,18 @@ using Strings = std::map<std::string, std::string>;
 	return result;
 }
 
+[[nodiscard]] bool LooksDoubleEncoded(const std::string &value) {
+	for (auto i = std::size_t(); i + 1 < value.size(); ++i) {
+		const auto first = static_cast<unsigned char>(value[i]);
+		const auto second = static_cast<unsigned char>(value[i + 1]);
+		if ((first == 0xC2 && second >= 0x80 && second <= 0x9F)
+			|| (first == 0xC3 && (second == 0x82 || second == 0x83))) {
+			return true;
+		}
+	}
+	return false;
+}
+
 void CheckTranslation(
 		const Strings &english,
 		const std::string &path) {
@@ -78,6 +90,9 @@ void CheckTranslation(
 		}
 		if (Placeholders(value) != Placeholders(found->second)) {
 			throw std::runtime_error(path + ": placeholder mismatch for " + key);
+		}
+		if (LooksDoubleEncoded(found->second)) {
+			throw std::runtime_error(path + ": double-encoded text in " + key);
 		}
 	}
 }
@@ -107,6 +122,9 @@ int main() {
 			}
 			if (upstream.contains(key)) {
 				throw std::runtime_error("Key collides with upstream: " + key);
+			}
+			if (LooksDoubleEncoded(entry.second)) {
+				throw std::runtime_error("Double-encoded English text: " + key);
 			}
 		}
 		for (const auto &locale : { "zh-hans", "zh-hant" }) {
