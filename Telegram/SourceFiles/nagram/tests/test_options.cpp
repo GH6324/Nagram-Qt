@@ -195,7 +195,7 @@ void TestOptions() {
 		"notification delay bounds");
 	auto compose = Registry();
 	Compose::RegisterOptions(compose);
-	Require(compose.All().size() == 27, "compose option count");
+	Require(compose.All().size() == 28, "compose option count");
 	Require(Compose::kDefaultCodeLanguage.validate(QString::fromLatin1("cpp"))
 		&& !Compose::kDefaultCodeLanguage.validate(QString::fromLatin1("c++!")),
 		"code language validation");

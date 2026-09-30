@@ -61,6 +61,7 @@
 "lng_nagram_hide_send_as_button" = "隱藏「傳送身分」按鈕";
 "lng_nagram_hide_stars_reaction_button" = "隱藏 Stars 反應按鈕";
 "lng_nagram_hide_channel_mute_button" = "隱藏頻道底部靜音按鈕";
+"lng_nagram_channel_discuss_button" = "頻道底部按鈕改為進入討論群組";
 "lng_nagram_input_behavior" = "輸入行為";
 "lng_nagram_disable_emoji_hover" = "滑鼠懸停時不開啟表情面板";
 "lng_nagram_disable_attach_hover" = "滑鼠懸停時不開啟附件選單";

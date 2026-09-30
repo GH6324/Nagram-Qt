@@ -124,6 +124,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "history/view/controls/history_view_webpage_processor.h"
 #include "history/view/reactions/history_view_reactions_button.h"
 #include "nagram/compose/buttons.h"
+#include "nagram/compose/channel.h"
 #include "nagram/compose/confirm.h"
 #include "nagram/compose/placeholder.h"
 #include "history/view/history_view_chat_section.h"
@@ -459,7 +460,11 @@ HistoryWidget::HistoryWidget(
 	_unblock->addClickHandler([=] { unblockUser(); });
 	_botStart->addClickHandler([=] { sendBotStartCommand(); });
 	_joinChannel->addClickHandler([=] { joinChannel(); });
-	_muteUnmute->addClickHandler([=] { toggleMuteUnmute(); });
+	_muteUnmute->addClickHandler([=] {
+		if (!Nagram::Compose::OpenDiscussion(controller, _peer)) {
+			toggleMuteUnmute();
+		}
+	});
 	setupGiftToChannelButton();
 	setupDirectMessageButton();
 	_reportMessages->addClickHandler([=] { reportSelectedMessages(); });
@@ -685,6 +690,7 @@ HistoryWidget::HistoryWidget(
 	_topShadow->hide();
 	Nagram::Compose::ButtonsChanged(
 	) | rpl::on_next([=] {
+		updateNotifyControls();
 		updateCmdStartShown();
 		refreshSendGiftToggle();
 		checkMessagesTTL();
@@ -1014,7 +1020,8 @@ HistoryWidget::HistoryWidget(
 		if (flags & PeerUpdateFlag::Migration) {
 			handlePeerMigration();
 		}
-		if (flags & PeerUpdateFlag::Notifications) {
+		if (flags & (PeerUpdateFlag::Notifications
+				| PeerUpdateFlag::DiscussionLink)) {
 			updateNotifyControls();
 		}
 		if (flags & PeerUpdateFlag::UnavailableReason) {
@@ -3822,7 +3829,7 @@ void HistoryWidget::updateNotifyControls() {
 		return;
 	}
 
-	_muteUnmute->setText((_history->muted()
+	_muteUnmute->setText(Nagram::Compose::ChannelBottomText(_peer, _history->muted()
 		? tr::lng_channel_unmute(tr::now)
 		: tr::lng_channel_mute(tr::now)).toUpper());
 	if (!session().data().notifySettings().silentPostsUnknown(_peer)) {
@@ -6721,8 +6728,7 @@ bool HistoryWidget::isChoosingTheme() const {
 
 bool HistoryWidget::isMuteUnmute() const {
 	return _peer
-		&& !Nagram::Compose::Hidden(
-			Nagram::Compose::kHideChannelMuteButton)
+		&& Nagram::Compose::ChannelBottomVisible(_peer)
 		&& ((_peer->isBroadcast() && !_peer->asChannel()->canPostMessages())
 			|| (_peer->isGigagroup() && !Data::CanSendAnything(_peer))
 			|| _peer->isRepliesChat()

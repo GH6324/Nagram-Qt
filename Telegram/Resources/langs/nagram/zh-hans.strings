@@ -61,6 +61,7 @@
 "lng_nagram_hide_send_as_button" = "隐藏“发送身份”按钮";
 "lng_nagram_hide_stars_reaction_button" = "隐藏 Stars 反应按钮";
 "lng_nagram_hide_channel_mute_button" = "隐藏频道底部静音按钮";
+"lng_nagram_channel_discuss_button" = "频道底部按钮改为进入讨论组";
 "lng_nagram_input_behavior" = "输入行为";
 "lng_nagram_disable_emoji_hover" = "鼠标悬停时不弹出表情面板";
 "lng_nagram_disable_attach_hover" = "鼠标悬停时不弹出附件菜单";

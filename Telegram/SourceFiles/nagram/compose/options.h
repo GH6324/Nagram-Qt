@@ -42,6 +42,9 @@ inline constexpr auto kHideStarsReactionButton = Option<bool>{
 inline constexpr auto kHideChannelMuteButton = Option<bool>{
 	"nagram.hideChannelMuteButton", Scope::Device, false,
 	Category::Compose, "lng_nagram_hide_channel_mute_button", kRefreshButtons };
+inline constexpr auto kChannelDiscussButton = Option<bool>{
+	"nagram.channelDiscussButton", Scope::Device, false,
+	Category::Compose, "lng_nagram_channel_discuss_button", kRefreshButtons };
 inline constexpr auto kDisableEmojiHover = Option<bool>{
 	"nagram.disableEmojiHover", Scope::Device, false,
 	Category::Compose, "lng_nagram_disable_emoji_hover" };
@@ -129,6 +132,7 @@ inline void RegisterOptions(Registry &registry) {
 	Expects(registry.Add(kHideSendAsButton));
 	Expects(registry.Add(kHideStarsReactionButton));
 	Expects(registry.Add(kHideChannelMuteButton));
+	Expects(registry.Add(kChannelDiscussButton));
 	Expects(registry.Add(kDisableEmojiHover));
 	Expects(registry.Add(kDisableAttachHover));
 	Expects(registry.Add(kBotCommandsToDraft));

@@ -175,6 +175,10 @@ const auto kMeta = BuildHelper({
 	AddToggle(builder, Compose::kHideChannelMuteButton,
 		tr::lng_nagram_hide_channel_mute_button(),
 		u"nagram/compose/hide-channel-mute"_q, { u"channel"_q, u"mute"_q });
+	AddToggle(builder, Compose::kChannelDiscussButton,
+		tr::lng_nagram_channel_discuss_button(),
+		u"nagram/compose/channel-discuss"_q,
+		{ u"channel"_q, u"discussion"_q, u"comments"_q });
 	builder.addSubsectionTitle({
 		.id = u"nagram/compose/input-behavior"_q,
 		.title = tr::lng_nagram_input_behavior(),
