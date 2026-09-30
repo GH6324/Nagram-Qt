@@ -12,6 +12,7 @@ include(lib_ui/cmake/generate_styles.cmake)
 include(cmake/generate_numbers.cmake)
 
 set(style_files
+    nagram/compose/nagram_compose.style
     nagram/snapshot/nagram_snapshot.style
     ui/td_common.style
     ui/filter_icons.style

@@ -250,6 +250,7 @@ Telegram/cmake/td_lang.cmake. Every key uses the lng_nagram_ prefix.
 "lng_nagram_sort_about" = "Enable rules and drag rows to set their priority. Pinned chats stay first.";
 "lng_nagram_managed_only" = "Show only groups and channels I manage";
 "lng_nagram_text_format" = "Text formatting";
+"lng_nagram_format_toolbar" = "Show formatting toolbar for selected text";
 "lng_nagram_disable_auto_markdown" = "Disable automatic Markdown";
 "lng_nagram_disable_link_preview" = "Hide link previews by default";
 "lng_nagram_space_on_send" = "Add ChineseâLatin spacing when sending";

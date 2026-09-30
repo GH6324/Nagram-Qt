@@ -4,6 +4,7 @@ set(nagram_sources
     nagram/chats/promotions.cpp
     nagram/compose/channel.cpp
     nagram/compose/confirm.cpp
+    nagram/compose/format_toolbar.cpp
     nagram/compose/placeholder.cpp
     nagram/compose/spacing.cpp
     nagram/compose/text.cpp

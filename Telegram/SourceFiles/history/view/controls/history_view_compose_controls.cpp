@@ -88,6 +88,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "history/view/controls/history_view_suggest_options.h"
 #include "history/view/controls/history_view_ttl_button.h"
 #include "nagram/compose/buttons.h"
+#include "nagram/compose/format_toolbar.h"
 #include "nagram/compose/placeholder.h"
 #include "history/view/controls/history_view_voice_record_bar.h"
 #include "history/view/controls/history_view_webpage_processor.h"
@@ -3172,6 +3173,7 @@ void ComposeControls::initField() {
 		return false;
 	});
 	InitMessageFieldFade(_field, _st.field.textBg);
+	Nagram::Compose::SetupFormatToolbar(_field, _parent);
 	_field->setEditLinkCallback(
 		DefaultEditLinkCallback(_show, _field, &_st.boxField));
 	_field->setEditLanguageCallback(DefaultEditLanguageCallback(_show));

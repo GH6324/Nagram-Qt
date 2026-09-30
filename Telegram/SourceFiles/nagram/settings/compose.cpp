@@ -211,6 +211,10 @@ const auto kMeta = BuildHelper({
 		.title = tr::lng_nagram_text_format(),
 		.keywords = { u"text"_q, u"format"_q },
 	});
+	AddToggle(builder, Compose::kFormatToolbar,
+		tr::lng_nagram_format_toolbar(),
+		u"nagram/compose/format-toolbar"_q,
+		{ u"format"_q, u"toolbar"_q, u"bold"_q });
 	AddToggle(builder, Compose::kDisableAutoMarkdown,
 		tr::lng_nagram_disable_auto_markdown(),
 		u"nagram/compose/disable-auto-markdown"_q,

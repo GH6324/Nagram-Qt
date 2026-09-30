@@ -246,6 +246,7 @@
 "lng_nagram_sort_about" = "啟用規則並拖曳調整優先順序。置頂會話始終在最前。";
 "lng_nagram_managed_only" = "僅顯示我管理的群組和頻道";
 "lng_nagram_text_format" = "文字格式";
+"lng_nagram_format_toolbar" = "選取文字時顯示格式工具列";
 "lng_nagram_disable_auto_markdown" = "關閉自動 Markdown";
 "lng_nagram_disable_link_preview" = "預設不顯示連結預覽";
 "lng_nagram_space_on_send" = "傳送時在中西文之間加空格";

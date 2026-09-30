@@ -58,6 +58,9 @@ inline constexpr auto kInputPlaceholderMode = Option<int>{
 	"nagram.inputPlaceholderMode", Scope::Device, 0,
 	Category::Compose, "lng_nagram_input_placeholder", 0,
 	[](const int &value) { return value >= 0 && value <= 2; } };
+inline constexpr auto kFormatToolbar = Option<bool>{
+	"nagram.formatToolbar", Scope::Device, false,
+	Category::Compose, "lng_nagram_format_toolbar" };
 inline constexpr auto kDisableAutoMarkdown = Option<bool>{
 	"nagram.disableAutoMarkdown", Scope::Device, false,
 	Category::Compose, "lng_nagram_disable_auto_markdown" };
@@ -137,6 +140,7 @@ inline void RegisterOptions(Registry &registry) {
 	Expects(registry.Add(kDisableAttachHover));
 	Expects(registry.Add(kBotCommandsToDraft));
 	Expects(registry.Add(kInputPlaceholderMode));
+	Expects(registry.Add(kFormatToolbar));
 	Expects(registry.Add(kDisableAutoMarkdown));
 	Expects(registry.Add(kDisableLinkPreview));
 	Expects(registry.Add(kSpaceOnSend));

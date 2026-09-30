@@ -126,6 +126,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "nagram/compose/buttons.h"
 #include "nagram/compose/channel.h"
 #include "nagram/compose/confirm.h"
+#include "nagram/compose/format_toolbar.h"
 #include "nagram/compose/placeholder.h"
 #include "history/view/history_view_chat_section.h"
 #include "history/view/history_view_cursor_state.h"
@@ -574,6 +575,7 @@ HistoryWidget::HistoryWidget(
 		return false;
 	});
 	InitMessageFieldFade(_field, st::historyComposeField.textBg);
+	Nagram::Compose::SetupFormatToolbar(_field, this);
 
 	setupFastButtonMode();
 	initAiButton();

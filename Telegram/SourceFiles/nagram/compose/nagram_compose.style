@@ -1,0 +1,33 @@
+using "ui/basic.style";
+using "ui/widgets/widgets.style";
+
+nagramFormatButtonSize: 32px;
+nagramFormatButton: IconButton(defaultIconButton) {
+	width: nagramFormatButtonSize;
+	height: nagramFormatButtonSize;
+	iconPosition: point(-1px, -1px);
+	rippleAreaPosition: point(0px, 0px);
+	rippleAreaSize: nagramFormatButtonSize;
+	ripple: defaultRippleAnimationBgOver;
+}
+nagramFormatPadding: margins(4px, 4px, 4px, 4px);
+nagramFormatRadius: 8px;
+nagramFormatSkip: 6px;
+
+nagramFormatBold: icon {{ "menu/rich/bold-24x24", menuIconColor }};
+nagramFormatItalic: icon {{ "menu/rich/italic-24x24", menuIconColor }};
+nagramFormatUnderline: icon {{ "menu/rich/underline-24x24", menuIconColor }};
+nagramFormatStrikeOut: icon {{ "menu/rich/strikeout-24x24", menuIconColor }};
+nagramFormatCode: icon {{ "menu/rich/code-24x24", menuIconColor }};
+nagramFormatSpoiler: icon {{ "menu/rich/spoiler-24x24", menuIconColor }};
+nagramFormatQuote: icon {{ "menu/rich/blockquote-24x24", menuIconColor }};
+nagramFormatLink: icon {{ "menu/rich/link-24x24", menuIconColor }};
+nagramFormatClear: icon {{ "menu/rich/plain_text-24x24", menuIconColor }};
+
+nagramFormatBoldActive: icon {{ "menu/rich/bold-24x24", windowActiveTextFg }};
+nagramFormatItalicActive: icon {{ "menu/rich/italic-24x24", windowActiveTextFg }};
+nagramFormatUnderlineActive: icon {{ "menu/rich/underline-24x24", windowActiveTextFg }};
+nagramFormatStrikeOutActive: icon {{ "menu/rich/strikeout-24x24", windowActiveTextFg }};
+nagramFormatCodeActive: icon {{ "menu/rich/code-24x24", windowActiveTextFg }};
+nagramFormatSpoilerActive: icon {{ "menu/rich/spoiler-24x24", windowActiveTextFg }};
+nagramFormatQuoteActive: icon {{ "menu/rich/blockquote-24x24", windowActiveTextFg }};
