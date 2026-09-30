@@ -186,7 +186,7 @@ const auto kMeta = BuildHelper({
 		.title = tr::lng_nagram_folders(),
 		.keywords = { u"folders"_q },
 	});
-	const auto session = &controller->session();
+	const auto session = builder.session();
 	builder.addButton({
 		.id = u"nagram/chats/startup-folder"_q,
 		.title = tr::lng_nagram_startup_folder(),
