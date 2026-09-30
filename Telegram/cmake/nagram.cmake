@@ -60,6 +60,7 @@ set(nagram_sources
     nagram/privacy/profile.cpp
     nagram/privacy/alias.cpp
     nagram/privacy/admin_shortcuts.cpp
+    nagram/privacy/display.cpp
     nagram/privacy/alias_model.cpp
     nagram/settings/home.cpp
     nagram/settings/rules.cpp

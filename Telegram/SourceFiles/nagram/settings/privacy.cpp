@@ -2,6 +2,7 @@
 
 #include "nagram/privacy/options.h"
 #include "nagram/settings/home.h"
+#include "nagram/settings/restart.h"
 #include "lang/lang_keys.h"
 #include "main/main_session.h"
 #include "main/main_session_settings.h"
@@ -65,6 +66,71 @@ QString ProfileIdFormatLabel(int format) {
 		: (format == 2)
 		? tr::lng_nagram_id_raw(tr::now)
 		: tr::lng_nagram_id_off(tr::now);
+}
+
+std::vector<QString> NameOrderLabels() {
+	return {
+		tr::lng_nagram_preview_follow(tr::now),
+		tr::lng_nagram_name_order_first(tr::now),
+		tr::lng_nagram_name_order_last(tr::now),
+	};
+}
+
+std::vector<QString> PersianCalendarLabels() {
+	return {
+		tr::lng_nagram_reading_off(tr::now),
+		tr::lng_nagram_persian_calendar_native(tr::now),
+		tr::lng_nagram_persian_calendar_latin(tr::now),
+	};
+}
+
+void ChoiceBox(
+		not_null<Ui::GenericBox*> box,
+		const Option<int> *option,
+		const tr::phrase<> *title,
+		std::vector<QString> labels,
+		Window::SessionController *restart) {
+	box->setTitle((*title)());
+	const auto group = std::make_shared<Ui::RadiobuttonGroup>(
+		ForDevice().Get(*option));
+	for (auto value = 0; value != int(labels.size()); ++value) {
+		box->addRow(object_ptr<Ui::Radiobutton>(
+			box, group, value, labels[value],
+			st::settingsSendType), st::settingsSendTypePadding);
+	}
+	group->setChangedCallback([=](int value) {
+		if (ForDevice().Get(*option) != value) {
+			Expects(ForDevice().Set(*option, value));
+			if (restart) {
+				ShowRestartPrompt(restart);
+			}
+		}
+		box->closeBox();
+	});
+}
+
+void ModerateDefaultsBox(not_null<Ui::GenericBox*> box) {
+	box->setTitle(tr::lng_nagram_moderate_defaults());
+	const auto current = ForDevice().Get(Privacy::kModerateDefaults);
+	const auto labels = std::array{
+		tr::lng_report_spam(tr::now),
+		tr::lng_nagram_moderate_delete_all(tr::now),
+		tr::lng_nagram_moderate_ban(tr::now),
+	};
+	auto checks = std::vector<not_null<Ui::Checkbox*>>();
+	for (auto i = 0; i != int(labels.size()); ++i) {
+		checks.push_back(box->addRow(object_ptr<Ui::Checkbox>(
+			box, labels[i], (current & (1 << i)) != 0)));
+	}
+	box->addButton(tr::lng_settings_save(), [=] {
+		auto value = 0;
+		for (auto i = 0; i != int(checks.size()); ++i) {
+			value |= checks[i]->checked() ? (1 << i) : 0;
+		}
+		Expects(ForDevice().Set(Privacy::kModerateDefaults, value));
+		box->closeBox();
+	});
+	box->addButton(tr::lng_cancel(), [=] { box->closeBox(); });
 }
 
 void ProfileIdFormatBox(not_null<Ui::GenericBox*> box) {
@@ -142,6 +208,49 @@ const auto kMeta = BuildHelper({
 		tr::lng_nagram_admin_shortcuts_option(),
 		u"nagram/privacy/admin-shortcuts"_q,
 		{ u"admin"_q, u"manage"_q, u"permissions"_q });
+	const auto addChoice = [&](
+			const Option<int> *option,
+			const tr::phrase<> *title,
+			std::vector<QString> (*labels)(),
+			bool restart,
+			QString id,
+			QStringList keywords) {
+		builder.addButton({
+			.id = std::move(id),
+			.title = (*title)(),
+			.st = &st::settingsButtonNoIcon,
+			.label = ForDevice().Value(*option)
+				| rpl::map([=](int value) { return labels().at(value); }),
+			.onClick = [=] {
+				controller->show(Box(
+					ChoiceBox,
+					option,
+					title,
+					labels(),
+					restart ? controller : nullptr));
+			},
+			.keywords = std::move(keywords),
+		});
+	};
+	addChoice(&Privacy::kNameOrder,
+		&tr::lng_nagram_name_order,
+		NameOrderLabels,
+		true,
+		u"nagram/privacy/name-order"_q,
+		{ u"name"_q, u"order"_q, u"last name"_q });
+	addChoice(&Privacy::kPersianCalendar,
+		&tr::lng_nagram_persian_calendar,
+		PersianCalendarLabels,
+		false,
+		u"nagram/privacy/persian-calendar"_q,
+		{ u"Persian"_q, u"Jalali"_q, u"calendar"_q });
+	builder.addButton({
+		.id = u"nagram/privacy/moderate-defaults"_q,
+		.title = tr::lng_nagram_moderate_defaults(),
+		.st = &st::settingsButtonNoIcon,
+		.onClick = [=] { controller->show(Box(ModerateDefaultsBox)); },
+		.keywords = { u"delete"_q, u"ban"_q, u"report"_q },
+	});
 });
 
 const SectionBuildMethod PrivacySection::kBuild = kMeta.build;

@@ -32,6 +32,20 @@ inline constexpr auto kHideCreateTodo = Option<bool>{
 	"nagram.hideCreateTodo", Scope::Device, false,
 	Category::Privacy, "lng_nagram_hide_create_todo" };
 
+inline constexpr auto kNameOrder = Option<int>{
+	"nagram.nameOrder", Scope::Device, 0,
+	Category::Privacy, "lng_nagram_name_order",
+	static_cast<unsigned>(Flag::RequiresRestart),
+	[](const int &value) { return value >= 0 && value <= 2; } };
+inline constexpr auto kPersianCalendar = Option<int>{
+	"nagram.persianCalendar", Scope::Device, 0,
+	Category::Privacy, "lng_nagram_persian_calendar",
+	static_cast<unsigned>(Flag::RefreshMessageView),
+	[](const int &value) { return value >= 0 && value <= 2; } };
+inline constexpr auto kModerateDefaults = Option<int>{
+	"nagram.moderateDefaults", Scope::Device, 0,
+	Category::Privacy, "lng_nagram_moderate_defaults", 0,
+	[](const int &value) { return value >= 0 && value <= 7; } };
 inline constexpr auto kAdminShortcuts = Option<bool>{
 	"nagram.adminShortcuts", Scope::Device, false,
 	Category::Privacy, "lng_nagram_admin_shortcuts_option" };
@@ -45,6 +59,9 @@ inline void RegisterOptions(Registry &registry) {
 	Expects(registry.Add(kHideProfileGifts));
 	Expects(registry.Add(kHideCreateTodo));
 	Expects(registry.Add(kAdminShortcuts));
+	Expects(registry.Add(kNameOrder));
+	Expects(registry.Add(kPersianCalendar));
+	Expects(registry.Add(kModerateDefaults));
 }
 
 } // namespace Nagram::Privacy
