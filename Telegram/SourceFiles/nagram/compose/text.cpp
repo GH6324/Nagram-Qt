@@ -2,9 +2,12 @@
 
 #include "nagram/compose/options.h"
 #include "nagram/compose/spacing.h"
+#include "nagram/messages/reading.h"
 #include "ui/text/text_utilities.h"
 #include "ui/widgets/fields/input_field.h"
 #include "ui/widgets/popup_menu.h"
+
+#include <QtWidgets/QMenu>
 #include "lang/lang_keys.h"
 
 #include <QtCore/QJsonArray>
@@ -109,7 +112,15 @@ TextWithEntities AddChineseLatinSpacing(const TextWithEntities &text) {
 
 TextWithEntities PrepareText(const TextWithEntities &text, bool editing) {
 	const auto enabled = ForDevice().Get(editing ? kSpaceOnEdit : kSpaceOnSend);
-	auto result = enabled ? AddChineseLatinSpacing(text) : text;
+	auto converted = text;
+	if (const auto chinese = ForDevice().Get(kInputChinese)) {
+		if (auto result = Messages::ConvertChinese(text, chinese == 2)) {
+			converted = std::move(*result);
+		} else {
+			LOG(("Nagram: Chinese conversion unavailable; text sent as typed."));
+		}
+	}
+	auto result = enabled ? AddChineseLatinSpacing(converted) : converted;
 	const auto language = ForDevice().Get(kDefaultCodeLanguage);
 	if (!language.isEmpty()) {
 		for (auto &entity : result.entities) {
@@ -162,6 +173,57 @@ void InstallQuickReplies(not_null<Ui::InputField*> field) {
 				cursor.endEditBlock();
 				field->setTextCursor(cursor);
 			});
+		}
+	});
+}
+
+QString FormatMenuItemTitle(int index) {
+	switch (index) {
+	case 0: return tr::lng_menu_formatting_bold(tr::now);
+	case 1: return tr::lng_menu_formatting_italic(tr::now);
+	case 2: return tr::lng_menu_formatting_underline(tr::now);
+	case 3: return tr::lng_menu_formatting_strike_out(tr::now);
+	case 4: return tr::lng_menu_formatting_monospace(tr::now);
+	case 5: return tr::lng_menu_formatting_spoiler(tr::now);
+	case 6: return tr::lng_menu_formatting_blockquote(tr::now);
+	case 7: return tr::lng_menu_formatting_link_create(tr::now);
+	case 8: return tr::lng_menu_formatting_clear(tr::now);
+	}
+	Unexpected("Nagram format menu item index.");
+}
+
+void InstallFieldHooks(not_null<Ui::InputField*> field) {
+	InstallQuickReplies(field);
+	field->addContextMenuHook([=](Ui::InputField::ContextMenuRequest request) {
+		const auto hidden = ForDevice().Get(kHiddenFormatItems);
+		if (!hidden) {
+			return;
+		}
+		auto prefixes = QStringList();
+		for (auto i = 0; i != kFormatMenuItemCount; ++i) {
+			if (hidden & (1 << i)) {
+				prefixes.push_back(FormatMenuItemTitle(i));
+			}
+		}
+		if (hidden & (1 << 7)) {
+			prefixes.push_back(tr::lng_menu_formatting_link_edit(tr::now));
+		}
+		const auto title = tr::lng_menu_formatting(tr::now);
+		for (const auto action : request.menu->actions()) {
+			const auto submenu = action->menu();
+			if (!submenu || action->text() != title) {
+				continue;
+			}
+			for (const auto item : submenu->actions()) {
+				const auto text = item->text();
+				for (const auto &prefix : prefixes) {
+					if (text.startsWith(prefix)) {
+						submenu->removeAction(item);
+						break;
+					}
+				}
+			}
+			action->setVisible(!submenu->actions().isEmpty());
 		}
 	});
 }

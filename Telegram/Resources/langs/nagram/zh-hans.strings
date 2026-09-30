@@ -293,6 +293,8 @@
 "lng_nagram_managed_only" = "仅显示我管理的群组和频道";
 "lng_nagram_text_format" = "文本格式";
 "lng_nagram_format_toolbar" = "选中文字时显示格式工具栏";
+"lng_nagram_format_menu_items" = "格式菜单项";
+"lng_nagram_input_chinese" = "发送时简繁转换";
 "lng_nagram_disable_auto_markdown" = "关闭自动 Markdown";
 "lng_nagram_disable_link_preview" = "默认不显示链接预览";
 "lng_nagram_space_on_send" = "发送时在中西文之间加空格";

@@ -218,7 +218,7 @@ void TestOptions() {
 		"notification delay bounds");
 	auto compose = Registry();
 	Compose::RegisterOptions(compose);
-	Require(compose.All().size() == 29, "compose option count");
+	Require(compose.All().size() == 31, "compose option count");
 	Require(Compose::kDefaultCodeLanguage.validate(QString::fromLatin1("cpp"))
 		&& !Compose::kDefaultCodeLanguage.validate(QString::fromLatin1("c++!")),
 		"code language validation");
@@ -234,6 +234,8 @@ void TestOptions() {
 			&& entry.key != Compose::kInputPlaceholderMode.key
 			&& entry.key != Compose::kDisableAutoMarkdown.key
 			&& entry.key != Compose::kFormatToolbar.key
+			&& entry.key != Compose::kHiddenFormatItems.key
+			&& entry.key != Compose::kInputChinese.key
 			&& entry.key != Compose::kDisableLinkPreview.key
 			&& entry.key != Compose::kSpaceOnSend.key
 			&& entry.key != Compose::kSpaceOnEdit.key

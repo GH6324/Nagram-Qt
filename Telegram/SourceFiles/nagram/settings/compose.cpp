@@ -2,6 +2,7 @@
 
 #include "nagram/compose/options.h"
 #include "nagram/compose/text.h"
+#include "nagram/messages/reading.h"
 #include "nagram/settings/home.h"
 #include "lang/lang_keys.h"
 #include "settings/settings_builder.h"
@@ -68,6 +69,52 @@ QString PlaceholderLabel(int value) {
 	case 2: return tr::lng_nagram_placeholder_sender(tr::now);
 	default: return tr::lng_nagram_preview_follow(tr::now);
 	}
+}
+
+void FormatItemsBox(not_null<Ui::GenericBox*> box) {
+	box->setTitle(tr::lng_nagram_format_menu_items());
+	const auto hidden = ForDevice().Get(Compose::kHiddenFormatItems);
+	auto checks = std::vector<not_null<Ui::Checkbox*>>();
+	for (auto i = 0; i != Compose::kFormatMenuItemCount; ++i) {
+		checks.push_back(box->addRow(object_ptr<Ui::Checkbox>(
+			box,
+			Compose::FormatMenuItemTitle(i),
+			!(hidden & (1 << i)))));
+	}
+	box->addButton(tr::lng_settings_save(), [=] {
+		auto value = 0;
+		for (auto i = 0; i != int(checks.size()); ++i) {
+			if (!checks[i]->checked()) {
+				value |= (1 << i);
+			}
+		}
+		Expects(ForDevice().Set(Compose::kHiddenFormatItems, value));
+		box->closeBox();
+	});
+	box->addButton(tr::lng_cancel(), [=] { box->closeBox(); });
+}
+
+QString InputChineseLabel(int value) {
+	switch (value) {
+	case 1: return tr::lng_nagram_reading_simplified(tr::now);
+	case 2: return tr::lng_nagram_reading_traditional(tr::now);
+	default: return tr::lng_nagram_reading_off(tr::now);
+	}
+}
+
+void InputChineseBox(not_null<Ui::GenericBox*> box) {
+	box->setTitle(tr::lng_nagram_input_chinese());
+	const auto group = std::make_shared<Ui::RadiobuttonGroup>(
+		ForDevice().Get(Compose::kInputChinese));
+	for (auto value = 0; value != 3; ++value) {
+		box->addRow(object_ptr<Ui::Radiobutton>(
+			box, group, value, InputChineseLabel(value),
+			st::settingsSendType), st::settingsSendTypePadding);
+	}
+	group->setChangedCallback([=](int value) {
+		Expects(ForDevice().Set(Compose::kInputChinese, value));
+		box->closeBox();
+	});
 }
 
 void PlaceholderBox(not_null<Ui::GenericBox*> box) {
@@ -215,6 +262,34 @@ const auto kMeta = BuildHelper({
 		tr::lng_nagram_format_toolbar(),
 		u"nagram/compose/format-toolbar"_q,
 		{ u"format"_q, u"toolbar"_q, u"bold"_q });
+	builder.addButton({
+		.id = u"nagram/compose/format-menu-items"_q,
+		.title = tr::lng_nagram_format_menu_items(),
+		.st = &st::settingsButtonNoIcon,
+		.label = ForDevice().Value(Compose::kHiddenFormatItems)
+			| rpl::map([](int hidden) {
+				auto shown = Compose::kFormatMenuItemCount;
+				for (auto i = 0; i != Compose::kFormatMenuItemCount; ++i) {
+					shown -= (hidden >> i) & 1;
+				}
+				return QString::number(shown)
+					+ u'/'
+					+ QString::number(Compose::kFormatMenuItemCount);
+			}),
+		.onClick = [=] { controller->show(Box(FormatItemsBox)); },
+		.keywords = { u"formatting"_q, u"menu"_q },
+	});
+	if (Messages::ChineseConversionAvailable()) {
+		builder.addButton({
+			.id = u"nagram/compose/input-chinese"_q,
+			.title = tr::lng_nagram_input_chinese(),
+			.st = &st::settingsButtonNoIcon,
+			.label = ForDevice().Value(Compose::kInputChinese)
+				| rpl::map(InputChineseLabel),
+			.onClick = [=] { controller->show(Box(InputChineseBox)); },
+			.keywords = { u"traditional"_q, u"simplified"_q, u"Chinese"_q },
+		});
+	}
 	AddToggle(builder, Compose::kDisableAutoMarkdown,
 		tr::lng_nagram_disable_auto_markdown(),
 		u"nagram/compose/disable-auto-markdown"_q,

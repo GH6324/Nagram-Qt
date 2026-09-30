@@ -571,7 +571,7 @@ auto InitMessageFieldHandlers(MessageFieldHandlersArgs &&args)
 	}, [paused] {
 		return On(PowerSaving::kChatSpoiler) || paused();
 	});
-	Nagram::Compose::InstallQuickReplies(field);
+	Nagram::Compose::InstallFieldHooks(field);
 	if (args.show) {
 		Nagram::InstallDraftTranslation(field, args.show);
 	}

@@ -18,5 +18,7 @@ namespace Nagram::Compose {
 [[nodiscard]] QStringList QuickReplies();
 [[nodiscard]] bool SetQuickReplies(const QStringList &replies);
 void InstallQuickReplies(not_null<Ui::InputField*> field);
+[[nodiscard]] QString FormatMenuItemTitle(int index);
+void InstallFieldHooks(not_null<Ui::InputField*> field);
 
 } // namespace Nagram::Compose

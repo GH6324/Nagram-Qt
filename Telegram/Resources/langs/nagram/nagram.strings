@@ -297,6 +297,8 @@ Telegram/cmake/td_lang.cmake. Every key uses the lng_nagram_ prefix.
 "lng_nagram_managed_only" = "Show only groups and channels I manage";
 "lng_nagram_text_format" = "Text formatting";
 "lng_nagram_format_toolbar" = "Show formatting toolbar for selected text";
+"lng_nagram_format_menu_items" = "Formatting menu items";
+"lng_nagram_input_chinese" = "Convert Chinese when sending";
 "lng_nagram_disable_auto_markdown" = "Disable automatic Markdown";
 "lng_nagram_disable_link_preview" = "Hide link previews by default";
 "lng_nagram_space_on_send" = "Add ChineseÃ¢ÂÂLatin spacing when sending";
