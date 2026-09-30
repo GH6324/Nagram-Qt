@@ -138,7 +138,15 @@ void TestOptions() {
 		"unknown refresh option");
 	auto chats = Registry();
 	Chats::RegisterOptions(chats);
-	Require(chats.All().size() == 18, "chat option count");
+	Require(chats.All().size() == 20, "chat option count");
+	Require(Chats::ValidRecentChats(QString())
+		&& Chats::ValidRecentChats(QString::fromLatin1("1,2,3"))
+		&& !Chats::ValidRecentChats(QString::fromLatin1("1,,2"))
+		&& !Chats::ValidRecentChats(QString::fromLatin1("1,x")),
+		"recent chats format");
+	Require(chats.HasFlag(Chats::kRecentChatsList.key, Flag::Hidden)
+		&& !chats.HasFlag(Chats::kRecentChatsList.key, Flag::Exportable),
+		"recent chats list stays local");
 	Require(Chats::kManagedFolderIds.scope == Scope::Account
 		&& Chats::kManagedFolderIds.validate(QString::fromLatin1("1,3,8"))
 		&& !Chats::kManagedFolderIds.validate(QString::fromLatin1("3,1"))

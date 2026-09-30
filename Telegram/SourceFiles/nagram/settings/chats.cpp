@@ -261,6 +261,16 @@ const auto kMeta = BuildHelper({
 		tr::lng_nagram_disable_scroll_to_next_topic(),
 		u"nagram/chats/disable-next-topic"_q,
 		{ u"scroll"_q, u"topic"_q });
+	builder.addSubsectionTitle({
+		.id = u"nagram/chats/navigation"_q,
+		.title = tr::lng_nagram_navigation(),
+		.keywords = { u"navigation"_q, u"recent"_q },
+	});
+	AddToggle(builder, Chats::kRecentChats,
+		tr::lng_nagram_recent_chats_option(),
+		u"nagram/chats/recent-chats"_q,
+		{ u"recent"_q, u"history"_q, u"main menu"_q });
+	builder.addDividerText(tr::lng_nagram_recent_chats_note());
 });
 
 const SectionBuildMethod ChatsSection::kBuild = kMeta.build;

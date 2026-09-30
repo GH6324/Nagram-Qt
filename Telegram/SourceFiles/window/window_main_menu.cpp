@@ -6,6 +6,7 @@ For license and copyright information please follow this link:
 https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 #include "window/window_main_menu.h"
+#include "nagram/chats/recent_chats.h"
 #include "nagram/interface/main_menu.h"
 
 #include "apiwrap.h"
@@ -732,6 +733,7 @@ void MainMenu::setupMenu() {
 		)->setClickedCallback([=] {
 			controller->showPeerHistory(controller->session().user());
 		});
+		Nagram::Chats::AddRecentChatsMenuItem(addAction, controller);
 	} else {
 		addAction(
 			tr::lng_profile_add_contact(),

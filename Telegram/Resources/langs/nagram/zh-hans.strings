@@ -48,6 +48,12 @@
 "lng_nagram_scroll_navigation" = "滚动导航";
 "lng_nagram_disable_scroll_to_next_channel" = "滚动到底时不切换到下一个频道";
 "lng_nagram_disable_scroll_to_next_topic" = "滚动到底时不切换到下一个话题";
+"lng_nagram_navigation" = "导航";
+"lng_nagram_recent_chats_option" = "记住最近会话";
+"lng_nagram_recent_chats_note" = "在主菜单中加入“最近会话”。列表按账号保存在本机，关闭后会清空。";
+"lng_nagram_recent_chats" = "最近会话";
+"lng_nagram_recent_chats_empty" = "还没有最近会话。";
+"lng_nagram_recent_chats_clear" = "清空";
 "lng_nagram_compose" = "输入与发送";
 "lng_nagram_compose_buttons" = "输入框按钮";
 "lng_nagram_hide_attach_button" = "隐藏附件按钮";

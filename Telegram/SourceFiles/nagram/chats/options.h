@@ -90,6 +90,31 @@ inline constexpr auto kDisableScrollToNextTopic = Option<bool>{
 	"nagram.disableScrollToNextTopic", Scope::Device, false,
 	Category::Chats, "lng_nagram_disable_scroll_to_next_topic" };
 
+[[nodiscard]] inline bool ValidRecentChats(const QString &value) {
+	if (value.isEmpty()) {
+		return true;
+	}
+	const auto parts = value.split(u',');
+	if (parts.size() > 30) {
+		return false;
+	}
+	for (const auto &part : parts) {
+		auto ok = false;
+		if (!part.toULongLong(&ok) || !ok) {
+			return false;
+		}
+	}
+	return true;
+}
+
+inline constexpr auto kRecentChats = Option<bool>{
+	"nagram.recentChats", Scope::Device, false,
+	Category::Chats, "lng_nagram_recent_chats_option" };
+inline const auto kRecentChatsList = Option<QString>{
+	"nagram.recentChatsList", Scope::Account, QString(),
+	Category::Chats, "lng_nagram_recent_chats",
+	static_cast<unsigned>(Flag::Hidden), ValidRecentChats };
+
 inline void RegisterOptions(Registry &registry) {
 	Expects(registry.Add(kCompactList));
 	Expects(registry.Add(kPreviewLines));
@@ -109,6 +134,8 @@ inline void RegisterOptions(Registry &registry) {
 	Expects(registry.Add(kHideBirthdaySuggestions));
 	Expects(registry.Add(kDisableScrollToNextChannel));
 	Expects(registry.Add(kDisableScrollToNextTopic));
+	Expects(registry.Add(kRecentChats));
+	Expects(registry.Add(kRecentChatsList));
 }
 
 } // namespace Nagram::Chats

@@ -8,6 +8,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "window/window_session_controller.h"
 #include "nagram/chats/startup_folder.h"
 #include "nagram/chats/sort.h"
+#include "nagram/chats/recent_chats.h"
 
 #include "apiwrap.h"
 #include "api/api_cloud_password.h"
@@ -1586,6 +1587,7 @@ SessionController::SessionController(
 , _chatStyle(std::make_unique<Ui::ChatStyle>(session->colorIndicesValue())) {
 	init();
 	if (_isPrimary) Nagram::Chats::WatchSorting(session, lifetime());
+	Nagram::Chats::WatchRecentChats(this);
 
 	_chatStyleTheme = _defaultChatTheme;
 	_chatStyle->apply(_defaultChatTheme.get());

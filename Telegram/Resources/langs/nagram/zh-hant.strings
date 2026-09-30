@@ -48,6 +48,12 @@
 "lng_nagram_scroll_navigation" = "捲動導覽";
 "lng_nagram_disable_scroll_to_next_channel" = "捲動到底時不切換到下一個頻道";
 "lng_nagram_disable_scroll_to_next_topic" = "捲動到底時不切換到下一個話題";
+"lng_nagram_navigation" = "導覽";
+"lng_nagram_recent_chats_option" = "記住最近對話";
+"lng_nagram_recent_chats_note" = "在主選單中加入「最近對話」。清單按帳號儲存在本機，關閉後會清除。";
+"lng_nagram_recent_chats" = "最近對話";
+"lng_nagram_recent_chats_empty" = "還沒有最近對話。";
+"lng_nagram_recent_chats_clear" = "清除";
 "lng_nagram_compose" = "輸入與傳送";
 "lng_nagram_compose_buttons" = "輸入框按鈕";
 "lng_nagram_hide_attach_button" = "隱藏附件按鈕";
