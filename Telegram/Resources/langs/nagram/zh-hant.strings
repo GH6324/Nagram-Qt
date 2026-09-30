@@ -108,6 +108,8 @@
 "lng_nagram_profile_dc" = "資料中心";
 "lng_nagram_hide_profile_gifts" = "隱藏個人資料禮物";
 "lng_nagram_hide_create_todo" = "隱藏建立待辦清單入口";
+"lng_nagram_admin_shortcuts_option" = "在聊天選單中顯示管理捷徑";
+"lng_nagram_admin_shortcuts" = "管理捷徑";
 "lng_nagram_time_and_info" = "時間與資訊";
 "lng_nagram_seconds_in_messages" = "時間顯示秒數";
 "lng_nagram_show_forwarded_message_date" = "轉傳訊息顯示原始傳送時間";

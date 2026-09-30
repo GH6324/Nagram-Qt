@@ -50,6 +50,7 @@ set(nagram_sources
     nagram/snapshot/snapshot.cpp
     nagram/privacy/profile.cpp
     nagram/privacy/alias.cpp
+    nagram/privacy/admin_shortcuts.cpp
     nagram/privacy/alias_model.cpp
     nagram/settings/home.cpp
     nagram/settings/rules.cpp

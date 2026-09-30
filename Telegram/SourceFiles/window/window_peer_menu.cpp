@@ -8,6 +8,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "window/window_peer_menu.h"
 #include "nagram/privacy/options.h"
 #include "nagram/privacy/alias.h"
+#include "nagram/privacy/admin_shortcuts.h"
 
 #include "base/call_delayed.h"
 #include "menu/menu_check_item.h"
@@ -1946,6 +1947,7 @@ void Filler::fillHistoryActions() {
 	addInfo();
 	addViewAsTopics();
 	addManageChat();
+	Nagram::Privacy::AddAdminShortcuts(_addAction, _controller, _peer);
 	addStoryArchive();
 	addSupportInfo();
 	addBoostChat();
@@ -1976,6 +1978,7 @@ void Filler::fillProfileActions() {
 	addViewStatistics();
 	addStoryArchive();
 	addManageChat();
+	Nagram::Privacy::AddAdminShortcuts(_addAction, _controller, _peer);
 	addSetPersonalChannel();
 	addTopicLink();
 	addManageTopic();

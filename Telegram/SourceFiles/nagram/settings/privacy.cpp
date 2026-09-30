@@ -138,6 +138,10 @@ const auto kMeta = BuildHelper({
 		tr::lng_nagram_hide_create_todo(),
 		u"nagram/privacy/hide-create-todo"_q,
 		{ u"todo"_q, u"list"_q });
+	AddToggle(builder, Privacy::kAdminShortcuts,
+		tr::lng_nagram_admin_shortcuts_option(),
+		u"nagram/privacy/admin-shortcuts"_q,
+		{ u"admin"_q, u"manage"_q, u"permissions"_q });
 });
 
 const SectionBuildMethod PrivacySection::kBuild = kMeta.build;

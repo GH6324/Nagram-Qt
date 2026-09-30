@@ -32,6 +32,10 @@ inline constexpr auto kHideCreateTodo = Option<bool>{
 	"nagram.hideCreateTodo", Scope::Device, false,
 	Category::Privacy, "lng_nagram_hide_create_todo" };
 
+inline constexpr auto kAdminShortcuts = Option<bool>{
+	"nagram.adminShortcuts", Scope::Device, false,
+	Category::Privacy, "lng_nagram_admin_shortcuts_option" };
+
 inline void RegisterOptions(Registry &registry) {
 	Expects(registry.Add(kDemoMode));
 	Expects(registry.Add(kHideReadTime));
@@ -40,6 +44,7 @@ inline void RegisterOptions(Registry &registry) {
 	Expects(registry.Add(kShowProfileDc));
 	Expects(registry.Add(kHideProfileGifts));
 	Expects(registry.Add(kHideCreateTodo));
+	Expects(registry.Add(kAdminShortcuts));
 }
 
 } // namespace Nagram::Privacy
