@@ -3,7 +3,7 @@ Nagram Desktop strings. Merged after lang.strings at configure time, see
 Telegram/cmake/td_lang.cmake. Every key uses the lng_nagram_ prefix.
 */
 "lng_nagram_about_api" = "Independent desktop messenger based on {api_link}.";
-"lng_nagram_about" = "Nagram Desktop is based on Telegram Desktop. Nagram icon artwork © MaitungTM.";
+"lng_nagram_about" = "Nagram Desktop is based on Telegram Desktop. Nagram icon artwork Â© MaitungTM.";
 "lng_nagram_intro_about" = "Nagram for desktop.\nAn independent client for Telegram.";
 "lng_nagram_mac_menu_show" = "Show Nagram";
 "lng_nagram_open_from_tray" = "Open Nagram";
@@ -17,11 +17,11 @@ Telegram/cmake/td_lang.cmake. Every key uses the lng_nagram_ prefix.
 "lng_nagram_bubble_roundness" = "Message bubble roundness";
 "lng_nagram_avatar_roundness" = "Avatar roundness";
 "lng_nagram_uniform_avatar_shapes" = "Use avatar roundness for forums and channel direct messages";
-"lng_nagram_roundness_hint" = "10–100%; leave empty to follow Telegram";
+"lng_nagram_roundness_hint" = "10â100%; leave empty to follow Telegram";
 "lng_nagram_restart_required" = "After restart";
 "lng_nagram_message_style" = "Message style";
 "lng_nagram_text_message_width" = "Text message width";
-"lng_nagram_text_width_hint" = "50–400%; leave empty to follow Telegram";
+"lng_nagram_text_width_hint" = "50â400%; leave empty to follow Telegram";
 "lng_nagram_wide_channel_posts" = "Widen channel text messages";
 "lng_nagram_hide_bubble_tail" = "Hide message bubble tails";
 "lng_nagram_theme_reply_colors" = "Use theme colors for replies and quotes";
@@ -89,7 +89,7 @@ Telegram/cmake/td_lang.cmake. Every key uses the lng_nagram_ prefix.
 "lng_nagram_sticker_scale" = "Sticker size";
 "lng_nagram_hide_sticker_time" = "Hide sticker time";
 "lng_nagram_recent_sticker_limit" = "Recent stickers shown";
-"lng_nagram_recent_sticker_hint" = "Enter 1–200, or leave empty to follow Telegram";
+"lng_nagram_recent_sticker_hint" = "Enter 1â200, or leave empty to follow Telegram";
 "lng_nagram_hide_group_stickers" = "Hide group stickers";
 "lng_nagram_hide_recommended_stickers" = "Hide recommended stickers";
 "lng_nagram_hide_recommended_emoji" = "Hide recommended emoji";
@@ -195,6 +195,12 @@ Telegram/cmake/td_lang.cmake. Every key uses the lng_nagram_ prefix.
 "lng_nagram_menu_delete_download_done" = "The file was moved to the trash.";
 "lng_nagram_menu_delete_download_failed" = "Couldn't move the file to the trash.";
 "lng_nagram_menu_delete_download_changed" = "The file has changed. Open the menu again.";
+"lng_nagram_menu_quick_rating" = "Quick rating";
+"lng_nagram_menu_quick_rating_item" = "Reply “{text}”";
+"lng_nagram_menu_quick_rating_first" = "Quick rating text 1";
+"lng_nagram_menu_quick_rating_second" = "Quick rating text 2";
+"lng_nagram_menu_quick_rating_placeholder" = "Text to put in the reply draft";
+"lng_nagram_menu_quick_rating_empty" = "Not set";
 "lng_nagram_menu_reading" = "Show original / converted text";
 "lng_nagram_menu_media_filename" = "File name";
 "lng_nagram_menu_media_type" = "Type";
@@ -244,8 +250,8 @@ Telegram/cmake/td_lang.cmake. Every key uses the lng_nagram_ prefix.
 "lng_nagram_text_format" = "Text formatting";
 "lng_nagram_disable_auto_markdown" = "Disable automatic Markdown";
 "lng_nagram_disable_link_preview" = "Hide link previews by default";
-"lng_nagram_space_on_send" = "Add Chinese–Latin spacing when sending";
-"lng_nagram_space_on_edit" = "Add Chinese–Latin spacing when editing";
+"lng_nagram_space_on_send" = "Add ChineseâLatin spacing when sending";
+"lng_nagram_space_on_edit" = "Add ChineseâLatin spacing when editing";
 "lng_nagram_default_code_language" = "Default code language";
 "lng_nagram_code_language_hint" = "Leave empty for automatic";
 "lng_nagram_quick_replies" = "Quick replies";
@@ -261,11 +267,11 @@ Telegram/cmake/td_lang.cmake. Every key uses the lng_nagram_ prefix.
 "lng_nagram_service_audio_upload" = "Upload this audio to the configured transcription service?";
 "lng_nagram_service_delete_confirm" = "Delete this service and its unshared saved API key? If selected, its function will inherit the existing service.";
 "lng_nagram_service_edit" = "Edit service";
-"lng_nagram_service_edit_about" = "Use HTTPS (HTTP is allowed only for local servers). The endpoint is relative to the base URL, without a leading slash. Enter the model ID supplied by your provider. Temperature: 0–2 for translation, 0–1 for transcription. Audio language: a two-letter code, such as en. Changing the endpoint requires entering the API key again.";
+"lng_nagram_service_edit_about" = "Use HTTPS (HTTP is allowed only for local servers). The endpoint is relative to the base URL, without a leading slash. Enter the model ID supplied by your provider. Temperature: 0â2 for translation, 0â1 for transcription. Audio language: a two-letter code, such as en. Changing the endpoint requires entering the API key again.";
 "lng_nagram_service_endpoint" = "Endpoint path";
 "lng_nagram_service_http_error" = "The service returned HTTP {code}. Check your API key, model, quota and endpoint, then retry.";
 "lng_nagram_service_invalid" = "Check the service name, HTTPS URL, relative endpoint, model and parameter ranges. A selected system service must be available on this device.";
-"lng_nagram_service_key" = "API key — leave blank to keep the saved key";
+"lng_nagram_service_key" = "API key â leave blank to keep the saved key";
 "lng_nagram_service_key_cleanup" = "Could not remove the old API key. Remove the Nagram Desktop Services entry from your system credential store.";
 "lng_nagram_service_key_error" = "The saved API key is missing or inaccessible. Enter it again and allow access to the system credential store. Keys must be one line, at most 4096 bytes.";
 "lng_nagram_service_language" = "Audio language code (blank detects automatically)";
@@ -277,14 +283,14 @@ Telegram/cmake/td_lang.cmake. Every key uses the lng_nagram_ prefix.
 "lng_nagram_service_prompt" = "Prompt";
 "lng_nagram_service_redirect_error" = "The service redirected the request. Enter its final endpoint in settings; credentials were not forwarded.";
 "lng_nagram_service_response_error" = "The service returned an incomplete or incompatible result. Check its model and prompt and retry. The original text is unchanged.";
-"lng_nagram_service_size_error" = "This request exceeds Nagram’s limit: 128 KiB for text requests, 24 MiB for audio or 2 MiB for responses. Use a smaller selection or file.";
+"lng_nagram_service_size_error" = "This request exceeds Nagramâs limit: 128 KiB for text requests, 24 MiB for audio or 2 MiB for responses. Use a smaller selection or file.";
 "lng_nagram_service_system_prompt" = "System prompt";
 "lng_nagram_service_temperature" = "Temperature (blank uses service default)";
-"lng_nagram_service_test" = "Test saved service…";
-"lng_nagram_service_test_about" = "Uses this service’s saved address, credentials, model and prompts. Text tests translate “Hello, world!” into Chinese. Tests may be billed by the service. Closing cancels the current request.";
-"lng_nagram_service_test_audio" = "Choose test audio…";
+"lng_nagram_service_test" = "Test saved serviceâ¦";
+"lng_nagram_service_test_about" = "Uses this serviceâs saved address, credentials, model and prompts. Text tests translate âHello, world!â into Chinese. Tests may be billed by the service. Closing cancels the current request.";
+"lng_nagram_service_test_audio" = "Choose test audioâ¦";
 "lng_nagram_service_test_translation" = "Test translation";
-"lng_nagram_service_testing" = "Waiting for service…";
+"lng_nagram_service_testing" = "Waiting for serviceâ¦";
 "lng_nagram_service_url" = "Base URL";
 "lng_nagram_service_use_key" = "Authenticate with an API key";
 "lng_nagram_services" = "Translation and transcription services";
@@ -294,7 +300,7 @@ Telegram/cmake/td_lang.cmake. Every key uses the lng_nagram_ prefix.
 "lng_nagram_service_system" = "System translation";
 "lng_nagram_service_translation" = "Manual translation";
 "lng_nagram_translate_apply" = "Use in draft";
-"lng_nagram_translate_draft" = "Translate draft…";
+"lng_nagram_translate_draft" = "Translate draftâ¦";
 "lng_nagram_system_translation_unavailable" = "System translation is unavailable on this device or OS version. Choose Telegram or a configured service.";
 "lng_nagram_service_transcription" = "Voice transcription";
 "lng_nagram_transcribe_upload_about" = "Process this audio with {name}?\n{url}\n\nStarting sends the audio to this service. Closing this window cancels the upload/request.";
@@ -326,11 +332,11 @@ Telegram/cmake/td_lang.cmake. Every key uses the lng_nagram_ prefix.
 "lng_nagram_rules" = "Rules";
 "lng_nagram_filter_hidden" = "Message hidden by a local filter";
 "lng_nagram_filters" = "Local message filters";
-"lng_nagram_filters_about" = "Applies only to this account’s chat views. Whole-message rules match original text, album captions, hidden links and button contents. Text masks and replacements affect displayed text. Blocked sources include forwarded authors and inline bots. Hidden content keeps a placeholder; search and notifications retain the original.";
+"lng_nagram_filters_about" = "Applies only to this accountâs chat views. Whole-message rules match original text, album captions, hidden links and button contents. Text masks and replacements affect displayed text. Blocked sources include forwarded authors and inline bots. Hidden content keeps a placeholder; search and notifications retain the original.";
 "lng_nagram_filter_invalid" = "Invalid filter configuration. Edit the rule or import a supported version.";
 "lng_nagram_filter_pattern_error" = "Pattern error at position {index}: {error}";
 "lng_nagram_filter_limit" = "Filtering stopped at its execution limit or an invalid match. Show unprocessed text to view this message, or simplify the rules.";
-"lng_nagram_filter_pending" = "Applying local filters…";
+"lng_nagram_filter_pending" = "Applying local filtersâ¦";
 "lng_nagram_filter_preview" = "Preview rules";
 "lng_nagram_filter_preview_about" = "Enter sample text and run the preview. This does not change or send messages. Reversed matching applies only to whole-message actions. Replacement text is literal.";
 "lng_nagram_filter_rule" = "Edit filter rule";
@@ -357,7 +363,7 @@ Telegram/cmake/td_lang.cmake. Every key uses the lng_nagram_ prefix.
 "lng_nagram_filter_author_hide" = "Hide this author locally";
 "lng_nagram_filter_chat_enable" = "Apply local filters in this chat";
 "lng_nagram_filter_chat_disable" = "Exclude this chat from local filters";
-"lng_nagram_filter_menu_saved" = "Filter preference saved for this account. The master switch is in Nagram → Local message filters.";
+"lng_nagram_filter_menu_saved" = "Filter preference saved for this account. The master switch is in Nagram â Local message filters.";
 "lng_nagram_link_rules" = "Link rules";
 "lng_nagram_link_changed" = "Open this modified link?";
 "lng_nagram_config_off" = "Off";
@@ -376,7 +382,7 @@ Telegram/cmake/td_lang.cmake. Every key uses the lng_nagram_ prefix.
 "lng_nagram_link_invalid" = "Invalid URL or link-rule configuration. Check the host, parameter names and rule limits (32 rules, 32 parameter names each).";
 "lng_nagram_link_credentials" = "Links containing a username or password cannot be rewritten.";
 "lng_nagram_menu_screenshot" = "Message screenshot";
-"lng_nagram_snapshot" = "Message screenshot…";
+"lng_nagram_snapshot" = "Message screenshotâ¦";
 "lng_nagram_snapshot_about" = "Review the exact image before copying or saving. Unloaded media keeps its current placeholder; refresh after downloading it in the chat. Spoilers start hidden for every screenshot.";
 "lng_nagram_snapshot_background" = "Include background";
 "lng_nagram_snapshot_date" = "Include date header";
@@ -387,7 +393,7 @@ Telegram/cmake/td_lang.cmake. Every key uses the lng_nagram_ prefix.
 "lng_nagram_snapshot_spoilers" = "Reveal spoilers in this screenshot";
 "lng_nagram_snapshot_refresh" = "Refresh preview";
 "lng_nagram_snapshot_copy" = "Copy image";
-"lng_nagram_snapshot_save" = "Save image…";
+"lng_nagram_snapshot_save" = "Save imageâ¦";
 "lng_nagram_snapshot_copied" = "Image copied.";
 "lng_nagram_snapshot_saved" = "Image saved.";
 "lng_nagram_snapshot_unavailable" = "These messages cannot be captured. They may have expired, changed permissions or become unavailable.";
@@ -408,12 +414,12 @@ Telegram/cmake/td_lang.cmake. Every key uses the lng_nagram_ prefix.
 "lng_nagram_config_imported" = "Configuration imported.";
 "lng_nagram_config_exported" = "Configuration exported.";
 "lng_nagram_config_read_error" = "Unable to read the configuration. Check that the file exists and is readable.";
-"lng_nagram_config_write_error" = "Unable to save the configuration. Check the destination’s permissions and free space. An existing file was not replaced.";
+"lng_nagram_config_write_error" = "Unable to save the configuration. Check the destinationâs permissions and free space. An existing file was not replaced.";
 "lng_nagram_config_file_filter" = "Nagram configuration (*.json)";
 "lng_nagram_catalog_title" = "Sticker catalog";
 "lng_nagram_catalog_about" = "Exports the public sticker, mask and emoji packs currently loaded for this account, including their order. Packs without a public link are omitted. No images or credentials are included. Open sticker management first to update the installed list.";
 "lng_nagram_catalog_preview" = "Sticker catalog preview";
-"lng_nagram_catalog_preview_about" = "Open a pack to review or install it using Telegram’s pack page. Apply order only reorders installed packs and preserves all other packs. This order syncs with your Telegram account.";
+"lng_nagram_catalog_preview_about" = "Open a pack to review or install it using Telegramâs pack page. Apply order only reorders installed packs and preserves all other packs. This order syncs with your Telegram account.";
 "lng_nagram_catalog_invalid" = "Invalid sticker catalog. Use format version 1 with up to 1,000 unique public pack names and a file of at most 1 MB.";
 "lng_nagram_catalog_incomplete" = "The installed sticker list is incomplete. Open sticker management to load it, then try again.";
 "lng_nagram_catalog_installed" = "Installed";

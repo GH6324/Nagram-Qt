@@ -24,6 +24,8 @@ set(nagram_sources
     nagram/menu/batch.cpp
     nagram/menu/media.cpp
     nagram/menu/download.cpp
+    nagram/menu/draft.cpp
+    nagram/menu/rating.cpp
     nagram/menu/model.cpp
     nagram/menu/repeat.cpp
     nagram/menu/reading.cpp

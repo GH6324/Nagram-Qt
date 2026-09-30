@@ -3,6 +3,7 @@
 #include "nagram/menu/batch.h"
 #include "nagram/menu/media.h"
 #include "nagram/menu/download.h"
+#include "nagram/menu/rating.h"
 #include "nagram/menu/reading.h"
 #include "nagram/filters/menu.h"
 #include "nagram/snapshot/snapshot.h"
@@ -36,6 +37,7 @@ void Apply(
 	if (controller) {
 		if (item) {
 			InsertRepeatActions(menu, item, controller);
+			InsertQuickRatingActions(menu, item, controller);
 		}
 		if (item || !selected.empty()) {
 			InsertBatchActions(menu, item, controller,

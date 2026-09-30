@@ -191,6 +191,12 @@
 "lng_nagram_menu_delete_download_done" = "檔案已移到垃圾桶。";
 "lng_nagram_menu_delete_download_failed" = "無法將檔案移到垃圾桶。";
 "lng_nagram_menu_delete_download_changed" = "檔案已變更，請重新開啟選單。";
+"lng_nagram_menu_quick_rating" = "快捷評價";
+"lng_nagram_menu_quick_rating_item" = "回覆「{text}」";
+"lng_nagram_menu_quick_rating_first" = "快捷評價文字 1";
+"lng_nagram_menu_quick_rating_second" = "快捷評價文字 2";
+"lng_nagram_menu_quick_rating_placeholder" = "填入回覆草稿的文字";
+"lng_nagram_menu_quick_rating_empty" = "未設定";
 "lng_nagram_menu_reading" = "顯示原文 / 轉換後文字";
 "lng_nagram_menu_media_filename" = "檔案名稱";
 "lng_nagram_menu_media_type" = "類型";

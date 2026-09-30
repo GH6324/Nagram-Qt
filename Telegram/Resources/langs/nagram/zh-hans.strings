@@ -191,6 +191,12 @@
 "lng_nagram_menu_delete_download_done" = "文件已移到回收站。";
 "lng_nagram_menu_delete_download_failed" = "无法将文件移到回收站。";
 "lng_nagram_menu_delete_download_changed" = "文件已变化，请重新打开菜单。";
+"lng_nagram_menu_quick_rating" = "快捷评价";
+"lng_nagram_menu_quick_rating_item" = "回复“{text}”";
+"lng_nagram_menu_quick_rating_first" = "快捷评价文字 1";
+"lng_nagram_menu_quick_rating_second" = "快捷评价文字 2";
+"lng_nagram_menu_quick_rating_placeholder" = "填入回复草稿的文字";
+"lng_nagram_menu_quick_rating_empty" = "未设置";
 "lng_nagram_menu_reading" = "显示原文 / 转换后文字";
 "lng_nagram_menu_media_filename" = "文件名";
 "lng_nagram_menu_media_type" = "类型";

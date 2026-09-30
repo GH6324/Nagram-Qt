@@ -31,6 +31,7 @@ enum class ActionId : int {
 	Reading = 22,
 	FilterAuthor = 23,
 	DeleteDownload = 25,
+	QuickRating = 26,
 };
 
 enum class Visibility { Show, Hide, WithOption };
@@ -40,7 +41,7 @@ struct Entry {
 	const char *titleKey;
 };
 
-inline constexpr auto kEntries = std::array<Entry, 24>({{
+inline constexpr auto kEntries = std::array<Entry, 25>({{
 	{ ActionId::Reply, "lng_nagram_menu_reply" },
 	{ ActionId::Edit, "lng_nagram_menu_edit" },
 	{ ActionId::Copy, "lng_nagram_menu_copy" },
@@ -65,6 +66,7 @@ inline constexpr auto kEntries = std::array<Entry, 24>({{
 	{ ActionId::Reading, "lng_nagram_menu_reading" },
 	{ ActionId::FilterAuthor, "lng_nagram_filter_author_hide" },
 	{ ActionId::DeleteDownload, "lng_nagram_menu_delete_download" },
+	{ ActionId::QuickRating, "lng_nagram_menu_quick_rating" },
 }});
 
 [[nodiscard]] Visibility DefaultVisibility(ActionId id);
@@ -80,6 +82,18 @@ inline const auto kMenuConfig = Option<QByteArray>{
 	"nagram.messageMenu", Scope::Device, QByteArray(),
 	Category::Menu, "lng_nagram_menu", static_cast<unsigned>(Flag::Exportable),
 	ValidateConfig };
+[[nodiscard]] inline bool ValidQuickRating(const QString &value) {
+	return value.size() <= 64;
+}
+
+inline const auto kQuickRatingFirst = Option<QString>{
+	"nagram.quickRatingFirst", Scope::Device, QString(),
+	Category::Menu, "lng_nagram_menu_quick_rating_first",
+	static_cast<unsigned>(Flag::Exportable), ValidQuickRating };
+inline const auto kQuickRatingSecond = Option<QString>{
+	"nagram.quickRatingSecond", Scope::Device, QString(),
+	Category::Menu, "lng_nagram_menu_quick_rating_second",
+	static_cast<unsigned>(Flag::Exportable), ValidQuickRating };
 inline constexpr auto kConfirmRepeat = Option<bool>{
 	"nagram.confirmRepeat", Scope::Device, false,
 	Category::Menu, "lng_nagram_menu_confirm_repeat",
@@ -88,6 +102,8 @@ inline constexpr auto kConfirmRepeat = Option<bool>{
 inline void RegisterOptions(Registry &registry) {
 	Expects(registry.Add(kMenuConfig));
 	Expects(registry.Add(kConfirmRepeat));
+	Expects(registry.Add(kQuickRatingFirst));
+	Expects(registry.Add(kQuickRatingSecond));
 }
 
 } // namespace Nagram::Menu

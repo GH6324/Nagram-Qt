@@ -80,6 +80,11 @@ void TestOptions() {
 		== Visibility::Hide, "delete download action default");
 	Require(Menu::ValidateConfig(R"({"version":2,"states":{"E25":"show"}})"),
 		"delete download action state rejected");
+	Require(Menu::ReadVisibility({}, ActionId::QuickRating)
+		== Visibility::Hide, "quick rating action default");
+	Require(Menu::ValidQuickRating(QString(64, u'x'))
+		&& !Menu::ValidQuickRating(QString(65, u'x')),
+		"quick rating length limit");
 	const auto oldReading = QByteArray(
 		R"({"version":1,"states":{"E21":"show","E23":"show"}})");
 	Require(Menu::ValidateConfig(oldReading), "old menu config valid");

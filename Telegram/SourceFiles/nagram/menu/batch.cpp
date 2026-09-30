@@ -1,9 +1,8 @@
 #include "nagram/menu/batch.h"
 
 #include "nagram/menu/actions.h"
-#include "data/data_changes.h"
+#include "nagram/menu/draft.h"
 #include "data/data_chat_participant_status.h"
-#include "data/data_drafts.h"
 #include "data/data_forum_topic.h"
 #include "data/data_session.h"
 #include "data/data_user.h"
@@ -12,7 +11,6 @@
 #include "lang/lang_keys.h"
 #include "main/main_session.h"
 #include "mainwidget.h"
-#include "storage/storage_account.h"
 #include "ui/layers/generic_box.h"
 #include "ui/text/text_utilities.h"
 #include "ui/widgets/buttons.h"
@@ -67,38 +65,6 @@ std::optional<TextWithEntities> Prepare(
 		}
 	}
 	return text;
-}
-
-bool DraftOccupied(not_null<Data::Thread*> target) {
-	const auto history = target->owningHistory();
-	const auto topic = target->topicRootId();
-	const auto monoforum = target->monoforumPeerId();
-	auto &local = target->session().local();
-	local.readDraftsWithCursors(history);
-	return !Data::DraftIsNull(history->localDraft(topic, monoforum))
-		|| !Data::DraftIsNull(history->cloudDraft(topic, monoforum))
-		|| history->localEditDraft(topic, monoforum)
-		|| !history->forwardDraft(topic, monoforum).ids.empty();
-}
-
-void PlaceTextDraft(
-		not_null<Window::SessionController*> controller,
-		not_null<Data::Thread*> target,
-		TextWithTags text) {
-	const auto history = target->owningHistory();
-	const auto topic = target->topicRootId();
-	const auto monoforum = target->monoforumPeerId();
-	history->setLocalDraft(std::make_unique<Data::Draft>(text, FullReplyTo{
-		.topicRootId = topic,
-		.monoforumPeerId = monoforum,
-	}, SuggestOptions(), MessageCursor{
-		int(text.text.size()), int(text.text.size()), Ui::kQFixedMax,
-	}, Data::WebPageDraft()));
-	controller->session().changes().entryUpdated(
-		target, Data::EntryUpdate::Flag::LocalDraftSet);
-	auto params = Window::SectionShow();
-	params.reapplyLocalDraft = true;
-	controller->showThread(target, ShowAtTheEndMsgId, params);
 }
 
 void BatchBox(

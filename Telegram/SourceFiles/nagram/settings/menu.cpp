@@ -7,6 +7,7 @@
 #include "ui/vertical_list.h"
 #include "ui/layers/generic_box.h"
 #include "ui/widgets/checkbox.h"
+#include "ui/widgets/fields/input_field.h"
 #include "ui/wrap/vertical_layout.h"
 #include "window/window_session_controller.h"
 #include "styles/style_menu_icons.h"
@@ -61,6 +62,7 @@ QString Title(Menu::ActionId id) {
 	case Menu::ActionId::Reading: return tr::lng_nagram_menu_reading(tr::now);
 	case Menu::ActionId::FilterAuthor: return tr::lng_nagram_filter_author_hide(tr::now);
 	case Menu::ActionId::DeleteDownload: return tr::lng_nagram_menu_delete_download(tr::now);
+	case Menu::ActionId::QuickRating: return tr::lng_nagram_menu_quick_rating(tr::now);
 	default: return QString();
 	}
 }
@@ -99,6 +101,7 @@ const style::icon *Icon(Menu::ActionId id) {
 	case Menu::ActionId::Reading: return &st::menuIconTranslate;
 	case Menu::ActionId::FilterAuthor: return &st::menuIconBlock;
 	case Menu::ActionId::DeleteDownload: return &st::menuIconClear;
+	case Menu::ActionId::QuickRating: return &st::menuIconReply;
 	default: return &st::menuIconChatBubble;
 	}
 }
@@ -122,6 +125,30 @@ void VisibilityBox(not_null<Ui::GenericBox*> box, Menu::ActionId id) {
 	});
 }
 
+void QuickRatingBox(
+		not_null<Ui::GenericBox*> box,
+		const Option<QString> *option,
+		rpl::producer<QString> title) {
+	box->setTitle(std::move(title));
+	const auto field = box->addRow(
+		object_ptr<Ui::InputField>(
+			box,
+			st::defaultInputField,
+			tr::lng_nagram_menu_quick_rating_placeholder(),
+			ForDevice().Get(*option)),
+		st::boxRowPadding);
+	field->setMaxLength(64);
+	box->setFocusCallback([=] { field->setFocusFast(); });
+	const auto submit = [=] {
+		if (ForDevice().Set(*option, field->getLastText().trimmed())) {
+			box->closeBox();
+		}
+	};
+	field->submits() | rpl::on_next(submit, field->lifetime());
+	box->addButton(tr::lng_settings_save(), submit);
+	box->addButton(tr::lng_cancel(), [=] { box->closeBox(); });
+}
+
 const auto kMeta = BuildHelper({
 	.id = MenuSection::Id(),
 	.parentId = HomeId(),
@@ -142,6 +169,32 @@ const auto kMeta = BuildHelper({
 			Expects(ForDevice().Set(Menu::kConfirmRepeat, value));
 		}, confirm->lifetime());
 	}
+	const auto addRating = [&](
+			const Option<QString> *option,
+			const tr::phrase<> *title,
+			QString id) {
+		builder.addButton({
+			.id = std::move(id),
+			.title = (*title)(),
+			.st = &st::settingsButtonNoIcon,
+			.label = ForDevice().Value(*option)
+				| rpl::map([](const QString &text) {
+					return text.isEmpty()
+						? tr::lng_nagram_menu_quick_rating_empty(tr::now)
+						: text;
+				}),
+			.onClick = [=] {
+				controller->show(Box(QuickRatingBox, option, (*title)()));
+			},
+			.keywords = { u"rating"_q, u"quick reply"_q },
+		});
+	};
+	addRating(&Menu::kQuickRatingFirst,
+		&tr::lng_nagram_menu_quick_rating_first,
+		u"nagram/menu/quick-rating-first"_q);
+	addRating(&Menu::kQuickRatingSecond,
+		&tr::lng_nagram_menu_quick_rating_second,
+		u"nagram/menu/quick-rating-second"_q);
 	for (const auto &entry : Menu::kEntries) {
 		const auto id = entry.id;
 		builder.addButton({
