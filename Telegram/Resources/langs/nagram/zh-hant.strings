@@ -115,6 +115,9 @@
 "lng_nagram_show_forwarded_message_date" = "轉傳訊息顯示原始傳送時間";
 "lng_nagram_show_service_time" = "服務訊息顯示時間";
 "lng_nagram_show_message_id" = "時間提示中顯示訊息 ID";
+"lng_nagram_sender_online" = "傳送者頭像顯示上線狀態";
+"lng_nagram_sender_online_now" = "上線";
+"lng_nagram_sender_online_recently" = "上線和最近上線";
 "lng_nagram_message_id" = "訊息 ID：{id}";
 "lng_nagram_marks_and_counts" = "標記與計數";
 "lng_nagram_exact_message_counters" = "顯示精確的瀏覽數和回覆數";

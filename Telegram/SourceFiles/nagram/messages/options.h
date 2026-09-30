@@ -19,6 +19,10 @@ inline constexpr auto kShowServiceTime = Option<bool>{
 inline constexpr auto kShowMessageId = Option<bool>{
 	"nagram.showMessageId", Scope::Device, false,
 	Category::Messages, "lng_nagram_show_message_id", kRefreshMessageView };
+inline constexpr auto kSenderOnlineStatus = Option<int>{
+	"nagram.senderOnlineStatus", Scope::Device, 0,
+	Category::Messages, "lng_nagram_sender_online", kRefreshMessageView,
+	[](const int &value) { return value >= 0 && value <= 2; } };
 inline constexpr auto kExactMessageCounters = Option<bool>{
 	"nagram.exactMessageCounters", Scope::Device, false,
 	Category::Messages, "lng_nagram_exact_message_counters", kRefreshMessageView };
@@ -92,6 +96,7 @@ inline void RegisterOptions(Registry &registry) {
 	Expects(registry.Add(kShowForwardedMessageDate));
 	Expects(registry.Add(kShowServiceTime));
 	Expects(registry.Add(kShowMessageId));
+	Expects(registry.Add(kSenderOnlineStatus));
 	Expects(registry.Add(kExactMessageCounters));
 	Expects(registry.Add(kHideMessageViews));
 	Expects(registry.Add(kHideChannelSignature));

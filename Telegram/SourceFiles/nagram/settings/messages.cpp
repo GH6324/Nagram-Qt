@@ -108,6 +108,29 @@ QString ReadingChineseLabel(int value) {
 	}
 }
 
+QString SenderOnlineLabel(int value) {
+	switch (value) {
+	case 1: return tr::lng_nagram_sender_online_now(tr::now);
+	case 2: return tr::lng_nagram_sender_online_recently(tr::now);
+	default: return tr::lng_nagram_reading_off(tr::now);
+	}
+}
+
+void SenderOnlineBox(not_null<Ui::GenericBox*> box) {
+	box->setTitle(tr::lng_nagram_sender_online());
+	const auto group = std::make_shared<Ui::RadiobuttonGroup>(
+		ForDevice().Get(Messages::kSenderOnlineStatus));
+	for (auto value = 0; value != 3; ++value) {
+		box->addRow(object_ptr<Ui::Radiobutton>(
+			box, group, value, SenderOnlineLabel(value),
+			st::settingsSendType), st::settingsSendTypePadding);
+	}
+	group->setChangedCallback([=](int value) {
+		Expects(ForDevice().Set(Messages::kSenderOnlineStatus, value));
+		box->closeBox();
+	});
+}
+
 void ReadingChineseBox(not_null<Ui::GenericBox*> box) {
 	box->setTitle(tr::lng_nagram_reading_chinese());
 	const auto group = std::make_shared<Ui::RadiobuttonGroup>(
@@ -150,6 +173,16 @@ const auto kMeta = BuildHelper({
 		tr::lng_nagram_show_message_id(),
 		u"nagram/messages/id"_q,
 		{ u"message ID"_q, u"tooltip"_q });
+	const auto onlineController = builder.controller();
+	builder.addButton({
+		.id = u"nagram/messages/sender-online"_q,
+		.title = tr::lng_nagram_sender_online(),
+		.st = &st::settingsButtonNoIcon,
+		.label = ForDevice().Value(Messages::kSenderOnlineStatus)
+			| rpl::map(SenderOnlineLabel),
+		.onClick = [=] { onlineController->show(Box(SenderOnlineBox)); },
+		.keywords = { u"online"_q, u"last seen"_q, u"avatar"_q },
+	});
 	builder.addSubsectionTitle({
 		.id = u"nagram/messages/marks"_q,
 		.title = tr::lng_nagram_marks_and_counts(),

@@ -6,6 +6,7 @@ For license and copyright information please follow this link:
 https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 #include "history/view/history_view_list_widget.h"
+#include "nagram/messages/online.h"
 #include "nagram/messages/reactions.h"
 
 #include "history/view/history_view_about_view.h"
@@ -663,6 +664,7 @@ ListWidget::ListWidget(
 	) | rpl::on_next([=] {
 		update();
 	}, lifetime());
+	Nagram::Messages::RepaintOnSenderOnline(this, _session);
 
 	_session->data().peerDecorationsUpdated(
 	) | rpl::on_next([=] {
@@ -3271,6 +3273,8 @@ void ListWidget::paintUserpics(
 					view->width(),
 					st::msgPhotoSize,
 					context.paused);
+				Nagram::Messages::PaintSenderOnline(p, from,
+					st::historyPhotoLeft, userpicTop, st::msgPhotoSize);
 			} else if (const auto info = item->displayHiddenSenderInfo()) {
 				if (info->customUserpic.empty()) {
 					info->emptyUserpic.paintCircle(

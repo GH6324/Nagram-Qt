@@ -37,6 +37,7 @@ set(nagram_sources
     nagram/messages/content.cpp
     nagram/messages/badges.cpp
     nagram/messages/effects.cpp
+    nagram/messages/online.cpp
     nagram/messages/reactions.cpp
     nagram/messages/reading.cpp
     nagram/tests/menu_scenario.cpp

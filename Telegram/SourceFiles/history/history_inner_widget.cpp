@@ -6,6 +6,7 @@ For license and copyright information please follow this link:
 https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 #include "history/history_inner_widget.h"
+#include "nagram/messages/online.h"
 #include "nagram/messages/reactions.h"
 #include "nagram/menu/actions.h"
 #include "nagram/menu/selection.h"
@@ -484,6 +485,7 @@ HistoryInner::HistoryInner(
 	}) | rpl::on_next([this] {
 		mouseActionCancel();
 	}, lifetime());
+	Nagram::Messages::RepaintOnSenderOnline(this, &session());
 	session().data().viewRepaintRequest(
 	) | rpl::on_next([this](Data::RequestViewRepaint data) {
 		repaintItem(data.view, data.rect);
@@ -1739,6 +1741,8 @@ void HistoryInner::paintEvent(QPaintEvent *e) {
 					width(),
 					st::msgPhotoSize,
 					context.paused);
+				Nagram::Messages::PaintSenderOnline(p, from,
+					st::historyPhotoLeft, userpicTop, st::msgPhotoSize);
 			} else if (const auto info = item->displayHiddenSenderInfo()) {
 				if (info->customUserpic.empty()) {
 					info->emptyUserpic.paintCircle(
