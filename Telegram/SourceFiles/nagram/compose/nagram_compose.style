@@ -1,6 +1,8 @@
 using "ui/basic.style";
 using "ui/widgets/widgets.style";
 
+nagramFilterTypeRecent: icon {{ "folders/folders_type_recent", historyPeerUserpicFg }};
+
 nagramFormatButtonSize: 32px;
 nagramFormatButton: IconButton(defaultIconButton) {
 	width: nagramFormatButtonSize;

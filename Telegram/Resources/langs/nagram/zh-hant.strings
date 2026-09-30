@@ -63,6 +63,7 @@
 "lng_nagram_disable_community_grouping" = "不合併社群對話";
 "lng_nagram_disable_community_grouping_note" = "社群中的每個對話都單獨顯示，並隱藏「合併顯示」開關。重新啟動後生效。";
 "lng_nagram_recent_chats_option" = "記住最近對話";
+"lng_nagram_recent_in_share" = "轉寄時優先顯示最近對話";
 "lng_nagram_recent_chats_note" = "在主選單中加入「最近對話」。清單按帳號儲存在本機，關閉後會清除。";
 "lng_nagram_recent_chats" = "最近對話";
 "lng_nagram_recent_chats_empty" = "還沒有最近對話。";

@@ -55,10 +55,7 @@ inline constexpr auto kChatSort = Option<int>{
 		}
 		return seen == 0xF;
 	} };
-inline const auto kManagedFolderIds = Option<QString>{
-	"nagram.managedFolderIds", Scope::Account, QString(),
-	Category::Chats, "lng_nagram_managed_only", 0,
-	[](const QString &value) {
+[[nodiscard]] inline bool ValidFolderIds(const QString &value) {
 		if (value.isEmpty()) return true;
 		auto previous = 0;
 		for (const auto &part : value.split(u',')) {
@@ -70,7 +67,14 @@ inline const auto kManagedFolderIds = Option<QString>{
 			previous = id;
 		}
 		return true;
-	} };
+}
+inline const auto kManagedFolderIds = Option<QString>{
+	"nagram.managedFolderIds", Scope::Account, QString(),
+	Category::Chats, "lng_nagram_managed_only", 0, ValidFolderIds };
+inline const auto kRecentFolderIds = Option<QString>{
+	"nagram.recentFolderIds", Scope::Account, QString(),
+	Category::Chats, "lng_nagram_recent_chats",
+	static_cast<unsigned>(Flag::Hidden), ValidFolderIds };
 inline constexpr auto kHideSponsoredMessages = Option<bool>{
 	"nagram.hideSponsoredMessages", Scope::Device, false,
 	Category::Chats, "lng_nagram_hide_sponsored_messages" };
@@ -158,6 +162,9 @@ inline constexpr auto kMaximumReadingPositions = 100;
 inline constexpr auto kChatTools = Option<bool>{
 	"nagram.chatTools", Scope::Device, false,
 	Category::Chats, "lng_nagram_chat_tools" };
+inline constexpr auto kRecentInShare = Option<bool>{
+	"nagram.recentChatsInShare", Scope::Device, false,
+	Category::Chats, "lng_nagram_recent_in_share" };
 inline constexpr auto kSaveReadingPosition = Option<bool>{
 	"nagram.saveReadingPosition", Scope::Device, false,
 	Category::Chats, "lng_nagram_save_reading_position" };
@@ -192,6 +199,8 @@ inline void RegisterOptions(Registry &registry) {
 	Expects(registry.Add(kDisableScrollToNextTopic));
 	Expects(registry.Add(kRecentChats));
 	Expects(registry.Add(kRecentChatsList));
+	Expects(registry.Add(kRecentInShare));
+	Expects(registry.Add(kRecentFolderIds));
 	Expects(registry.Add(kChatTools));
 	Expects(registry.Add(kSaveReadingPosition));
 	Expects(registry.Add(kReadingPositions));

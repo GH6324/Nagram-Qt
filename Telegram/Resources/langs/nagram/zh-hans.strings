@@ -63,6 +63,7 @@
 "lng_nagram_disable_community_grouping" = "不合并社区会话";
 "lng_nagram_disable_community_grouping_note" = "社区中的每个聊天都单独显示，并隐藏“合并显示”开关。重启后生效。";
 "lng_nagram_recent_chats_option" = "记住最近会话";
+"lng_nagram_recent_in_share" = "转发时优先显示最近会话";
 "lng_nagram_recent_chats_note" = "在主菜单中加入“最近会话”。列表按账号保存在本机，关闭后会清空。";
 "lng_nagram_recent_chats" = "最近会话";
 "lng_nagram_recent_chats_empty" = "还没有最近会话。";

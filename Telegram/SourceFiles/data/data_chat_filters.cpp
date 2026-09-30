@@ -7,6 +7,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 #include "data/data_chat_filters.h"
 #include "nagram/chats/managed_folders.h"
+#include "nagram/chats/recent_chats.h"
 #include "nagram/chats/options.h"
 #include "nagram/core/options.h"
 #include "data/data_premium_limits.h"
@@ -366,6 +367,8 @@ bool ChatFilter::contains(
 	}();
 	if (_never.contains(history)) {
 		return false;
+	} else if (Nagram::Chats::RecentInFolder(history, _id)) {
+		return true;
 	}
 	const auto channel = history->peer->asChannel();
 	if (channel && channel->isCommunity()) {

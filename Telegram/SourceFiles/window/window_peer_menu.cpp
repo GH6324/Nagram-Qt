@@ -9,6 +9,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "nagram/privacy/options.h"
 #include "nagram/privacy/alias.h"
 #include "nagram/privacy/admin_shortcuts.h"
+#include "nagram/chats/recent_chats.h"
 
 #include "base/call_delayed.h"
 #include "menu/menu_check_item.h"
@@ -3461,9 +3462,11 @@ base::weak_qptr<Ui::BoxContent> ShowForwardMessagesBox(
 		auto state = std::make_unique<PeerListState>();
 		state->controllerState = std::make_unique<SavedState>();
 
+		auto recent = base::flat_set<not_null<PeerData*>>();
 		const auto addList = [&](auto chats) {
 			for (const auto &row : chats->all()) {
-				if (const auto history = row->history()) {
+				if (const auto history = row->history()
+					; history && !recent.contains(history->peer)) {
 					state->list.push_back(history->peer);
 				}
 			}
@@ -3471,6 +3474,13 @@ base::weak_qptr<Ui::BoxContent> ShowForwardMessagesBox(
 
 		if (!id) {
 			state->list.push_back(session->user());
+			Nagram::Chats::ForEachRecentShareTarget(
+				session,
+				[&](not_null<History*> history) {
+					if (recent.emplace(history->peer).second) {
+						state->list.push_back(history->peer);
+					}
+				});
 			addList(session->data().chatsList()->indexed());
 			const auto folderId = Data::Folder::kId;
 			if (const auto folder = session->data().folderLoaded(folderId)) {

@@ -8,6 +8,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "boxes/peer_list_controllers.h"
 
 #include "api/api_chat_participants.h"
+#include "nagram/chats/recent_chats.h"
 #include "api/api_premium.h" // MessageMoneyRestriction.
 #include "base/random.h"
 #include "boxes/filters/edit_filter_chats_list.h"
@@ -485,6 +486,19 @@ void ChatsListBoxController::rebuildRows() {
 		if (appendRow(session().data().history(session().user()))) {
 			++added;
 		}
+	}
+	if (dynamic_cast<ChooseRecipientBoxController*>(this)) {
+		Nagram::Chats::ForEachRecentShareTarget(
+			&session(),
+			[&](not_null<History*> history) {
+				added += appendRow(history) ? 1 : 0;
+			});
+	} else if (dynamic_cast<EditFilterChatsListController*>(this)) {
+		Nagram::Chats::ForEachRecentChat(
+			&session(),
+			[&](not_null<History*> history) {
+				added += appendRow(history) ? 1 : 0;
+			});
 	}
 	added += appendList(session().data().chatsList()->indexed());
 	const auto id = Data::Folder::kId;
