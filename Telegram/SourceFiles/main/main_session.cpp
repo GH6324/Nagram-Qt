@@ -7,6 +7,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 #include "main/main_session.h"
 #include "nagram/display/view_refresher.h"
+#include "nagram/core/diagnostics.h"
 #include "nagram/messages/badges.h"
 
 #include "apiwrap.h"
@@ -184,6 +185,7 @@ Session::Session(
 , _saveSettingsTimer([=] { saveSettings(); }) {
 	Expects(_settings != nullptr);
 	Nagram::ViewRefresher::Attach(this);
+	Nagram::InstallRpcErrorObserver();
 
 	_api->requestTermsUpdate();
 	_api->requestFullPeer(_user);

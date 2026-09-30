@@ -515,3 +515,10 @@
 "lng_nagram_config_invalid" = "存储值无效";
 "lng_nagram_config_diagnostic_report" = "Nagram {version}\n配置格式：1\n管理的设置：{amount}\n已修改的设置：{value}\n无效存储值：{error}\n\n本报告只包含版本和数量。";
 "lng_nagram_config_copy_report" = "复制报告";
+"lng_nagram_show_rpc_errors" = "显示服务器错误代码";
+"lng_nagram_rpc_error" = "服务器错误 {code}：{error}";
+"lng_nagram_debug_logs" = "调试日志";
+"lng_nagram_debug_logs_enable" = "开启调试日志？所有网络事件都会写入日志文件。";
+"lng_nagram_debug_logs_disable" = "关闭调试日志？";
+"lng_nagram_show_logs" = "在文件夹中显示日志文件";
+"lng_nagram_logs_note" = "错误提示只显示代码和类型。日志只保存在本机，分享前请先检查内容。";

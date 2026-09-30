@@ -1,6 +1,7 @@
 #include "nagram/settings/config.h"
 
 #include "nagram/core/exchange.h"
+#include "nagram/core/diagnostics.h"
 #include "nagram/core/language.h"
 #include "nagram/settings/chats.h"
 #include "nagram/settings/compose.h"
@@ -22,6 +23,9 @@
 #include "settings/settings_builder.h"
 #include "settings/settings_common_session.h"
 #include "ui/layers/generic_box.h"
+#include "ui/boxes/confirm_box.h"
+#include "logs.h"
+#include "settings.h"
 #include "ui/vertical_list.h"
 #include "ui/widgets/buttons.h"
 #include "ui/widgets/labels.h"
@@ -302,6 +306,44 @@ const auto kMeta = BuildHelper({
 		.st = &st::settingsButtonNoIcon,
 		.onClick = [=] { CopyDiagnostics(controller); },
 	});
+	const auto rpc = builder.addButton({
+		.id = u"nagram/config/rpc-errors"_q,
+		.title = tr::lng_nagram_show_rpc_errors(),
+		.st = &st::settingsButtonNoIcon,
+		.toggled = ForDevice().Value(kShowRpcErrors),
+		.keywords = { u"RPC"_q, u"error"_q },
+	});
+	if (rpc) {
+		rpc->toggledChanges(
+		) | rpl::on_next([](bool value) {
+			Expects(ForDevice().Set(kShowRpcErrors, value));
+		}, rpc->lifetime());
+	}
+	builder.addButton({
+		.id = u"nagram/config/debug-logs"_q,
+		.title = tr::lng_nagram_debug_logs(),
+		.st = &st::settingsButtonNoIcon,
+		.label = rpl::single(Logs::DebugEnabled()
+			? tr::lng_nagram_config_on(tr::now)
+			: tr::lng_nagram_reading_off(tr::now)),
+		.onClick = [=] {
+			controller->show(Ui::MakeConfirmBox({
+				.text = (Logs::DebugEnabled()
+					? tr::lng_nagram_debug_logs_disable
+					: tr::lng_nagram_debug_logs_enable)(),
+				.confirmed = [] { Core::App().switchDebugMode(); },
+			}));
+		},
+		.keywords = { u"log"_q, u"debug"_q },
+	});
+	builder.addButton({
+		.id = u"nagram/config/show-logs"_q,
+		.title = tr::lng_nagram_show_logs(),
+		.st = &st::settingsButtonNoIcon,
+		.onClick = [] { File::ShowInFolder(cWorkingDir() + u"log.txt"_q); },
+		.keywords = { u"log"_q, u"folder"_q },
+	});
+	builder.addDividerText(tr::lng_nagram_logs_note());
 });
 
 const SectionBuildMethod ConfigSection::kBuild = kMeta.build;

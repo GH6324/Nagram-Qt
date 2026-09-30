@@ -37,6 +37,7 @@ constexpr auto kConfigBecomesOldForBlockedIn = 8 * crl::time(1000);
 using namespace details;
 
 std::atomic<int> GlobalAtomicRequestId = 0;
+Fn<void(const Error&)> RpcErrorObserver;
 
 } // namespace
 
@@ -1220,6 +1221,10 @@ void Instance::Private::onSessionReset(ShiftedDcId dcWithShift) {
 	}
 }
 
+void SetRpcErrorObserver(Fn<void(const Error&)> observer) {
+	RpcErrorObserver = std::move(observer);
+}
+
 bool Instance::Private::rpcErrorOccured(
 		const Response &response,
 		const FailHandler &onFail,
@@ -1243,6 +1248,9 @@ bool Instance::Private::rpcErrorOccured(
 		error.description().isEmpty()
 			? QString()
 			: QString(": %1").arg(error.description())));
+	if (RpcErrorObserver) {
+		RpcErrorObserver(error);
+	}
 	if (onFail) {
 		const auto guard = QPointer<Instance>(_instance);
 		onFail(error, response);

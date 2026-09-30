@@ -519,3 +519,10 @@ Telegram/cmake/td_lang.cmake. Every key uses the lng_nagram_ prefix.
 "lng_nagram_config_invalid" = "Invalid stored value";
 "lng_nagram_config_diagnostic_report" = "Nagram {version}\nConfiguration format: 1\nManaged settings: {amount}\nModified settings: {value}\nInvalid stored values: {error}\n\nThis report contains only version and counts.";
 "lng_nagram_config_copy_report" = "Copy report";
+"lng_nagram_show_rpc_errors" = "Show server error codes";
+"lng_nagram_rpc_error" = "Server error {code}: {error}";
+"lng_nagram_debug_logs" = "Debug logs";
+"lng_nagram_debug_logs_enable" = "Enable debug logs? All network events will be written to the log file.";
+"lng_nagram_debug_logs_disable" = "Disable debug logs?";
+"lng_nagram_show_logs" = "Show log file in folder";
+"lng_nagram_logs_note" = "Error codes show only the code and type. Logs stay on this device; check them before sharing.";

@@ -515,3 +515,10 @@
 "lng_nagram_config_invalid" = "儲存值無效";
 "lng_nagram_config_diagnostic_report" = "Nagram {version}\n設定格式：1\n管理的設定：{amount}\n已修改的設定：{value}\n無效儲存值：{error}\n\n本報告只包含版本和數量。";
 "lng_nagram_config_copy_report" = "複製報告";
+"lng_nagram_show_rpc_errors" = "顯示伺服器錯誤代碼";
+"lng_nagram_rpc_error" = "伺服器錯誤 {code}：{error}";
+"lng_nagram_debug_logs" = "偵錯日誌";
+"lng_nagram_debug_logs_enable" = "開啟偵錯日誌？所有網路事件都會寫入日誌檔案。";
+"lng_nagram_debug_logs_disable" = "關閉偵錯日誌？";
+"lng_nagram_show_logs" = "在資料夾中顯示日誌檔案";
+"lng_nagram_logs_note" = "錯誤提示只顯示代碼和類型。日誌只儲存在本機，分享前請先檢查內容。";
