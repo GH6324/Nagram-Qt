@@ -60,6 +60,9 @@
 | B11 | `data/components/promo_suggestions.cpp` | 忽略代理赞助频道 | 读取 |
 | B12、B13 | `dialogs/dialogs_top_bar_suggestion.cpp` | 顶部提示条不显示 Premium 推广与生日提示 | 过滤 |
 | B14、B15 | `history/history_view_pull_to_next_channel.cpp` | 滚动到底时不触发切换，取消已排队的切换 | 读取 |
+| B16 | `window/window_session_controller.cpp`、`window/window_main_menu.cpp` | 控制器构造时订阅当前会话变化并记录；主菜单在“收藏夹”后按开关加入入口 | 读取 |
+| B17 | `window/window_session_controller.cpp`、`history/history_widget.cpp` | 切换会话与定时保存上一会话的 `scrollTopItem`；打开无未读的普通聊天时以保存的消息 ID 替换 `ShowAtUnreadMsgId` | 替换 |
+| B18 | `history/view/history_view_top_bar_widget.cpp` | `updateControlsGeometry` 在搜索按钮前放置工具按钮组并计入右侧占用宽度 | 读取 |
 | 管理文件夹 | `data/data_chat_filters.cpp`、`ui/widgets/chat_filters_tabs_strip.cpp`、`window/window_filters_menu.cpp` | 文件夹匹配增加“仅我管理的”条件；文件夹菜单加入该选项 | 读取 |
 
 ### 2.3 消息
@@ -70,6 +73,7 @@
 | C02 | `history/view/history_view_bottom_info.cpp` | 转发消息显示 `originalDate` | 替换 |
 | C03 | `history/view/history_view_element.cpp`（服务消息） | 服务消息文本后追加时间 | 读取 |
 | C04 | `history/view/history_view_element.cpp`（时间提示） | 提示文本追加服务端消息 ID；本地、待发送消息不显示 | 读取 |
+| C27 | `history/history_inner_widget.cpp`、`history/view/history_view_list_widget.cpp` | 绘制发送者头像后叠加在线点；订阅在线状态变化重绘 | 读取 |
 | C05–C07 | `history/view/history_view_bottom_info.cpp` | 计数格式化、浏览数与签名的布局 | 替换 |
 | C08、C09 | `history/view/history_view_bottom_info.cpp` | “已编辑”标记的显示与文字 | 替换 |
 | C10–C13 | `history/view/history_view_element.cpp`、`history/view/history_view_message.cpp` | 反应区域不创建并回收空间；按对话类型判断 | 读取 |
@@ -92,6 +96,7 @@
 | --- | --- | --- | --- |
 | D01–D10 | `history/history_widget.cpp`、`history/view/controls/history_view_compose_controls.cpp` | 各按钮的可见性与布局宽度；隐藏录音按钮时空草稿显示发送按钮 | 读取 |
 | D11 | `history/history_widget.cpp`、`history/view/controls/history_view_bottom_controls.cpp` | 频道底部静音按钮 | 读取 |
+| D28 | `history/history_widget.cpp` | 静音按钮的显隐、文字与点击处理；讨论组关联变化时刷新文字 | 替换 |
 | D12 | `chat_helpers/tabbed_panel.cpp` | 悬停不触发打开，点击保留 | 读取 |
 | D13 | `history/history_widget.cpp`、`history/view/controls/history_view_compose_controls.cpp` | 附件按钮不注册悬停菜单 | 读取 |
 | D14 | `history/history_widget.cpp`、`history/view/history_view_chat_section.cpp`、`history/view/history_view_scheduled_section.cpp` | 命令链接点击改为插入输入框光标处 | 拦截 |
@@ -100,6 +105,7 @@
 | D17 | `history/view/controls/history_view_webpage_processor.cpp` | 输入时不请求预览；发送时带无预览标志；手动选择的预览保留 | 读取 |
 | D18、D19 | `api/api_sending.cpp`、`api/api_editing.cpp`、`apiwrap.cpp`、`data/components/ephemeral_messages.cpp` | 发送与编辑前对文本做间距处理，保持实体偏移 | 替换 |
 | D20、D21 | `chat_helpers/message_field.cpp` | 代码块默认语言；输入框菜单加入快捷回复 | 读取 |
+| D29 | `history/history_widget.cpp`、`history/view/controls/history_view_compose_controls.cpp` | 输入框初始化后挂接浮动格式工具栏，调用上游 `InputField` 的标记切换接口 | 读取 |
 | D22、D23 | `history/history_widget.cpp`、`history/view/history_view_chat_section.cpp` | 普通文档与内联结果发送前各一行调用 `Nagram::Compose::ConfirmBeforeSend`；确认后重新发送，付费确认的重入不再次弹框；不改上游函数签名 | 拦截 |
 | D24、D25 | `history/view/controls/history_view_voice_record_bar.cpp` | 录制结束后进入上游的试听界面而不是直接发送 | 读取 |
 | D26 | `calls/calls_instance.cpp` | 发起私聊通话前进入上游确认 | 拦截 |
@@ -110,7 +116,7 @@
 | 编号 | 上游位置 | 需要处理的上游逻辑 | 方式 |
 | --- | --- | --- | --- |
 | E01–E14 | `history/history_inner_widget.cpp`（`showContextMenu`）、`history/view/history_view_context_menu.cpp`（`FillContextMenu`） | 每个上游菜单项创建处一行 `Nagram::Menu::Tag(action, id)`；两条填充路径结束处各一行 `Nagram::Menu::Apply(menu, context)`，按三态设置移除动作并清理首尾及连续分隔线，不移动上游动作 | 过滤 |
-| E15–E23 | 同上（`Apply` 内插入） | Nagram 动作在 `nagram/menu/` 中实现，检查权限与消息有效性；E15–E17 插在“转发”之后，其余插在“删除”之前或末尾 | 读取 |
+| E15–E27 | 同上（`Apply` 内插入） | Nagram 动作在 `nagram/menu/` 中实现，检查权限与消息有效性；E15–E17 插在“转发”之后，其余插在“删除”之前或末尾 | 读取 |
 | E24 | `nagram/menu/` 内部 | 复读前确认 | — |
 | 上游其他菜单 | `window/window_peer_menu.cpp`（G08、本地别名入口） | 会话菜单项过滤与新增 | 过滤 |
 
@@ -141,6 +147,7 @@
 | G05、G06 | `info/profile/info_profile_actions.cpp` | 资料页增加 ID 与数据中心行，取值逻辑在 `nagram/privacy/profile.cpp` | 读取 |
 | G07 | `info/profile/tabs/adapters/info_profile_tab_peer_lists.cpp`、`info/profile/info_profile_shared_media_classic.cpp`、`info/profile/info_profile_top_bar.cpp` | 不显示礼物标签、礼物区、礼物按钮与置顶礼物 | 读取 |
 | G08 | `window/window_peer_menu.cpp` | 不显示创建待办入口 | 过滤 |
+| G09 | `window/window_peer_menu.cpp` | 聊天与资料菜单在“管理”后加入子菜单，调用上游权限、邀请链接、成员列表与最近操作入口 | 读取 |
 | 本地别名 | `data/data_peer.cpp`（显示名）、`history/history.cpp`、`info/profile/info_profile_values.cpp`、`window/window_peer_menu.cpp` | 显示名与本地搜索使用别名，原名保留 | 替换 |
 
 ### 2.8 翻译与 AI
@@ -176,7 +183,7 @@ E21 截图在 `history_view_element.h/.cpp`、`history_view_message.cpp`、`hist
 | `history/view/controls/history_view_compose_controls.cpp` | D01–D10、D13、D15 等约 13 项 |
 | `history/view/history_view_element.cpp` | C03、C04、C10–C13、C19、C21、C25、C26、F02、I01 等约 13 项 |
 | `history/view/history_view_bottom_info.cpp` | C01、C02、C05–C09、F02 |
-| `history/history_inner_widget.cpp`、`history/view/history_view_context_menu.cpp` | 消息菜单（E01–E23） |
+| `history/history_inner_widget.cpp`、`history/view/history_view_context_menu.cpp` | 消息菜单（E01–E27）；C27 在线点 |
 
 ## 4. 私有成员依赖
 

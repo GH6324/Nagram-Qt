@@ -140,6 +140,23 @@
 
 收尾核对：表中 54 个步骤均为 ✅，提交标题逐项匹配 `dev..nagram-next` 的实际提交；上游同步后的 macOS Debug 完整目标编译和 `test_nagram` 八组检查通过。各步骤现场验证的剩余缺口汇总在 `design.md` 第 8 节。未获得推送授权，三平台 CI 未运行。
 
+### P1/P2 补全（2026-10-01）
+
+逐项核对需求第 6 节的 P1/P2 功能包后，补做设置页设计中缺少的条目。每项独立提交，macOS arm64 Debug 增量构建与 `test_nagram` 通过；本轮没有做界面现场核验，原因见 `design.md` 第 8 节。
+
+| 步骤 | 提交 | 条目 | 需求 | 备注 |
+| --- | --- | --- | --- | --- |
+| ✅ S90 | `feat(menu): delete downloaded file` | E25 | P1-07 | 确认后移到系统回收站，同步清理下载管理器记录 |
+| ✅ S91 | `feat(menu): quick rating replies` | E26 | P2-04 | 文字填入回复草稿；草稿已占用时提示，不覆盖 |
+| ✅ S92 | `feat(menu): select messages in between` | E27 | P2-04 | 只选择已加载的消息，遵守选择上限 |
+| ✅ S93 | `feat(compose): channel bottom button opens discussion` | D28 | P1-03 | 无讨论组时回到静音按钮或 D11 |
+| ✅ S94 | `feat(compose): formatting toolbar for selected text` | D29 | P2-03 | 普通聊天与话题输入框 |
+| ✅ S95 | `feat(privacy): admin shortcuts in chat menu` | G09 | P2-09 | 聊天菜单与资料菜单 |
+| ✅ S96 | `feat(messages): online status on sender avatars` | C27 | P2-09 | 两套消息视图 |
+| ✅ S97 | `feat(chats): recent chats in main menu` | B16 | P2-02 | 主菜单排序页新增 `recentChats` |
+| ✅ S98 | `feat(chats): restore reading position` | B17 | P2-02 | 不含话题 |
+| ✅ S99 | `feat(chats): chat tools in the top bar` | B18 | P2-02 | 不提供清理缓存按钮 |
+
 ### P3
 
 P3 功能不在本计划内。每项先在 `docs/nagram/` 下单独写设计并确认，再按本文件的规则拆分步骤。
