@@ -2,6 +2,7 @@
 #include "nagram/menu/repeat.h"
 #include "nagram/menu/batch.h"
 #include "nagram/menu/media.h"
+#include "nagram/menu/download.h"
 #include "nagram/menu/reading.h"
 #include "nagram/filters/menu.h"
 #include "nagram/snapshot/snapshot.h"
@@ -43,6 +44,7 @@ void Apply(
 		}
 		if (item) {
 			InsertMediaInfoAction(menu, item, controller);
+			InsertDeleteDownloadAction(menu, item, controller);
 			InsertReadingAction(menu, item, controller);
 			Filters::InsertAuthorAction(menu, item, controller);
 		}

@@ -76,6 +76,10 @@ void TestOptions() {
 		"new menu action default");
 	Require(Menu::ReadVisibility({}, ActionId::Reading) == Visibility::Hide,
 		"reading menu action default");
+	Require(Menu::ReadVisibility({}, ActionId::DeleteDownload)
+		== Visibility::Hide, "delete download action default");
+	Require(Menu::ValidateConfig(R"({"version":2,"states":{"E25":"show"}})"),
+		"delete download action state rejected");
 	const auto oldReading = QByteArray(
 		R"({"version":1,"states":{"E21":"show","E23":"show"}})");
 	Require(Menu::ValidateConfig(oldReading), "old menu config valid");

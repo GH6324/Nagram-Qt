@@ -23,6 +23,7 @@ set(nagram_sources
     nagram/menu/actions.cpp
     nagram/menu/batch.cpp
     nagram/menu/media.cpp
+    nagram/menu/download.cpp
     nagram/menu/model.cpp
     nagram/menu/repeat.cpp
     nagram/menu/reading.cpp

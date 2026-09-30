@@ -190,6 +190,11 @@ Telegram/cmake/td_lang.cmake. Every key uses the lng_nagram_ prefix.
 "lng_nagram_menu_batch_unavailable" = "This batch action is unavailable in the destination.";
 "lng_nagram_menu_selection_limit" = "Too many messages are selected.";
 "lng_nagram_menu_media_info" = "Media information";
+"lng_nagram_menu_delete_download" = "Delete downloaded file";
+"lng_nagram_menu_delete_download_confirm" = "Move {file} to the system trash? The message stays in the chat.";
+"lng_nagram_menu_delete_download_done" = "The file was moved to the trash.";
+"lng_nagram_menu_delete_download_failed" = "Couldn't move the file to the trash.";
+"lng_nagram_menu_delete_download_changed" = "The file has changed. Open the menu again.";
 "lng_nagram_menu_reading" = "Show original / converted text";
 "lng_nagram_menu_media_filename" = "File name";
 "lng_nagram_menu_media_type" = "Type";

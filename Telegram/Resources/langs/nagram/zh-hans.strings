@@ -186,6 +186,11 @@
 "lng_nagram_menu_batch_unavailable" = "目标聊天不支持此批量操作。";
 "lng_nagram_menu_selection_limit" = "选中的消息太多。";
 "lng_nagram_menu_media_info" = "媒体信息";
+"lng_nagram_menu_delete_download" = "删除已下载的文件";
+"lng_nagram_menu_delete_download_confirm" = "将 {file} 移到系统回收站？聊天中的消息会保留。";
+"lng_nagram_menu_delete_download_done" = "文件已移到回收站。";
+"lng_nagram_menu_delete_download_failed" = "无法将文件移到回收站。";
+"lng_nagram_menu_delete_download_changed" = "文件已变化，请重新打开菜单。";
 "lng_nagram_menu_reading" = "显示原文 / 转换后文字";
 "lng_nagram_menu_media_filename" = "文件名";
 "lng_nagram_menu_media_type" = "类型";

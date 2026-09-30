@@ -186,6 +186,11 @@
 "lng_nagram_menu_batch_unavailable" = "目標聊天不支援這項批次操作。";
 "lng_nagram_menu_selection_limit" = "選取的訊息太多。";
 "lng_nagram_menu_media_info" = "媒體資訊";
+"lng_nagram_menu_delete_download" = "刪除已下載的檔案";
+"lng_nagram_menu_delete_download_confirm" = "將 {file} 移到系統垃圾桶？聊天中的訊息會保留。";
+"lng_nagram_menu_delete_download_done" = "檔案已移到垃圾桶。";
+"lng_nagram_menu_delete_download_failed" = "無法將檔案移到垃圾桶。";
+"lng_nagram_menu_delete_download_changed" = "檔案已變更，請重新開啟選單。";
 "lng_nagram_menu_reading" = "顯示原文 / 轉換後文字";
 "lng_nagram_menu_media_filename" = "檔案名稱";
 "lng_nagram_menu_media_type" = "類型";
