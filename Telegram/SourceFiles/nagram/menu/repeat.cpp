@@ -48,6 +48,9 @@ void SendRepeat(
 	if (!Available(item)) {
 		return;
 	}
+	if (id == ActionId::Repeat && ForDevice().Get(kRepeatWithoutQuote)) {
+		id = ActionId::RepeatAsCopy;
+	}
 	const auto target = item->topic()
 		? static_cast<Data::Thread*>(item->topic())
 		: static_cast<Data::Thread*>(item->history());
@@ -162,10 +165,14 @@ void InsertRepeatActions(
 	}
 	const auto itemId = item->fullId();
 	auto position = InsertPosition(menu);
-	Insert(menu, position++, controller, itemId, ActionId::Repeat,
-		tr::lng_nagram_menu_repeat(tr::now));
-	Insert(menu, position++, controller, itemId, ActionId::RepeatAsCopy,
-		tr::lng_nagram_menu_repeat_as_copy(tr::now));
+	if (Available(item)
+		&& (!item->history()->peer->isBroadcast()
+			|| !ForDevice().Get(kNoRepeatInChannels))) {
+		Insert(menu, position++, controller, itemId, ActionId::Repeat,
+			tr::lng_nagram_menu_repeat(tr::now));
+		Insert(menu, position++, controller, itemId, ActionId::RepeatAsCopy,
+			tr::lng_nagram_menu_repeat_as_copy(tr::now));
+	}
 	Insert(menu, position, controller, itemId, ActionId::ForwardWithoutQuote,
 		tr::lng_nagram_menu_forward_without_quote(tr::now));
 }

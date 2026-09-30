@@ -41,3 +41,11 @@ nagramChatToolsButton: IconButton(defaultIconButton) {
 	rippleAreaSize: 36px;
 	ripple: defaultRippleAnimationBgOver;
 }
+
+nagramCompactPopupMenu: PopupMenu(popupMenuWithIcons) {
+	scrollPadding: margins(0px, 3px, 0px, 3px);
+	menu: Menu(menuWithIcons) {
+		itemIconPosition: point(15px, 2px);
+		itemPadding: margins(54px, 5px, 17px, 5px);
+	}
+}

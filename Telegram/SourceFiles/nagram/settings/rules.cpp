@@ -2,12 +2,16 @@
 
 #include "nagram/settings/home.h"
 #include "nagram/filters/settings.h"
+#include "nagram/filters/hidden_messages.h"
+#include "nagram/filters/model.h"
 #include "nagram/links/settings.h"
 #include "lang/lang_keys.h"
 #include "settings/settings_builder.h"
 #include "settings/settings_common_session.h"
 #include "ui/vertical_list.h"
 #include "ui/layers/generic_box.h"
+#include "ui/boxes/confirm_box.h"
+#include "main/main_session.h"
 #include "window/window_session_controller.h"
 
 #include "styles/style_menu_icons.h"
@@ -60,6 +64,29 @@ const auto kMeta = BuildHelper({
 			controller->show(Box(Links::SettingsBox));
 		},
 		.keywords = { u"link"_q, u"URL"_q },
+	});
+	const auto session = builder.session();
+	builder.addButton({
+		.id = u"nagram/rules/hidden-messages"_q,
+		.title = tr::lng_nagram_hidden_messages(),
+		.st = &st::settingsButtonNoIcon,
+		.label = ForAccount(session).Value(Filters::kHiddenMessages)
+			| rpl::map([=](const QString &) {
+				return QString::number(Filters::HiddenMessagesCount(session));
+			}),
+		.onClick = [=] {
+			if (!Filters::HiddenMessagesCount(session)) {
+				return;
+			}
+			controller->show(Ui::MakeConfirmBox({
+				.text = tr::lng_nagram_hidden_messages_clear(),
+				.confirmed = [=](Fn<void()> &&close) {
+					Filters::ClearHiddenMessages(session);
+					close();
+				},
+			}));
+		},
+		.keywords = { u"hide"_q, u"message"_q },
 	});
 });
 

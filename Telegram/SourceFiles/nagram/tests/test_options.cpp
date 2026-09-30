@@ -8,6 +8,7 @@
 #include "nagram/compose/options.h"
 #include "nagram/media/options.h"
 #include "nagram/menu/model.h"
+#include "nagram/filters/model.h"
 #include "nagram/privacy/options.h"
 #include "nagram/messages/time_format.h"
 
@@ -89,6 +90,13 @@ void TestOptions() {
 		== Visibility::Hide, "select between action default");
 	Require(Menu::ReadVisibility({}, ActionId::SeenBy) == Visibility::Show
 		&& Menu::IsUpstream(ActionId::SeenBy), "seen by stays upstream");
+	Require(Menu::ReadVisibility({}, ActionId::MessageDetails) == Visibility::Hide
+		&& Menu::ReadVisibility({}, ActionId::SelectAll) == Visibility::Hide,
+		"message tool actions default");
+	Require(Filters::ValidHiddenMessages(QString::fromLatin1("5:10,6:2"))
+		&& !Filters::ValidHiddenMessages(QString::fromLatin1("5:-1"))
+		&& !Filters::ValidHiddenMessages(QString::fromLatin1("x:1")),
+		"hidden messages format");
 	const auto oldReading = QByteArray(
 		R"({"version":1,"states":{"E21":"show","E23":"show"}})");
 	Require(Menu::ValidateConfig(oldReading), "old menu config valid");

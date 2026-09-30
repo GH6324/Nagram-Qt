@@ -31,6 +31,7 @@ set(nagram_sources
     nagram/menu/download.cpp
     nagram/menu/draft.cpp
     nagram/menu/rating.cpp
+    nagram/menu/message_tools.cpp
     nagram/menu/model.cpp
     nagram/menu/repeat.cpp
     nagram/menu/reading.cpp
@@ -48,6 +49,7 @@ set(nagram_sources
     nagram/filters/view.cpp
     nagram/filters/settings.cpp
     nagram/filters/menu.cpp
+    nagram/filters/hidden_messages.cpp
     nagram/links/model.cpp
     nagram/links/open.cpp
     nagram/links/settings.cpp

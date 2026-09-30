@@ -1,5 +1,6 @@
 #include "nagram/filters/view.h"
 
+#include "nagram/filters/hidden_messages.h"
 #include "data/data_peer.h"
 #include "data/data_peer_id.h"
 #include "data/data_groups.h"
@@ -77,6 +78,9 @@ QString Searchable(not_null<HistoryItem*> item) {
 Result Project(HistoryItem *item, const TextWithEntities &source) {
 	if (!item || item->isService() || item->nagramOriginalShown()) {
 		return { .text = source };
+	}
+	if (MessageHidden(item)) {
+		return { .text = source, .hidden = true };
 	}
 	const auto raw = ForAccount(&item->history()->session()).Get(kRules);
 	if (raw.isEmpty()) {

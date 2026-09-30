@@ -12,15 +12,19 @@ class SessionController;
 namespace Ui {
 class PopupMenu;
 } // namespace Ui
+namespace style {
+struct PopupMenu;
+} // namespace style
 
 namespace Nagram::Menu {
 
+[[nodiscard]] const style::PopupMenu &MessageMenuStyle();
 void Tag(QAction *action, ActionId id);
 void Apply(
 	Ui::PopupMenu *menu,
 	HistoryItem *item,
 	Window::SessionController *controller,
 	MessageIdsList selected,
-	Fn<void(HistoryItem*)> select); // nullptr selects everything between
+	Fn<void(HistoryItem*)> select); // nullptr: between selected, else all
 
 } // namespace Nagram::Menu

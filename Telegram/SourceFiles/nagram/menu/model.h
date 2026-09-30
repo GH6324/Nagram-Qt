@@ -34,6 +34,10 @@ enum class ActionId : int {
 	QuickRating = 26,
 	SelectBetween = 27,
 	SeenBy = 28,
+	MessageDetails = 29,
+	HideMessage = 30,
+	SaveToSaved = 31,
+	SelectAll = 32,
 };
 
 enum class Visibility { Show, Hide, WithOption };
@@ -43,7 +47,7 @@ struct Entry {
 	const char *titleKey;
 };
 
-inline constexpr auto kEntries = std::array<Entry, 27>({{
+inline constexpr auto kEntries = std::array<Entry, 31>({{
 	{ ActionId::Reply, "lng_nagram_menu_reply" },
 	{ ActionId::Edit, "lng_nagram_menu_edit" },
 	{ ActionId::Copy, "lng_nagram_menu_copy" },
@@ -71,6 +75,10 @@ inline constexpr auto kEntries = std::array<Entry, 27>({{
 	{ ActionId::QuickRating, "lng_nagram_menu_quick_rating" },
 	{ ActionId::SelectBetween, "lng_nagram_menu_select_between" },
 	{ ActionId::SeenBy, "lng_nagram_menu_seen_by" },
+	{ ActionId::MessageDetails, "lng_nagram_menu_details" },
+	{ ActionId::HideMessage, "lng_nagram_hide_message" },
+	{ ActionId::SaveToSaved, "lng_nagram_menu_save_to_saved" },
+	{ ActionId::SelectAll, "lng_nagram_menu_select_all" },
 }});
 
 [[nodiscard]] bool IsUpstream(ActionId id);
@@ -104,11 +112,27 @@ inline constexpr auto kConfirmRepeat = Option<bool>{
 	Category::Menu, "lng_nagram_menu_confirm_repeat",
 	static_cast<unsigned>(Flag::Exportable) };
 
+inline constexpr auto kCompactMenu = Option<bool>{
+	"nagram.compactMessageMenu", Scope::Device, false,
+	Category::Menu, "lng_nagram_menu_compact",
+	static_cast<unsigned>(Flag::Exportable) };
+inline constexpr auto kRepeatWithoutQuote = Option<bool>{
+	"nagram.repeatWithoutQuote", Scope::Device, false,
+	Category::Menu, "lng_nagram_menu_repeat_without_quote",
+	static_cast<unsigned>(Flag::Exportable) };
+inline constexpr auto kNoRepeatInChannels = Option<bool>{
+	"nagram.noRepeatInChannels", Scope::Device, false,
+	Category::Menu, "lng_nagram_menu_no_repeat_channels",
+	static_cast<unsigned>(Flag::Exportable) };
+
 inline void RegisterOptions(Registry &registry) {
 	Expects(registry.Add(kMenuConfig));
 	Expects(registry.Add(kConfirmRepeat));
 	Expects(registry.Add(kQuickRatingFirst));
 	Expects(registry.Add(kQuickRatingSecond));
+	Expects(registry.Add(kCompactMenu));
+	Expects(registry.Add(kRepeatWithoutQuote));
+	Expects(registry.Add(kNoRepeatInChannels));
 }
 
 } // namespace Nagram::Menu

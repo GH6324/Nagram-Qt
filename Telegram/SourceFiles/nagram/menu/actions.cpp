@@ -4,6 +4,8 @@
 #include "nagram/menu/media.h"
 #include "nagram/menu/download.h"
 #include "nagram/menu/rating.h"
+#include "nagram/menu/message_tools.h"
+#include "nagram/filters/hidden_messages.h"
 #include "nagram/menu/reading.h"
 #include "nagram/filters/menu.h"
 #include "nagram/snapshot/snapshot.h"
@@ -11,6 +13,8 @@
 #include "ui/widgets/menu/menu.h"
 #include "ui/widgets/menu/menu_item_base.h"
 #include "ui/widgets/popup_menu.h"
+#include "styles/style_nagram_compose.h"
+#include "styles/style_widgets.h"
 
 #include <QtGui/QAction>
 #include <QtGui/QGuiApplication>
@@ -21,6 +25,12 @@ namespace {
 constexpr auto kActionIdProperty = "nagramMenuActionId";
 
 } // namespace
+
+const style::PopupMenu &MessageMenuStyle() {
+	return ForDevice().Get(kCompactMenu)
+		? st::nagramCompactPopupMenu
+		: st::popupMenuWithIcons;
+}
 
 void Tag(QAction *action, ActionId id) {
 	Expects(action != nullptr);
@@ -41,7 +51,7 @@ void Apply(
 		}
 		if (item || !selected.empty()) {
 			InsertBatchActions(menu, item, controller,
-				selected, std::move(select));
+				selected, select);
 			Snapshot::InsertAction(menu, controller, item, selected);
 		}
 		if (item) {
@@ -49,6 +59,8 @@ void Apply(
 			InsertDeleteDownloadAction(menu, item, controller);
 			InsertReadingAction(menu, item, controller);
 			Filters::InsertAuthorAction(menu, item, controller);
+			Filters::InsertHideMessageAction(menu, item, controller);
+			InsertMessageToolActions(menu, item, controller, select);
 		}
 	}
 	const auto config = ForDevice().Get(kMenuConfig);

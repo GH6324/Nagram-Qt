@@ -65,6 +65,10 @@ QString Title(Menu::ActionId id) {
 	case Menu::ActionId::QuickRating: return tr::lng_nagram_menu_quick_rating(tr::now);
 	case Menu::ActionId::SelectBetween: return tr::lng_nagram_menu_select_between(tr::now);
 	case Menu::ActionId::SeenBy: return tr::lng_nagram_menu_seen_by(tr::now);
+	case Menu::ActionId::MessageDetails: return tr::lng_nagram_menu_details(tr::now);
+	case Menu::ActionId::HideMessage: return tr::lng_nagram_hide_message(tr::now);
+	case Menu::ActionId::SaveToSaved: return tr::lng_nagram_menu_save_to_saved(tr::now);
+	case Menu::ActionId::SelectAll: return tr::lng_nagram_menu_select_all(tr::now);
 	default: return QString();
 	}
 }
@@ -106,6 +110,10 @@ const style::icon *Icon(Menu::ActionId id) {
 	case Menu::ActionId::QuickRating: return &st::menuIconReply;
 	case Menu::ActionId::SelectBetween: return &st::menuIconSelect;
 	case Menu::ActionId::SeenBy: return &st::menuIconShowInChat;
+	case Menu::ActionId::MessageDetails: return &st::menuIconInfo;
+	case Menu::ActionId::HideMessage: return &st::menuIconStealth;
+	case Menu::ActionId::SaveToSaved: return &st::menuIconSavedMessages;
+	case Menu::ActionId::SelectAll: return &st::menuIconSelect;
 	default: return &st::menuIconChatBubble;
 	}
 }
@@ -173,6 +181,32 @@ const auto kMeta = BuildHelper({
 			Expects(ForDevice().Set(Menu::kConfirmRepeat, value));
 		}, confirm->lifetime());
 	}
+	const auto addMenuToggle = [&](
+			const Option<bool> *option,
+			rpl::producer<QString> title,
+			QString id) {
+		const auto button = builder.addButton({
+			.id = std::move(id),
+			.title = std::move(title),
+			.st = &st::settingsButtonNoIcon,
+			.toggled = ForDevice().Value(*option),
+		});
+		if (button) {
+			button->toggledChanges(
+			) | rpl::on_next([=](bool value) {
+				Expects(ForDevice().Set(*option, value));
+			}, button->lifetime());
+		}
+	};
+	addMenuToggle(&Menu::kCompactMenu,
+		tr::lng_nagram_menu_compact(),
+		u"nagram/menu/compact"_q);
+	addMenuToggle(&Menu::kRepeatWithoutQuote,
+		tr::lng_nagram_menu_repeat_without_quote(),
+		u"nagram/menu/repeat-without-quote"_q);
+	addMenuToggle(&Menu::kNoRepeatInChannels,
+		tr::lng_nagram_menu_no_repeat_channels(),
+		u"nagram/menu/no-repeat-channels"_q);
 	const auto addRating = [&](
 			const Option<QString> *option,
 			const tr::phrase<> *title,

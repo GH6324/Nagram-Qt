@@ -2002,7 +2002,7 @@ base::unique_qptr<Ui::PopupMenu> FillContextMenu(
 
 	auto result = base::make_unique_q<Ui::PopupMenu>(
 		list,
-		st::popupMenuWithIcons);
+		Nagram::Menu::MessageMenuStyle());
 
 	// Build the full message menu.
 	FillContextMenuItems(result, list, request, hasPollOption);

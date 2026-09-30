@@ -2920,7 +2920,9 @@ void HistoryInner::showContextMenu(QContextMenuEvent *e, bool showFromTouch) {
 				_dragStateItem ? _dragStateItem->fullId() : FullMsgId()));
 		return;
 	}
-	_menu = base::make_unique_q<Ui::PopupMenu>(this, st::popupMenuWithIcons);
+	_menu = base::make_unique_q<Ui::PopupMenu>(
+		this,
+		Nagram::Menu::MessageMenuStyle());
 	if (linkUserpicPeerId) {
 		_widget->fillSenderUserpicMenu(
 			_menu.get(),

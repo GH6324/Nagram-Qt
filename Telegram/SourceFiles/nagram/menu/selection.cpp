@@ -49,21 +49,18 @@ void Selection::Select(HistoryInner *widget, HistoryItem *source) {
 	}
 	const auto range = RangeBounds(views, [&](not_null<HistoryItem*> item) {
 		return selected.contains(item);
-	});
-	if (!source && !range) {
-		return;
-	}
+	}).value_or(std::make_pair(0, int(views.size()) - 1));
 	for (auto index = 0; index != int(views.size()); ++index) {
 		const auto item = views[index];
 		if (!item->canBeSelected() || (source
 				? (item->from() != source->from())
-				: (index < range->first || index > range->second))) {
+				: (index < range.first || index > range.second))) {
 			continue;
 		}
 		if (!selected.contains(item) && selected.size() >= MaxSelectedItems) {
 			widget->_controller->showToast(
 				tr::lng_nagram_menu_selection_limit(tr::now));
-			return;
+			break;
 		}
 		widget->changeSelection(&selected, item,
 			HistoryInner::SelectAction::Select);
@@ -86,22 +83,19 @@ void Selection::Select(HistoryView::ListWidget *widget, HistoryItem *source) {
 	}
 	const auto range = RangeBounds(views, [&](not_null<HistoryItem*> item) {
 		return selected.contains(item->fullId());
-	});
-	if (!source && !range) {
-		return;
-	}
+	}).value_or(std::make_pair(0, int(views.size()) - 1));
 	for (auto index = 0; index != int(views.size()); ++index) {
 		const auto item = views[index];
 		if (!widget->_delegate->listIsItemGoodForSelection(item) || (source
 				? (item->from() != source->from())
-				: (index < range->first || index > range->second))) {
+				: (index < range.first || index > range.second))) {
 			continue;
 		}
 		if (!selected.contains(item->fullId())
 			&& selected.size() >= MaxSelectedItems) {
 			widget->controller()->showToast(
 				tr::lng_nagram_menu_selection_limit(tr::now));
-			return;
+			break;
 		}
 		widget->changeSelection(selected, item,
 			HistoryView::ListWidget::SelectAction::Select);
