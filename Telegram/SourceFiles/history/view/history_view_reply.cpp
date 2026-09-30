@@ -7,6 +7,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 #include "history/view/history_view_reply.h"
 #include "nagram/interface/options.h"
+#include "nagram/messages/content.h"
 
 #include "core/click_handler_types.h"
 #include "core/ui_integration.h"
@@ -873,12 +874,13 @@ void Reply::paint(
 			inBubble,
 			useColorIndex ? colorIndexPlusOne : 0)];
 	const auto rippleColor = cache->bg;
-	if (!inBubble) {
+	const auto simplified = Nagram::Messages::SimplifiedReplies();
+	if (!inBubble || simplified) {
 		cache->bg = QColor(0, 0, 0, 0);
 	}
 	Ui::Text::ValidateQuotePaintCache(*cache, quoteSt);
 	Ui::Text::FillQuotePaint(p, rect, *cache, quoteSt);
-	if (backgroundEmojiData) {
+	if (backgroundEmojiData && !simplified) {
 		ValidateBackgroundEmoji(
 			backgroundEmojiId,
 			colorCollectible,
@@ -895,7 +897,7 @@ void Reply::paint(
 				backgroundEmojiData->firstGiftFrame);
 		}
 	}
-	if (!inBubble) {
+	if (!inBubble || simplified) {
 		cache->bg = rippleColor;
 	}
 

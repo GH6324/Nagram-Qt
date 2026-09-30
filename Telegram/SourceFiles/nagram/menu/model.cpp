@@ -25,9 +25,13 @@ QJsonObject Parse(const QByteArray &raw) {
 
 } // namespace
 
+bool IsUpstream(ActionId id) {
+	return (static_cast<int>(id) < static_cast<int>(ActionId::Repeat))
+		|| (id == ActionId::SeenBy);
+}
+
 Visibility DefaultVisibility(ActionId id) {
-	return static_cast<int>(id) >= static_cast<int>(ActionId::Repeat)
-		? Visibility::Hide : Visibility::Show;
+	return IsUpstream(id) ? Visibility::Show : Visibility::Hide;
 }
 
 bool ValidateConfig(const QByteArray &raw) {

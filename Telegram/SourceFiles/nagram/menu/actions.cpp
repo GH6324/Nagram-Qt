@@ -60,7 +60,7 @@ void Apply(
 		const auto value = menu->actions()[index]->property(kActionIdProperty);
 		if (value.isValid() && !Visible(
 				ReadVisibility(config, ActionId(value.toInt())), optionHeld)) {
-			removedUpstreamAction |= value.toInt() < int(ActionId::Repeat);
+			removedUpstreamAction |= IsUpstream(ActionId(value.toInt()));
 			menu->removeAction(index);
 		}
 	}

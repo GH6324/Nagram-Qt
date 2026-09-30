@@ -204,6 +204,10 @@ const auto kMeta = BuildHelper({
 		tr::lng_nagram_hide_edited_badge(),
 		u"nagram/messages/hide-edited"_q,
 		{ u"edited"_q, u"badge"_q });
+	AddToggle(builder, Messages::kEditedIcon,
+		tr::lng_nagram_edited_icon(),
+		u"nagram/messages/edited-icon"_q,
+		{ u"edited"_q, u"icon"_q });
 	const auto controller = builder.controller();
 	builder.addButton({
 		.id = u"nagram/messages/edited-mark"_q,
@@ -217,8 +221,10 @@ const auto kMeta = BuildHelper({
 			}),
 		.onClick = [=] { controller->show(Box(EditMarkBox)); },
 		.keywords = { u"edited"_q, u"label"_q, u"text"_q },
-		.shown = ForDevice().Value(Messages::kHideEditedBadge)
-			| rpl::map([](bool hidden) { return !hidden; }),
+		.shown = rpl::combine(
+			ForDevice().Value(Messages::kHideEditedBadge),
+			ForDevice().Value(Messages::kEditedIcon)
+		) | rpl::map([](bool hidden, bool icon) { return !hidden && !icon; }),
 	});
 	builder.addSubsectionTitle({
 		.id = u"nagram/messages/reactions"_q,
@@ -284,6 +290,18 @@ const auto kMeta = BuildHelper({
 		tr::lng_nagram_hide_recommended_channels(),
 		u"nagram/messages/hide-recommended"_q,
 		{ u"recommended"_q, u"channels"_q });
+	AddToggle(builder, Messages::kCollapseRecommendedChannels,
+		tr::lng_nagram_collapse_recommended_channels(),
+		u"nagram/messages/collapse-recommended"_q,
+		{ u"similar"_q, u"channels"_q, u"collapse"_q });
+	AddToggle(builder, Messages::kSimplifiedReplies,
+		tr::lng_nagram_simplified_replies(),
+		u"nagram/messages/simplified-replies"_q,
+		{ u"reply"_q, u"quote"_q, u"simple"_q });
+	AddToggle(builder, Messages::kDisableVideoUserpics,
+		tr::lng_nagram_disable_video_userpics(),
+		u"nagram/messages/disable-video-userpics"_q,
+		{ u"animated"_q, u"avatar"_q, u"video"_q });
 	AddToggle(builder, Messages::kHidePremiumBadges,
 		tr::lng_nagram_hide_premium_badges(),
 		u"nagram/messages/hide-premium"_q,

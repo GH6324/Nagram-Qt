@@ -13,6 +13,10 @@ bool HideProxySponsor() {
 	return ForDevice().Get(kHideProxySponsor);
 }
 
+bool HidePhoneSuggestion() {
+	return ForDevice().Get(kHidePhoneSuggestion);
+}
+
 bool HideSuggestion(Dialogs::TopBarSuggestions::Priority priority) {
 	using Priority = Dialogs::TopBarSuggestions::Priority;
 	switch (priority) {

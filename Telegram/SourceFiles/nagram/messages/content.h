@@ -28,6 +28,9 @@ namespace Nagram::Messages {
 [[nodiscard]] bool HideRecommendedChannels();
 [[nodiscard]] std::unique_ptr<HistoryView::Media> RecommendedChannelsMedia(
 	not_null<HistoryView::Element*> view);
+[[nodiscard]] bool CollapseRecommendedChannels();
+[[nodiscard]] bool SimplifiedReplies();
+[[nodiscard]] bool VideoUserpicAllowed(not_null<PeerData*> peer);
 [[nodiscard]] bool HideSavedTags();
 [[nodiscard]] rpl::producer<bool> SavedTagsValue();
 [[nodiscard]] bool ShowSavedTag(

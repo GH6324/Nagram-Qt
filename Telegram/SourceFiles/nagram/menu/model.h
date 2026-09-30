@@ -33,6 +33,7 @@ enum class ActionId : int {
 	DeleteDownload = 25,
 	QuickRating = 26,
 	SelectBetween = 27,
+	SeenBy = 28,
 };
 
 enum class Visibility { Show, Hide, WithOption };
@@ -42,7 +43,7 @@ struct Entry {
 	const char *titleKey;
 };
 
-inline constexpr auto kEntries = std::array<Entry, 26>({{
+inline constexpr auto kEntries = std::array<Entry, 27>({{
 	{ ActionId::Reply, "lng_nagram_menu_reply" },
 	{ ActionId::Edit, "lng_nagram_menu_edit" },
 	{ ActionId::Copy, "lng_nagram_menu_copy" },
@@ -69,8 +70,10 @@ inline constexpr auto kEntries = std::array<Entry, 26>({{
 	{ ActionId::DeleteDownload, "lng_nagram_menu_delete_download" },
 	{ ActionId::QuickRating, "lng_nagram_menu_quick_rating" },
 	{ ActionId::SelectBetween, "lng_nagram_menu_select_between" },
+	{ ActionId::SeenBy, "lng_nagram_menu_seen_by" },
 }});
 
+[[nodiscard]] bool IsUpstream(ActionId id);
 [[nodiscard]] Visibility DefaultVisibility(ActionId id);
 [[nodiscard]] bool ValidateConfig(const QByteArray &raw);
 [[nodiscard]] Visibility ReadVisibility(const QByteArray &raw, ActionId id);

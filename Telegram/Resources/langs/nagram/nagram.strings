@@ -49,6 +49,7 @@ Telegram/cmake/td_lang.cmake. Every key uses the lng_nagram_ prefix.
 "lng_nagram_hide_proxy_sponsor" = "Hide proxy sponsored channels";
 "lng_nagram_hide_premium_promotions" = "Hide Premium promotions";
 "lng_nagram_hide_birthday_suggestions" = "Hide birthday suggestions";
+"lng_nagram_hide_phone_suggestion" = "Hide phone number check suggestion";
 "lng_nagram_scroll_navigation" = "Scroll navigation";
 "lng_nagram_disable_scroll_to_next_channel" = "Do not switch to next channel at bottom";
 "lng_nagram_disable_scroll_to_next_topic" = "Do not switch to next topic at bottom";
@@ -138,6 +139,7 @@ Telegram/cmake/td_lang.cmake. Every key uses the lng_nagram_ prefix.
 "lng_nagram_hide_message_views" = "Hide view counts";
 "lng_nagram_hide_channel_signature" = "Hide channel message signatures";
 "lng_nagram_hide_edited_badge" = "Hide edited label";
+"lng_nagram_edited_icon" = "Use an icon for the edited label";
 "lng_nagram_edited_mark" = "Edited label text";
 "lng_nagram_reactions" = "Reactions";
 "lng_nagram_hide_reactions" = "Hide message reactions";
@@ -154,6 +156,9 @@ Telegram/cmake/td_lang.cmake. Every key uses the lng_nagram_ prefix.
 "lng_nagram_reveal_spoilers" = "Reveal spoilers by default";
 "lng_nagram_hide_quick_share" = "Hide quick forward button";
 "lng_nagram_hide_recommended_channels" = "Hide recommended channels";
+"lng_nagram_collapse_recommended_channels" = "Collapse similar channels after joining";
+"lng_nagram_simplified_replies" = "Simplified replies and quotes";
+"lng_nagram_disable_video_userpics" = "Do not play animated profile photos";
 "lng_nagram_hide_premium_badges" = "Hide Premium badges and emoji statuses";
 "lng_nagram_hide_saved_tags" = "Hide saved message tags";
 "lng_nagram_hide_private_chat_activities" = "Hide typing activity in private chats";
@@ -218,6 +223,7 @@ Telegram/cmake/td_lang.cmake. Every key uses the lng_nagram_ prefix.
 "lng_nagram_menu_quick_rating_placeholder" = "Text to put in the reply draft";
 "lng_nagram_menu_quick_rating_empty" = "Not set";
 "lng_nagram_menu_select_between" = "Select messages in between";
+"lng_nagram_menu_seen_by" = "Read and reaction list";
 "lng_nagram_menu_reading" = "Show original / converted text";
 "lng_nagram_menu_media_filename" = "File name";
 "lng_nagram_menu_media_type" = "Type";

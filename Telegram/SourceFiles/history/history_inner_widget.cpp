@@ -7,6 +7,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 #include "history/history_inner_widget.h"
 #include "nagram/messages/online.h"
+#include "nagram/messages/content.h"
 #include "nagram/messages/reactions.h"
 #include "nagram/menu/actions.h"
 #include "nagram/menu/selection.h"
@@ -1880,7 +1881,7 @@ HistoryInner::VideoUserpic *HistoryInner::validateVideoUserpic(
 		not_null<PeerData*> peer) {
 	if (!peer->isPremium()
 		|| peer->userpicPhotoUnknown()
-		|| !peer->userpicHasVideo()) {
+		|| !Nagram::Messages::VideoUserpicAllowed(peer)) {
 		_videoUserpics.remove(peer);
 		return nullptr;
 	}

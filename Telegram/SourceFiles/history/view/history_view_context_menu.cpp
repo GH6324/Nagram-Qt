@@ -2585,18 +2585,18 @@ void AddWhoReactedAction(
 			item,
 			controller,
 			false);
-		menu->addAction(Ui::WhenReadContextAction(
+		Nagram::Menu::Tag(menu->addAction(Ui::WhenReadContextAction(
 			menu.get(),
 			Api::WhoReacted(item, context, st::defaultWhoRead, whoReadIds),
-			showOrPremium));
+			showOrPremium)), Nagram::Menu::ActionId::SeenBy);
 	} else {
-		menu->addAction(Ui::WhoReactedContextAction(
+		Nagram::Menu::Tag(menu->addAction(Ui::WhoReactedContextAction(
 			menu.get(),
 			Api::WhoReacted(item, context, st::defaultWhoRead, whoReadIds),
 			Data::ReactedMenuFactory(&controller->session()),
 			participantChosen,
 			showAllChosen,
-			moderateReactionChosen));
+			moderateReactionChosen)), Nagram::Menu::ActionId::SeenBy);
 		AddWhenEditedForwardedAuthorActionHelper(
 			menu,
 			item,

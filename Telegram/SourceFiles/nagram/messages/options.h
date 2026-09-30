@@ -77,6 +77,19 @@ inline constexpr auto kHideRecommendedChannels = Option<bool>{
 inline constexpr auto kHidePremiumBadges = Option<bool>{
 	"nagram.hidePremiumBadges", Scope::Device, false,
 	Category::Messages, "lng_nagram_hide_premium_badges", kRefreshMessageView };
+inline constexpr auto kEditedIcon = Option<bool>{
+	"nagram.editedIcon", Scope::Device, false,
+	Category::Messages, "lng_nagram_edited_icon", kRefreshMessageView };
+inline constexpr auto kSimplifiedReplies = Option<bool>{
+	"nagram.simplifiedReplies", Scope::Device, false,
+	Category::Messages, "lng_nagram_simplified_replies", kRefreshMessageView };
+inline constexpr auto kDisableVideoUserpics = Option<bool>{
+	"nagram.disableVideoUserpics", Scope::Device, false,
+	Category::Messages, "lng_nagram_disable_video_userpics", kRefreshMessageView
+		| static_cast<unsigned>(Flag::RefreshDialogList) };
+inline constexpr auto kCollapseRecommendedChannels = Option<bool>{
+	"nagram.collapseRecommendedChannels", Scope::Device, false,
+	Category::Messages, "lng_nagram_collapse_recommended_channels" };
 inline constexpr auto kHideSavedTags = Option<bool>{
 	"nagram.hideSavedTags", Scope::Device, false,
 	Category::Messages, "lng_nagram_hide_saved_tags" };
@@ -116,6 +129,10 @@ inline void RegisterOptions(Registry &registry) {
 	Expects(registry.Add(kHideRecommendedChannels));
 	Expects(registry.Add(kHidePremiumBadges));
 	Expects(registry.Add(kHideSavedTags));
+	Expects(registry.Add(kEditedIcon));
+	Expects(registry.Add(kSimplifiedReplies));
+	Expects(registry.Add(kDisableVideoUserpics));
+	Expects(registry.Add(kCollapseRecommendedChannels));
 	Expects(registry.Add(kHidePrivateChatActivities));
 	Expects(registry.Add(kReadingSpacing));
 	Expects(registry.Add(kReadingChinese));

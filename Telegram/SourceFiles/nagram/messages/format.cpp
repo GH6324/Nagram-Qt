@@ -47,10 +47,20 @@ QString FormatSavedFrom(QDateTime dateTime) {
 		tr::now, lt_date, dateText, lt_time, time);
 }
 
+namespace {
+
+QString ActiveEditedMark() {
+	return ForDevice().Get(kEditedIcon)
+		? QString(QChar(0x270E))
+		: ForDevice().Get(kEditedMark);
+}
+
+} // namespace
+
 QString FormatEditedDate(QDateTime sent, QDateTime edited) {
 	const auto today = QDateTime::currentDateTime().date();
 	const auto time = FormatTime(edited.time());
-	const auto mark = ForDevice().Get(kEditedMark);
+	const auto mark = ActiveEditedMark();
 	if (sent.date() == today && edited.date() == today) {
 		return mark.isEmpty()
 			? tr::lng_edited_at(tr::now, lt_time, time)
@@ -63,7 +73,7 @@ QString FormatEditedDate(QDateTime sent, QDateTime edited) {
 }
 
 QString EditedMark() {
-	const auto mark = ForDevice().Get(kEditedMark);
+	const auto mark = ActiveEditedMark();
 	return mark.isEmpty() ? tr::lng_edited(tr::now) : mark;
 }
 

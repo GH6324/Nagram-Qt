@@ -7,6 +7,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 #include "history/view/history_view_list_widget.h"
 #include "nagram/messages/online.h"
+#include "nagram/messages/content.h"
 #include "nagram/messages/reactions.h"
 
 #include "history/view/history_view_about_view.h"
@@ -3311,7 +3312,7 @@ ListWidget::VideoUserpic *ListWidget::validateVideoUserpic(
 		not_null<PeerData*> peer) {
 	if (!peer->isPremium()
 		|| peer->userpicPhotoUnknown()
-		|| !peer->userpicHasVideo()) {
+		|| !Nagram::Messages::VideoUserpicAllowed(peer)) {
 		_videoUserpics.remove(peer);
 		return nullptr;
 	}

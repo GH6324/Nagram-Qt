@@ -1794,7 +1794,7 @@ Ui::VideoUserpic *InnerWidget::validateVideoUserpic(
 	const auto peer = history->peer;
 	if (!peer->isPremium()
 		|| peer->userpicPhotoUnknown()
-		|| !peer->userpicHasVideo()
+		|| !Nagram::Messages::VideoUserpicAllowed(peer)
 		|| peer->isSelf()
 		|| peer->isRepliesChat()) {
 		_videoUserpics.remove(peer);

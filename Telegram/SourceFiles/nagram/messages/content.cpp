@@ -39,6 +39,19 @@ std::unique_ptr<HistoryView::Media> RecommendedChannelsMedia(
 		: std::make_unique<HistoryView::SimilarChannels>(view);
 }
 
+bool CollapseRecommendedChannels() {
+	return ForDevice().Get(kCollapseRecommendedChannels);
+}
+
+bool SimplifiedReplies() {
+	return ForDevice().Get(kSimplifiedReplies);
+}
+
+bool VideoUserpicAllowed(not_null<PeerData*> peer) {
+	return peer->userpicHasVideo()
+		&& !ForDevice().Get(kDisableVideoUserpics);
+}
+
 bool HideSavedTags() {
 	return ForDevice().Get(kHideSavedTags);
 }

@@ -87,6 +87,8 @@ void TestOptions() {
 		"quick rating length limit");
 	Require(Menu::ReadVisibility({}, ActionId::SelectBetween)
 		== Visibility::Hide, "select between action default");
+	Require(Menu::ReadVisibility({}, ActionId::SeenBy) == Visibility::Show
+		&& Menu::IsUpstream(ActionId::SeenBy), "seen by stays upstream");
 	const auto oldReading = QByteArray(
 		R"({"version":1,"states":{"E21":"show","E23":"show"}})");
 	Require(Menu::ValidateConfig(oldReading), "old menu config valid");
@@ -117,14 +119,14 @@ void TestOptions() {
 	Require(registry.All().size() == 1, "registry count");
 	auto messages = Registry();
 	Messages::RegisterOptions(messages);
-	Require(messages.All().size() == 27, "message option count");
+	Require(messages.All().size() == 31, "message option count");
 	auto refreshCount = 0;
 	for (const auto &entry : messages.All()) {
 		Require(entry.scope == Scope::Device, "message option scope");
 		Require(entry.category == Category::Messages, "message option category");
 		refreshCount += messages.HasFlag(entry.key, Flag::RefreshMessageView);
 	}
-	Require(refreshCount == 20, "message refresh option count");
+	Require(refreshCount == 23, "message refresh option count");
 	Require(Messages::kReadingChinese.validate(0)
 		&& Messages::kReadingChinese.validate(1)
 		&& Messages::kReadingChinese.validate(2)
@@ -138,7 +140,7 @@ void TestOptions() {
 		"unknown refresh option");
 	auto chats = Registry();
 	Chats::RegisterOptions(chats);
-	Require(chats.All().size() == 23, "chat option count");
+	Require(chats.All().size() == 24, "chat option count");
 	Require(Chats::ValidReadingPositions(QString::fromLatin1("5:10,7:1"))
 		&& !Chats::ValidReadingPositions(QString::fromLatin1("5:0"))
 		&& !Chats::ValidReadingPositions(QString::fromLatin1("5"))

@@ -248,6 +248,10 @@ const auto kMeta = BuildHelper({
 		tr::lng_nagram_hide_birthday_suggestions(),
 		u"nagram/chats/hide-birthday"_q,
 		{ u"birthday"_q, u"suggestion"_q });
+	AddToggle(builder, Chats::kHidePhoneSuggestion,
+		tr::lng_nagram_hide_phone_suggestion(),
+		u"nagram/chats/hide-phone-suggestion"_q,
+		{ u"phone number"_q, u"suggestion"_q });
 	builder.addSubsectionTitle({
 		.id = u"nagram/chats/scroll-navigation"_q,
 		.title = tr::lng_nagram_scroll_navigation(),

@@ -45,6 +45,7 @@
 "lng_nagram_hide_proxy_sponsor" = "隐藏代理赞助频道";
 "lng_nagram_hide_premium_promotions" = "隐藏 Premium 推广提示";
 "lng_nagram_hide_birthday_suggestions" = "隐藏生日提示";
+"lng_nagram_hide_phone_suggestion" = "隐藏手机号确认建议";
 "lng_nagram_scroll_navigation" = "滚动导航";
 "lng_nagram_disable_scroll_to_next_channel" = "滚动到底时不切换到下一个频道";
 "lng_nagram_disable_scroll_to_next_topic" = "滚动到底时不切换到下一个话题";
@@ -134,6 +135,7 @@
 "lng_nagram_hide_message_views" = "隐藏浏览数";
 "lng_nagram_hide_channel_signature" = "隐藏频道消息签名";
 "lng_nagram_hide_edited_badge" = "隐藏“已编辑”标记";
+"lng_nagram_edited_icon" = "“已编辑”标记改用图标";
 "lng_nagram_edited_mark" = "“已编辑”标记文字";
 "lng_nagram_reactions" = "反应";
 "lng_nagram_hide_reactions" = "隐藏消息反应";
@@ -150,6 +152,9 @@
 "lng_nagram_reveal_spoilers" = "直接显示剧透内容";
 "lng_nagram_hide_quick_share" = "隐藏快速转发按钮";
 "lng_nagram_hide_recommended_channels" = "隐藏推荐频道";
+"lng_nagram_collapse_recommended_channels" = "加入频道后折叠相似频道";
+"lng_nagram_simplified_replies" = "简化回复和引用样式";
+"lng_nagram_disable_video_userpics" = "不播放动态头像";
 "lng_nagram_hide_premium_badges" = "隐藏会员标识和表情状态";
 "lng_nagram_hide_saved_tags" = "隐藏收藏夹标签栏";
 "lng_nagram_hide_private_chat_activities" = "隐藏私聊中对方的输入状态";
@@ -214,6 +219,7 @@
 "lng_nagram_menu_quick_rating_placeholder" = "填入回复草稿的文字";
 "lng_nagram_menu_quick_rating_empty" = "未设置";
 "lng_nagram_menu_select_between" = "选择区间内的消息";
+"lng_nagram_menu_seen_by" = "已读与回应列表";
 "lng_nagram_menu_reading" = "显示原文 / 转换后文字";
 "lng_nagram_menu_media_filename" = "文件名";
 "lng_nagram_menu_media_type" = "类型";
