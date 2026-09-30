@@ -157,6 +157,23 @@
 | ✅ S98 | `feat(chats): restore reading position` | B17 | P2-02 | 不含话题 |
 | ✅ S99 | `feat(chats): chat tools in the top bar` | B18 | P2-02 | 不提供清理缓存按钮 |
 
+### P1/P2 补全第二轮（2026-10-01）
+
+对照功能目录逐项核对后继续补做。每组一个提交，macOS arm64 Debug 增量构建与 `test_nagram` 通过；界面未现场核验，原因见 `design.md` 第 8 节。
+
+| 步骤 | 提交 | 条目 | 备注 |
+| --- | --- | --- | --- |
+| ✅ S100 | `feat(messages): reply, avatar, edited mark and prompt options` | B19、C28–C31、E28 | Premium 与 Stars 提示已由 B12 覆盖 |
+| ✅ S101 | `feat(menu): message details, local hide, save and select all` | E29–E35、I03 | 多选操作栏的桌面对应是多选右键菜单，由菜单显隐覆盖 |
+| ✅ S102 | `feat(compose): formatting menu items and Chinese conversion on send` | D30、D31 | 输入栏快捷回复按钮未做，保留右键菜单入口 D21 |
+| ✅ S103 | `feat(chats): community grouping switch, compact tabs and join folders` | B20–B23 | B23 按 iOS 总开关实现 |
+| ✅ S104 | `feat(media): GIF and panel size, downloads entry, auto-download exceptions` | F14–F18 | 已收藏贴纸不进最近使用、贴纸集排序为上游已有 |
+| ✅ S105 | `feat(privacy): name order, Persian calendar and delete dialog defaults` | G10–G12 | 彩色管理员头衔为上游已有 |
+| ✅ S106 | `feat(config): server error codes and debug log entries` | J05–J07 | |
+| ✅ S107 | `feat(interface): per-type theme override, title name and holiday decorations` | A16–A19 | |
+| ✅ S108 | `feat(ai): Google, Microsoft and Yandex translation, DeepL formality` | H05 | 请求构造、响应解析、鉴权头有单元测试；未用真实密钥联调 |
+| ✅ S109 | `feat(chats): recent chats first when forwarding` | B24 | |
+
 ### P3
 
 P3 功能不在本计划内。每项先在 `docs/nagram/` 下单独写设计并确认，再按本文件的规则拆分步骤。

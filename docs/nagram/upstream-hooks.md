@@ -173,6 +173,34 @@ E21 截图在 `history_view_element.h/.cpp`、`history_view_message.cpp`、`hist
 
 无上游改动。批量导入先完成校验，再在同一事件循环内逐键写入并统一通知（见设计文档第 3.3 节）。
 
+### 2.11 P1／P2 补全第二轮
+
+| 条目 | 上游文件 | 改动 | 方式 |
+| --- | --- | --- | --- |
+| A16、A17 | `window/section_widget.cpp` | 主题忽略条件改用 `IgnoreChatThemeValue(peer)`，按会话类型合并 A10 | 替换 |
+| A18 | `window/window_main_menu.cpp` | 节日判断前加“始终显示” | 读取 |
+| A19 | `window/main_window.cpp` | 账号名显示条件增加本开关 | 读取 |
+| B19 | `settings/sections/settings_main.cpp` | 手机号确认建议前判断 | 过滤 |
+| B20 | `ui/widgets/chat_filters_tabs_strip.cpp` | 标签条样式经 `FiltersTabsStyle` 选择 | 替换 |
+| B21 | `window/window_session_controller.cpp` | 控制器构造时订阅加入频道事件 | 读取 |
+| B22 | `dialogs/dialogs_widget.cpp` | `peerSearchRequired` 增加条件 | 读取 |
+| B23 | `data/data_channel.h`、`history/history.cpp`、`window/window_peer_menu.cpp`、`boxes/peers/community_box.cpp` | `collapsedInDialogs()` 在总开关开启时返回 false；两处直接读标志位的判断改走该函数；隐藏“合并显示”开关 | 替换 |
+| B24 | `boxes/share_box.cpp` | 默认列表在收藏夹后插入最近会话，并对后续列表去重 | 读取 |
+| C28 | 无（`nagram/messages/format.cpp`） | 编辑标记文字来源 | 替换 |
+| C29 | `apiwrap.cpp` | 加入频道时不设置 `SimilarExpanded` | 读取 |
+| C30 | `history/view/history_view_reply.cpp` | 回复块按非气泡样式绘制底色，跳过背景图案 | 读取 |
+| C31 | `history/history_inner_widget.cpp`、`history/view/history_view_list_widget.cpp`、`dialogs/dialogs_inner_widget.cpp` | 动态头像判断改用 `VideoUserpicAllowed` | 替换 |
+| D30、D31 | `chat_helpers/message_field.cpp` | 输入框挂钩入口改为 `InstallFieldHooks`；简繁转换在既有 `PrepareText` 内完成 | 替换 |
+| E28 | `history/view/history_view_context_menu.cpp` | 已读／回应列表项加 `Tag` | 读取 |
+| E29–E35 | `history/history_inner_widget.cpp`、`history/view/history_view_context_menu.cpp` | 新增项经 `Apply` 插入；菜单样式经 `MessageMenuStyle()` 选择 | 替换 |
+| F14 | `history/view/media/history_view_gif.cpp` | GIF 最大尺寸 | 替换 |
+| F15 | `chat_helpers/stickers_list_widget.cpp` | 面板单元最小宽度 | 替换 |
+| F16 | `window/window_main_menu.cpp` | 主菜单加入“下载” | 读取 |
+| F17、F18 | `data/data_auto_download.cpp` | 两处自动下载判断增加扩展名排除 | 过滤 |
+| G10、G11 | `lang/lang_keys.cpp` | `langFullName` 的姓名顺序；五个日期格式函数开头的波斯历分支 | 替换 |
+| G12 | `boxes/moderate_messages_box.cpp` | 入口处合并默认勾选 | 读取 |
+| J05 | `mtproto/mtp_instance.h/.cpp`、`main/main_session.cpp` | 新增 `SetRpcErrorObserver`，在未被默认处理的 RPC 错误记录日志后通知；会话创建时安装 Nagram 观察者 | 读取 |
+
 ## 3. 改动面预估
 
 上表去重后共涉及 85 个上游文件（已逐个确认在当前上游中存在），与旧实现的文件数相当：这些功能本身就分布在这些位置。上游改动以 `#include`、已有判断中的条件及单行调用为主；调用上游类私有方法时允许约 10 行以内的短块，并在提交正文说明原因。每个里程碑统计上游新增行数，解释集中改动，不再要求每个文件只改一行。M2 的 152 行调用／条件主要分布在输入按钮的既有判断处；D14 命令草稿分支与按钮刷新订阅因调用 `HistoryWidget` 私有方法而保留在上游文件。热点文件及其承载的条目：
