@@ -60,6 +60,8 @@ Telegram/cmake/td_lang.cmake. Every key uses the lng_nagram_ prefix.
 "lng_nagram_recent_chats_clear" = "Clear";
 "lng_nagram_save_reading_position" = "Restore reading position";
 "lng_nagram_save_reading_position_note" = "When a chat has no unread messages, it opens where you stopped reading instead of at the bottom. Positions are kept on this device for each account; topics are not included. Turning this off clears them.";
+"lng_nagram_chat_tools" = "Show chat tools in the top bar";
+"lng_nagram_chat_tools_start" = "Jump to beginning";
 "lng_nagram_compose" = "Compose and send";
 "lng_nagram_compose_buttons" = "Compose buttons";
 "lng_nagram_hide_attach_button" = "Hide attachment button";

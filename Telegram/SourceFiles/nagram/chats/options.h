@@ -138,6 +138,9 @@ inline constexpr auto kMaximumReadingPositions = 100;
 	return true;
 }
 
+inline constexpr auto kChatTools = Option<bool>{
+	"nagram.chatTools", Scope::Device, false,
+	Category::Chats, "lng_nagram_chat_tools" };
 inline constexpr auto kSaveReadingPosition = Option<bool>{
 	"nagram.saveReadingPosition", Scope::Device, false,
 	Category::Chats, "lng_nagram_save_reading_position" };
@@ -167,6 +170,7 @@ inline void RegisterOptions(Registry &registry) {
 	Expects(registry.Add(kDisableScrollToNextTopic));
 	Expects(registry.Add(kRecentChats));
 	Expects(registry.Add(kRecentChatsList));
+	Expects(registry.Add(kChatTools));
 	Expects(registry.Add(kSaveReadingPosition));
 	Expects(registry.Add(kReadingPositions));
 }

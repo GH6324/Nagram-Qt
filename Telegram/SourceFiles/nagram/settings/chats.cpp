@@ -271,6 +271,10 @@ const auto kMeta = BuildHelper({
 		u"nagram/chats/recent-chats"_q,
 		{ u"recent"_q, u"history"_q, u"main menu"_q });
 	builder.addDividerText(tr::lng_nagram_recent_chats_note());
+	AddToggle(builder, Chats::kChatTools,
+		tr::lng_nagram_chat_tools(),
+		u"nagram/chats/chat-tools"_q,
+		{ u"toolbar"_q, u"top bar"_q, u"media"_q, u"pinned"_q });
 	AddToggle(builder, Chats::kSaveReadingPosition,
 		tr::lng_nagram_save_reading_position(),
 		u"nagram/chats/reading-position"_q,

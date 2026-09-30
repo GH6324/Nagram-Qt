@@ -54,6 +54,8 @@
 "lng_nagram_recent_chats" = "最近對話";
 "lng_nagram_recent_chats_empty" = "還沒有最近對話。";
 "lng_nagram_recent_chats_clear" = "清除";
+"lng_nagram_chat_tools" = "在頂部列顯示聊天工具按鈕";
+"lng_nagram_chat_tools_start" = "跳到開頭";
 "lng_nagram_save_reading_position" = "恢復閱讀位置";
 "lng_nagram_save_reading_position_note" = "對話沒有未讀訊息時，從上次讀到的位置開啟，而不是跳到底部。位置按帳號儲存在本機，不包括話題；關閉後會清除。";
 "lng_nagram_compose" = "輸入與傳送";

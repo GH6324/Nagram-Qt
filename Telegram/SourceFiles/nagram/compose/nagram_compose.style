@@ -31,3 +31,13 @@ nagramFormatStrikeOutActive: icon {{ "menu/rich/strikeout-24x24", windowActiveTe
 nagramFormatCodeActive: icon {{ "menu/rich/code-24x24", windowActiveTextFg }};
 nagramFormatSpoilerActive: icon {{ "menu/rich/spoiler-24x24", windowActiveTextFg }};
 nagramFormatQuoteActive: icon {{ "menu/rich/blockquote-24x24", windowActiveTextFg }};
+
+nagramChatToolsStart: icon {{ "history_down_arrow-flip_vertical", menuIconColor }};
+nagramChatToolsButton: IconButton(defaultIconButton) {
+	width: 36px;
+	height: 54px;
+	iconPosition: point(-1px, -1px);
+	rippleAreaPosition: point(0px, 9px);
+	rippleAreaSize: 36px;
+	ripple: defaultRippleAnimationBgOver;
+}

@@ -54,6 +54,8 @@
 "lng_nagram_recent_chats" = "最近会话";
 "lng_nagram_recent_chats_empty" = "还没有最近会话。";
 "lng_nagram_recent_chats_clear" = "清空";
+"lng_nagram_chat_tools" = "在顶部栏显示聊天工具按钮";
+"lng_nagram_chat_tools_start" = "跳到开头";
 "lng_nagram_save_reading_position" = "恢复阅读位置";
 "lng_nagram_save_reading_position_note" = "聊天没有未读消息时，从上次读到的位置打开，而不是跳到底部。位置按账号保存在本机，不包括话题；关闭后会清空。";
 "lng_nagram_compose" = "输入与发送";

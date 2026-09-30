@@ -6,6 +6,7 @@ For license and copyright information please follow this link:
 https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 #include "history/view/history_view_top_bar_widget.h"
+#include "nagram/chats/tools.h"
 #include "nagram/messages/content.h"
 
 #include "history/history.h"
@@ -1301,6 +1302,16 @@ void TopBarWidget::updateControlsGeometry() {
 		_groupCall->moveToRight(_rightTaken, otherButtonsTop);
 		_rightTaken += _call->width();
 	}
+	_rightTaken += Nagram::Chats::LayoutChatTools(
+		this,
+		_controller,
+		_activeChat.key,
+		(_activeChat.section == Section::History)
+			&& !_searchMode
+			&& !_animatingMode
+			&& !_chooseForReportReason,
+		_rightTaken,
+		otherButtonsTop);
 	_search->moveToRight(_rightTaken, otherButtonsTop);
 	if (!_search->isHidden()) {
 		_rightTaken += _search->width() + st::topBarCallSkip;
