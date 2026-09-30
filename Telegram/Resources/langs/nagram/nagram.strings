@@ -27,6 +27,10 @@ Telegram/cmake/td_lang.cmake. Every key uses the lng_nagram_ prefix.
 "lng_nagram_theme_reply_colors" = "Use theme colors for replies and quotes";
 "lng_nagram_hide_reply_thumbnail" = "Hide reply thumbnails";
 "lng_nagram_ignore_chat_theme" = "Ignore custom chat themes and wallpapers";
+"lng_nagram_ignore_private_chat_theme" = "Ignore custom themes in private chats";
+"lng_nagram_ignore_channel_chat_theme" = "Ignore custom themes in channels";
+"lng_nagram_always_seasonal" = "Always show holiday decorations";
+"lng_nagram_account_name_in_title" = "Show account name in window title";
 "lng_nagram_messages" = "Messages";
 "lng_nagram_chats" = "Chats";
 "lng_nagram_chat_list" = "Chat list";

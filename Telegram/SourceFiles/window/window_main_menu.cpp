@@ -9,6 +9,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "nagram/chats/recent_chats.h"
 #include "nagram/media/extras.h"
 #include "nagram/interface/main_menu.h"
+#include "nagram/interface/appearance.h"
 
 #include "apiwrap.h"
 #include "base/event_filter.h"
@@ -431,7 +432,8 @@ MainMenu::MainMenu(
 
 	initResetScaleButton();
 
-	if (CanCheckSpecialEvent() && CheckSpecialEvent()
+	if ((Nagram::Interface::AlwaysSeasonal()
+			|| (CanCheckSpecialEvent() && CheckSpecialEvent()))
 		&& Nagram::Interface::MainMenuSeasonal()) {
 		const auto snowLifetime = lifetime().make_state<rpl::lifetime>();
 		const auto rebuild = [=] {

@@ -7,6 +7,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 #include "window/main_window.h"
 #include "nagram/interface/options.h"
+#include "nagram/interface/appearance.h"
 #include "nagram/privacy/options.h"
 
 #include "api/api_updates.h"
@@ -427,8 +428,10 @@ MainWindow::MainWindow(not_null<Controller*> controller)
 	}, lifetime());
 	Nagram::ForDevice().changes(
 	) | rpl::filter([](auto key) {
-		return key == Nagram::Interface::kHideAppIconBadge.key;
+		return key == Nagram::Interface::kHideAppIconBadge.key
+			|| key == Nagram::Interface::kAccountNameInTitle.key;
 	}) | rpl::on_next([=] {
+		updateTitle();
 		unreadCounterChangedHook();
 	}, lifetime());
 
@@ -911,7 +914,8 @@ void MainWindow::updateTitle() {
 	const auto session = locked ? nullptr : _controller->sessionController();
 	const auto user = (session
 		&& !settings.hideAccountName
-		&& Core::App().domain().accountsAuthedCount() > 1)
+		&& (Core::App().domain().accountsAuthedCount() > 1
+			|| Nagram::Interface::AccountNameInTitle()))
 		? st::wrap_rtl(session->authedName())
 		: QString();
 	const auto separateSharedMediaTitle = session

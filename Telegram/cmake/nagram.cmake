@@ -17,6 +17,7 @@ set(nagram_sources
     nagram/interface/main_menu_model.cpp
     nagram/interface/notifications.cpp
     nagram/interface/text.cpp
+    nagram/interface/appearance.cpp
     nagram/chats/startup_folder.cpp
     nagram/chats/sort.cpp
     nagram/chats/recent_chats.cpp

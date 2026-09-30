@@ -42,6 +42,18 @@ inline constexpr auto kHideReplyThumbnail = Option<bool>{
 inline constexpr auto kIgnoreChatTheme = Option<bool>{
 	"nagram.ignoreChatTheme", Scope::Device, false,
 	Category::Interface, "lng_nagram_ignore_chat_theme" };
+inline constexpr auto kIgnorePrivateChatTheme = Option<bool>{
+	"nagram.ignorePrivateChatTheme", Scope::Device, false,
+	Category::Interface, "lng_nagram_ignore_private_chat_theme" };
+inline constexpr auto kIgnoreChannelChatTheme = Option<bool>{
+	"nagram.ignoreChannelChatTheme", Scope::Device, false,
+	Category::Interface, "lng_nagram_ignore_channel_chat_theme" };
+inline constexpr auto kAccountNameInTitle = Option<bool>{
+	"nagram.accountNameInTitle", Scope::Device, false,
+	Category::Interface, "lng_nagram_account_name_in_title" };
+inline constexpr auto kAlwaysSeasonal = Option<bool>{
+	"nagram.alwaysSeasonalDecorations", Scope::Device, false,
+	Category::Interface, "lng_nagram_always_seasonal", kRestart };
 inline const auto kMainMenuConfig = Option<QByteArray>{
 	"nagram.mainMenu", Scope::Device, QByteArray(),
 	Category::Interface, "lng_nagram_main_menu", 0,
@@ -73,6 +85,10 @@ inline void RegisterOptions(Registry &registry) {
 	Expects(registry.Add(kThemeReplyColors));
 	Expects(registry.Add(kHideReplyThumbnail));
 	Expects(registry.Add(kIgnoreChatTheme));
+	Expects(registry.Add(kIgnorePrivateChatTheme));
+	Expects(registry.Add(kIgnoreChannelChatTheme));
+	Expects(registry.Add(kAccountNameInTitle));
+	Expects(registry.Add(kAlwaysSeasonal));
 	Expects(registry.Add(kMainMenuConfig));
 	Expects(registry.Add(kHideAppIconBadge));
 	Expects(registry.Add(kNotificationDelay));

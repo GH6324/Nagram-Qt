@@ -23,6 +23,10 @@
 "lng_nagram_theme_reply_colors" = "回覆和引用使用主題顏色";
 "lng_nagram_hide_reply_thumbnail" = "隱藏回覆縮圖";
 "lng_nagram_ignore_chat_theme" = "忽略對話自訂主題和桌布";
+"lng_nagram_ignore_private_chat_theme" = "忽略私人對話的自訂主題";
+"lng_nagram_ignore_channel_chat_theme" = "忽略頻道的自訂主題";
+"lng_nagram_always_seasonal" = "總是顯示節日裝飾";
+"lng_nagram_account_name_in_title" = "在視窗標題中顯示帳號名稱";
 "lng_nagram_messages" = "訊息";
 "lng_nagram_chats" = "聊天";
 "lng_nagram_chat_list" = "聊天清單";

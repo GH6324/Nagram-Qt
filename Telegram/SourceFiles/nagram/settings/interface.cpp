@@ -281,6 +281,14 @@ const auto kMeta = BuildHelper({
 		tr::lng_nagram_ignore_chat_theme(),
 		u"nagram/interface/ignore-chat-theme"_q,
 		{ u"chat"_q, u"theme"_q, u"wallpaper"_q });
+	AddToggle(builder, Interface::kIgnorePrivateChatTheme,
+		tr::lng_nagram_ignore_private_chat_theme(),
+		u"nagram/interface/ignore-private-theme"_q,
+		{ u"private"_q, u"theme"_q, u"wallpaper"_q });
+	AddToggle(builder, Interface::kIgnoreChannelChatTheme,
+		tr::lng_nagram_ignore_channel_chat_theme(),
+		u"nagram/interface/ignore-channel-theme"_q,
+		{ u"channel"_q, u"theme"_q, u"wallpaper"_q });
 	builder.addSubsectionTitle({
 		.id = u"nagram/interface/main-menu-heading"_q,
 		.title = tr::lng_nagram_main_menu(),
@@ -293,6 +301,10 @@ const auto kMeta = BuildHelper({
 		.onClick = [=] { controller->show(Box(Interface::MainMenuBox)); },
 		.keywords = { u"menu"_q, u"order"_q, u"visibility"_q },
 	});
+	AddToggle(builder, Interface::kAlwaysSeasonal,
+		tr::lng_nagram_always_seasonal(),
+		u"nagram/interface/always-seasonal"_q,
+		{ u"holiday"_q, u"snow"_q, u"decoration"_q });
 	builder.addSubsectionTitle({
 		.id = u"nagram/interface/window-notification"_q,
 		.title = tr::lng_nagram_window_notification(),
@@ -302,6 +314,10 @@ const auto kMeta = BuildHelper({
 		tr::lng_nagram_hide_app_icon_badge(),
 		u"nagram/interface/hide-app-icon-badge"_q,
 		{ u"dock"_q, u"icon"_q, u"badge"_q });
+	AddToggle(builder, Interface::kAccountNameInTitle,
+		tr::lng_nagram_account_name_in_title(),
+		u"nagram/interface/account-name-title"_q,
+		{ u"window"_q, u"title"_q, u"account"_q });
 	AddDelay(builder, Interface::kNotificationDelay,
 		tr::lng_nagram_notification_delay(),
 		u"nagram/interface/notification-delay"_q);
