@@ -3391,7 +3391,7 @@ bool History::shouldBeInChatList() const {
 		; community && community->isCommunity()) {
 		return !(community->flags() & ChannelDataFlag::Forbidden)
 			&& !community->haveLeft()
-			&& (community->flags() & ChannelDataFlag::CommunityCollapsed);
+			&& community->collapsedInDialogs();
 	} else if (isPinnedDialog(FilterId())) {
 		return true;
 	} else if (const auto channel = peer->asChannel()) {

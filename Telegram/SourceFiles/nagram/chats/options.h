@@ -83,6 +83,20 @@ inline constexpr auto kHidePremiumPromotions = Option<bool>{
 inline constexpr auto kHideBirthdaySuggestions = Option<bool>{
 	"nagram.hideBirthdaySuggestions", Scope::Device, false,
 	Category::Chats, "lng_nagram_hide_birthday_suggestions" };
+inline constexpr auto kDisableCommunityGrouping = Option<bool>{
+	"nagram.disableCommunityGrouping", Scope::Device, false,
+	Category::Chats, "lng_nagram_disable_community_grouping",
+	static_cast<unsigned>(Flag::RequiresRestart) };
+inline constexpr auto kCompactFolderTabs = Option<bool>{
+	"nagram.compactFolderTabs", Scope::Device, false,
+	Category::Chats, "lng_nagram_compact_folder_tabs",
+	static_cast<unsigned>(Flag::RequiresRestart) };
+inline constexpr auto kDisableGlobalSearch = Option<bool>{
+	"nagram.disableGlobalSearch", Scope::Device, false,
+	Category::Chats, "lng_nagram_disable_global_search" };
+inline constexpr auto kChooseFolderAfterJoin = Option<bool>{
+	"nagram.chooseFolderAfterJoin", Scope::Device, false,
+	Category::Chats, "lng_nagram_choose_folder_after_join" };
 inline constexpr auto kHidePhoneSuggestion = Option<bool>{
 	"nagram.hidePhoneSuggestion", Scope::Device, false,
 	Category::Chats, "lng_nagram_hide_phone_suggestion" };
@@ -170,6 +184,10 @@ inline void RegisterOptions(Registry &registry) {
 	Expects(registry.Add(kHidePremiumPromotions));
 	Expects(registry.Add(kHideBirthdaySuggestions));
 	Expects(registry.Add(kHidePhoneSuggestion));
+	Expects(registry.Add(kDisableCommunityGrouping));
+	Expects(registry.Add(kCompactFolderTabs));
+	Expects(registry.Add(kDisableGlobalSearch));
+	Expects(registry.Add(kChooseFolderAfterJoin));
 	Expects(registry.Add(kDisableScrollToNextChannel));
 	Expects(registry.Add(kDisableScrollToNextTopic));
 	Expects(registry.Add(kRecentChats));

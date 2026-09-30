@@ -14,6 +14,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "data/data_community.h"
 #include "data/data_peer_bot_commands.h"
 #include "data/data_user_names.h"
+#include "nagram/chats/community.h"
 
 class ChannelData;
 
@@ -344,7 +345,8 @@ public:
 		return flags() & Flag::Community;
 	}
 	[[nodiscard]] bool collapsedInDialogs() const {
-		return flags() & Flag::CommunityCollapsed;
+		return (flags() & Flag::CommunityCollapsed)
+			&& !Nagram::Chats::CommunityGroupingDisabled();
 	}
 	[[nodiscard]] bool hasUsername() const {
 		return flags() & Flag::Username;

@@ -49,3 +49,23 @@ nagramCompactPopupMenu: PopupMenu(popupMenuWithIcons) {
 		itemPadding: margins(54px, 5px, 17px, 5px);
 	}
 }
+
+nagramCompactFiltersTabs: SettingsSlider(defaultSettingsSlider) {
+	padding: 5px;
+	height: 33px;
+	barTop: 30px;
+	barSkip: 0px;
+	barStroke: 6px;
+	barRadius: 2px;
+	barFg: transparent;
+	barSnapToLabel: true;
+	strictSkip: 10px;
+	labelTop: 7px;
+	labelStyle: semiboldTextStyle;
+	labelFg: windowSubTextFg;
+	labelFgActive: lightButtonFg;
+	rippleBottomSkip: 0px;
+	rippleBg: windowBgOver;
+	rippleBgActive: lightButtonBgOver;
+	ripple: defaultRippleAnimation;
+}

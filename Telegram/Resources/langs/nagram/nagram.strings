@@ -44,6 +44,11 @@ Telegram/cmake/td_lang.cmake. Every key uses the lng_nagram_ prefix.
 "lng_nagram_hide_all_chats_folder" = "Hide All Chats folder";
 "lng_nagram_show_archive_in_folders" = "Show Archive in folders";
 "lng_nagram_hide_folder_unread_counters" = "Hide folder unread counts";
+"lng_nagram_compact_folder_tabs" = "Compact folder tabs";
+"lng_nagram_choose_folder_after_join" = "Choose folders after joining a group or channel";
+"lng_nagram_join_folders_title" = "Add to folders";
+"lng_nagram_join_folders_about" = "Choose the folders this chat should appear in.";
+"lng_nagram_join_folders_failed" = "Some folders could not be changed because of folder limits.";
 "lng_nagram_promotions" = "Promotions";
 "lng_nagram_hide_sponsored_messages" = "Hide sponsored messages and search ads";
 "lng_nagram_hide_proxy_sponsor" = "Hide proxy sponsored channels";
@@ -54,6 +59,9 @@ Telegram/cmake/td_lang.cmake. Every key uses the lng_nagram_ prefix.
 "lng_nagram_disable_scroll_to_next_channel" = "Do not switch to next channel at bottom";
 "lng_nagram_disable_scroll_to_next_topic" = "Do not switch to next topic at bottom";
 "lng_nagram_navigation" = "Navigation";
+"lng_nagram_disable_global_search" = "Do not search public chats globally";
+"lng_nagram_disable_community_grouping" = "Never group community chats";
+"lng_nagram_disable_community_grouping_note" = "Every chat of a community is shown on its own, and the \"show as one\" switch is hidden. Takes effect after restart.";
 "lng_nagram_recent_chats_option" = "Remember recent chats";
 "lng_nagram_recent_chats_note" = "Adds “Recent chats” to the main menu. The list is kept on this device for each account. Turning this off clears it.";
 "lng_nagram_recent_chats" = "Recent chats";

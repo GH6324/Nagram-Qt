@@ -817,7 +817,7 @@ void Filler::addUngroup() {
 	const auto channel = _peer ? _peer->asChannel() : nullptr;
 	if (!channel
 		|| !channel->isCommunity()
-		|| !(channel->flags() & ChannelDataFlag::CommunityCollapsed)) {
+		|| !channel->collapsedInDialogs()) {
 		return;
 	}
 	const auto controller = _controller;

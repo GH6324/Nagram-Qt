@@ -8,6 +8,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "ui/widgets/chat_filters_tabs_strip.h"
 #include "nagram/chats/managed_folders.h"
 #include "nagram/chats/options.h"
+#include "nagram/chats/folders.h"
 #include "nagram/core/options.h"
 
 #include "api/api_chat_filters_remove_manager.h"
@@ -228,7 +229,7 @@ not_null<Ui::RpWidget*> AddChatFiltersTabsStrip(
 			parent,
 			trackActiveFilterAndUnreadAndReorder
 				? st::dialogsSearchTabs
-				: st::chatsFiltersTabs));
+				: Nagram::Chats::FiltersTabsStyle(st::chatsFiltersTabs)));
 	const auto state = wrap->lifetime().make_state<State>();
 	const auto reassignUnreadValue = [=] {
 		state->reorderLifetime.destroy();

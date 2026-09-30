@@ -14,6 +14,8 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "dialogs/ui/dialogs_stories_content.h"
 #include "nagram/chats/layout.h"
 #include "nagram/chats/options.h"
+#include "nagram/chats/folders.h"
+#include "nagram/chats/community.h"
 #include "nagram/core/options.h"
 #include "dialogs/ui/dialogs_stories_list.h"
 #include "dialogs/ui/dialogs_suggestions.h"
@@ -1007,7 +1009,7 @@ void Widget::chosenRow(const ChosenRow &row) {
 			return nullptr;
 		}
 		const auto communityId = Data::PeerLinkedCommunityId(history->peer);
-		if (!communityId) {
+		if (!communityId || Nagram::Chats::CommunityGroupingDisabled()) {
 			return nullptr;
 		}
 		const auto community = session().data().channel(communityId);
@@ -3301,7 +3303,9 @@ bool Widget::search(bool inCache, SearchRequestDelay delay) {
 }
 
 bool Widget::peerSearchRequired() const {
-	return _searchState.filterChatsList() && !_openedForum;
+	return _searchState.filterChatsList()
+		&& !_openedForum
+		&& !Nagram::Chats::GlobalSearchDisabled();
 }
 
 bool Widget::searchForTopicsRequired(const QString &query) const {

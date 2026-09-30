@@ -4,6 +4,7 @@
 #include "nagram/chats/sort.h"
 #include "nagram/core/options.h"
 #include "nagram/settings/home.h"
+#include "nagram/settings/restart.h"
 #include "data/data_chat_filters.h"
 #include "data/data_session.h"
 #include "main/main_session.h"
@@ -52,6 +53,7 @@ void AddToggle(
 		rpl::producer<QString> title,
 		QString id,
 		QStringList keywords) {
+	const auto controller = builder.controller();
 	const auto button = builder.addButton({
 		.id = std::move(id),
 		.title = std::move(title),
@@ -61,8 +63,11 @@ void AddToggle(
 	});
 	if (button) {
 		button->toggledChanges(
-		) | rpl::on_next([option](bool value) {
+		) | rpl::on_next([option, controller](bool value) {
 			Expects(ForDevice().Set(option, value));
+			if (option.flags & static_cast<unsigned>(Flag::RequiresRestart)) {
+				ShowRestartPrompt(controller);
+			}
 		}, button->lifetime());
 	}
 }
@@ -209,6 +214,14 @@ const auto kMeta = BuildHelper({
 		tr::lng_nagram_hide_folder_unread_counters(),
 		u"nagram/chats/hide-folder-unread"_q,
 		{ u"unread"_q, u"folders"_q });
+	AddToggle(builder, Chats::kCompactFolderTabs,
+		tr::lng_nagram_compact_folder_tabs(),
+		u"nagram/chats/compact-folder-tabs"_q,
+		{ u"folders"_q, u"tabs"_q, u"compact"_q });
+	AddToggle(builder, Chats::kChooseFolderAfterJoin,
+		tr::lng_nagram_choose_folder_after_join(),
+		u"nagram/chats/choose-folder-after-join"_q,
+		{ u"join"_q, u"folder"_q });
 	builder.addSubsectionTitle({
 		.id = u"nagram/chats/sorting"_q,
 		.title = tr::lng_nagram_sorting(),
@@ -270,6 +283,15 @@ const auto kMeta = BuildHelper({
 		.title = tr::lng_nagram_navigation(),
 		.keywords = { u"navigation"_q, u"recent"_q },
 	});
+	AddToggle(builder, Chats::kDisableGlobalSearch,
+		tr::lng_nagram_disable_global_search(),
+		u"nagram/chats/disable-global-search"_q,
+		{ u"search"_q, u"global"_q, u"public"_q });
+	AddToggle(builder, Chats::kDisableCommunityGrouping,
+		tr::lng_nagram_disable_community_grouping(),
+		u"nagram/chats/disable-community-grouping"_q,
+		{ u"community"_q, u"group"_q, u"collapse"_q });
+	builder.addDividerText(tr::lng_nagram_disable_community_grouping_note());
 	AddToggle(builder, Chats::kRecentChats,
 		tr::lng_nagram_recent_chats_option(),
 		u"nagram/chats/recent-chats"_q,

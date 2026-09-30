@@ -8,6 +8,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "dialogs/dialogs_row.h"
 #include "nagram/interface/roundness.h"
 #include "nagram/chats/layout.h"
+#include "nagram/chats/community.h"
 
 #include "ui/chat/chat_theme.h" // CountAverageColor.
 #include "ui/color_contrast.h"
@@ -466,6 +467,7 @@ void Row::updateCornerBadgeShown(
 	const auto user = peer->asUser();
 	const auto now = user ? base::unixtime::now() : TimeId();
 	const auto channel = user ? nullptr : peer->asChannel();
+	insideCommunity |= Nagram::Chats::CommunityGroupingDisabled();
 	const auto nextLayer = [&] {
 		if (hasUnreadBadgesAbove) {
 			return kNoneLayer;
@@ -815,7 +817,8 @@ void Row::paintUserpic(
 		&& !(badgeChannel && Data::ChannelHasActiveCall(badgeChannel))
 		&& !(badgeUser && Data::IsUserOnline(badgeUser))
 		&& !subscribed
-		&& !insideCommunity;
+		&& !insideCommunity
+		&& !Nagram::Chats::CommunityGroupingDisabled();
 	_cornerBadgeUserpic->communityMember = communityMember ? 1 : 0;
 	// Only stories outline and online badge differ for active row.
 	const auto activeMatters = storiesCount

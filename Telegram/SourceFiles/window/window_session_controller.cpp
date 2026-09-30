@@ -10,6 +10,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "nagram/chats/sort.h"
 #include "nagram/chats/recent_chats.h"
 #include "nagram/chats/reading_position.h"
+#include "nagram/chats/folders.h"
 
 #include "apiwrap.h"
 #include "api/api_cloud_password.h"
@@ -1590,6 +1591,7 @@ SessionController::SessionController(
 	if (_isPrimary) Nagram::Chats::WatchSorting(session, lifetime());
 	Nagram::Chats::WatchRecentChats(this);
 	Nagram::Chats::WatchReadingPositions(this);
+	Nagram::Chats::WatchJoinedChats(this);
 
 	_chatStyleTheme = _defaultChatTheme;
 	_chatStyle->apply(_defaultChatTheme.get());
