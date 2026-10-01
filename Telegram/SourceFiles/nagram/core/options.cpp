@@ -76,19 +76,26 @@ void AccountPrefs::clear(std::string_view key) {
 
 Options &ForAccount(gsl::not_null<Main::Session*> session) {
 	struct State {
-		explicit State(Storage::Account &account)
-		: prefs(account), options(prefs, Scope::Account) { }
+		explicit State(gsl::not_null<Main::Session*> session)
+		: guard(base::make_weak(session))
+		, prefs(session->local())
+		, options(prefs, Scope::Account) { }
+		base::weak_ptr<Main::Session> guard;
 		AccountPrefs prefs;
 		Options options;
 	};
+	// Called while the session is still being constructed, so its lifetime
+	// can't own the state: the weak pointer tells when the session is gone.
 	static auto states = std::map<Main::Session*, std::unique_ptr<State>>();
 	const auto found = states.find(session);
-	if (found != states.end()) {
+	if (found != states.end() && found->second->guard) {
 		return found->second->options;
 	}
+	std::erase_if(states, [](const auto &entry) {
+		return !entry.second->guard;
+	});
 	const auto inserted = states.emplace(
-		session, std::make_unique<State>(session->local())).first;
-	session->lifetime().add([session] { states.erase(session); });
+		session, std::make_unique<State>(session)).first;
 	return inserted->second->options;
 }
 

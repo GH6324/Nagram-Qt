@@ -20,6 +20,7 @@ constexpr auto kMaximumAliases = 1000;
 constexpr auto kMaximumAliasLength = 96;
 
 struct State {
+	base::weak_ptr<Main::Session> guard;
 	PeerAliases aliases;
 };
 
@@ -30,14 +31,20 @@ auto &States() {
 
 State &ForSession(not_null<Main::Session*> session) {
 	auto &states = States();
-	if (const auto i = states.find(session); i != states.end()) {
+	if (const auto i = states.find(session)
+		; i != states.end() && i->second->guard) {
 		return *i->second;
 	}
+	// Names are resolved while the session is still being constructed, so
+	// its lifetime can't own the state.
+	std::erase_if(states, [](const auto &entry) {
+		return !entry.second->guard;
+	});
 	const auto raw = ForAccount(session).Get(kAliases);
 	auto state = std::make_unique<State>();
+	state->guard = base::make_weak(session);
 	state->aliases = ParseAliases(raw).value_or(PeerAliases());
 	const auto inserted = states.emplace(session, std::move(state)).first;
-	session->lifetime().add([session] { States().erase(session); });
 	return *inserted->second;
 }
 
