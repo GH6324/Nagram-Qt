@@ -1,11 +1,14 @@
 #include "nagram/services/model.h"
+#include "nagram/services/presets.h"
 #include "base/basic_types.h"
 
 #include <QtCore/QJsonArray>
 #include <QtCore/QJsonDocument>
 
 #include <iostream>
+#include <set>
 #include <stdexcept>
+#include <string>
 
 namespace {
 
@@ -13,6 +16,210 @@ void Require(bool value, const char *message) {
 	if (!value) {
 		throw std::runtime_error(message);
 	}
+}
+
+QByteArray OpenAiReply(const QByteArray &content, const QByteArray &reason) {
+	return QJsonDocument(QJsonObject{ { u"choices"_q, QJsonArray{ QJsonObject{
+		{ u"finish_reason"_q, reason.isEmpty()
+			? QJsonValue()
+			: QJsonValue(QString::fromUtf8(reason)) },
+		{ u"message"_q, QJsonObject{
+			{ u"role"_q, u"assistant"_q },
+			{ u"content"_q, QString::fromUtf8(content) },
+		} },
+	} } } }).toJson();
+}
+
+void TestServicesV2(const Nagram::ServiceDefinition &service) {
+	using namespace Nagram;
+	auto oldInstance = SerializeService(service);
+	oldInstance.remove(u"summaryPrompt"_q);
+	const auto old = QJsonObject{
+		{ u"version"_q, 1 },
+		{ u"translation"_q, service.id },
+		{ u"transcription"_q, QString() },
+		{ u"instances"_q, QJsonArray{ oldInstance } },
+	};
+	Require(ValidServices(old)
+		&& ValidServicesBytes(QJsonDocument(old).toJson()),
+		"version 1 services rejected");
+	const auto upgraded = UpgradeServices(old);
+	Require(upgraded.value(u"version"_q) == QJsonValue(2)
+		&& upgraded.value(u"summary"_q) == QString()
+		&& upgraded.value(u"translation"_q) == service.id
+		&& upgraded.value(u"instances"_q).toArray()[0]
+			== QJsonValue(SerializeService(service)),
+		"version 1 upgrade");
+	Require(UpgradeServices(upgraded) == upgraded, "upgrade not idempotent");
+	Require(UpgradeServices(ServicesDefaults()) == ServicesDefaults(),
+		"defaults changed by upgrade");
+	auto mixed = old;
+	mixed.insert(u"summary"_q, QString());
+	Require(!ValidServices(mixed), "version 1 with summary accepted");
+	mixed = upgraded;
+	mixed.insert(u"instances"_q, QJsonArray{ oldInstance });
+	Require(!ValidServices(mixed), "version 2 without summaryPrompt accepted");
+	mixed = upgraded;
+	mixed.insert(u"version"_q, 3);
+	Require(!ValidServices(mixed), "unknown version accepted");
+
+	auto prompted = service;
+	prompted.summaryPrompt = u"Summarize briefly.\nUse bullet points."_q;
+	Require(ParseService(SerializeService(prompted)).has_value(),
+		"summary prompt rejected");
+	Require(CredentialAccount(prompted) == CredentialAccount(service),
+		"summary prompt changed the credential binding");
+	auto deepl = service;
+	deepl.id = u"00000000-0000-0000-0000-000000000003"_q;
+	deepl.protocol = u"deepl"_q;
+	deepl.model = QString();
+	Require(ParseService(SerializeService(deepl)).has_value(), "DeepL");
+	auto deeplPrompted = deepl;
+	deeplPrompted.summaryPrompt = u"x"_q;
+	Require(!ParseService(SerializeService(deeplPrompted)),
+		"summary prompt accepted for a non-LLM protocol");
+	auto audio = service;
+	audio.id = u"00000000-0000-0000-0000-000000000004"_q;
+	audio.kind = ServiceKind::Transcription;
+	Require(ParseService(SerializeService(audio)).has_value(), "audio");
+	auto audioPrompted = audio;
+	audioPrompted.summaryPrompt = u"x"_q;
+	Require(!ParseService(SerializeService(audioPrompted)),
+		"summary prompt accepted for transcription");
+
+	auto config = ServicesDefaults();
+	config.insert(u"instances"_q, QJsonArray{
+		SerializeService(service),
+		SerializeService(deepl),
+		SerializeService(audio),
+	});
+	config.insert(u"summary"_q, service.id);
+	Require(ValidServices(config), "LLM summary selection rejected");
+	config.insert(u"summary"_q, deepl.id);
+	Require(!ValidServices(config), "non-LLM summary selection accepted");
+	config.insert(u"summary"_q, audio.id);
+	Require(!ValidServices(config), "transcription summary accepted");
+	config.insert(u"summary"_q, u"00000000-0000-0000-0000-000000000009"_q);
+	Require(!ValidServices(config), "missing summary instance accepted");
+	config.insert(u"summary"_q, u"system"_q);
+	Require(!ValidServices(config), "system summary accepted");
+	config.insert(u"summary"_q, 1);
+	Require(!ValidServices(config), "non-string summary accepted");
+	std::cout << "PASS: Nagram services config version 2" << std::endl;
+}
+
+void TestLlmProtocols(const Nagram::ServiceDefinition &service) {
+	using namespace Nagram;
+	auto anthropic = service;
+	anthropic.protocol = u"anthropic"_q;
+	anthropic.endpoint = u"messages"_q;
+	anthropic.systemPrompt = u"Be exact."_q;
+	anthropic.temperature = 1.;
+	Require(ParseService(SerializeService(anthropic)).has_value(),
+		"Anthropic service rejected");
+	Require(LlmProtocol(u"anthropic"_q) && LlmProtocol(u"openai"_q)
+		&& !LlmProtocol(u"deepl"_q), "LLM protocol list");
+	auto invalid = anthropic;
+	invalid.temperature = 1.5;
+	Require(!ParseService(SerializeService(invalid)),
+		"Anthropic temperature above 1 accepted");
+	invalid = anthropic;
+	invalid.model = QString();
+	Require(!ParseService(SerializeService(invalid)),
+		"Anthropic without a model accepted");
+	invalid = anthropic;
+	invalid.kind = ServiceKind::Transcription;
+	invalid.systemPrompt = QString();
+	Require(!ParseService(SerializeService(invalid)),
+		"Anthropic transcription accepted");
+	const auto call = BuildTranslationCall(anthropic, { u"Hi"_q }, u"zh"_q);
+	const auto body = call.body.object();
+	const auto messages = body.value(u"messages"_q).toArray();
+	Require(body.value(u"model"_q) == u"stub"_q
+		&& body.value(u"max_tokens"_q) == QJsonValue(4096)
+		&& body.value(u"system"_q) == u"Be exact."_q
+		&& body.value(u"temperature"_q) == QJsonValue(1.)
+		&& messages.size() == 1
+		&& messages[0].toObject().value(u"role"_q) == u"user"_q
+		&& messages[0].toObject().value(u"content"_q).toString().contains(
+			u"[\"Hi\"]"_q)
+		&& call.query.isEmpty(),
+		"Anthropic request body");
+	anthropic.systemPrompt = QString();
+	Require(!BuildTranslationCall(anthropic, { u"Hi"_q }, u"zh"_q)
+		.body.object().contains(u"system"_q), "empty system sent");
+	const auto headers = AuthHeaders(anthropic, "key");
+	Require(headers.size() == 2
+		&& headers[0].first == "x-api-key" && headers[0].second == "key"
+		&& headers[1].first == "anthropic-version"
+		&& headers[1].second == "2023-06-01",
+		"Anthropic headers");
+	const auto reply = [](const char *reason) {
+		return QByteArray(R"({"content":[{"type":"thinking","thinking":"x"},)"
+			R"({"type":"text","text":"[\"a\",\"b\"]"}],"stop_reason":")")
+			+ reason + "\"}";
+	};
+	const auto parsed = ParseTranslationResult(anthropic, reply("end_turn"), 2);
+	Require(parsed && (*parsed == QStringList{ u"a"_q, u"b"_q }),
+		"Anthropic response");
+	Require(!ParseTranslationResult(anthropic, reply("max_tokens"), 2),
+		"truncated Anthropic response accepted");
+	Require(!ParseTranslationResult(anthropic, reply("end_turn"), 3),
+		"Anthropic length mismatch accepted");
+
+	const auto accepts = [&](const QByteArray &content, const QByteArray &reason) {
+		const auto result = ParseTranslationResult(
+			service, OpenAiReply(content, reason), 2);
+		return result && (*result == QStringList{ u"a"_q, u"b"_q });
+	};
+	Require(accepts(R"(["a","b"])", "stop"), "plain array");
+	Require(accepts("```json\n[\"a\",\"b\"]\n```", "stop"), "code fence");
+	Require(accepts("```\n[\"a\",\"b\"]\n```", "stop"), "bare code fence");
+	Require(accepts("<think>\nplan [\"x\"]\n</think>\n\n[\"a\",\"b\"]", "stop"),
+		"think prefix");
+	Require(accepts("<think>x</think>```json\n[\"a\",\"b\"]\n```", "stop"),
+		"think prefix with code fence");
+	Require(accepts(R"(["a","b"])", QByteArray()), "null finish reason");
+	Require(ParseTranslationResult(
+			service,
+			R"({"choices":[{"message":{"content":"[\"a\",\"b\"]",)"
+			R"("reasoning_content":"ignored"}}]})",
+			2).has_value(),
+		"missing finish reason");
+	Require(!accepts(R"(["a","b"])", "length"), "length accepted");
+	Require(!accepts(R"(["a","b"])", "content_filter"), "filter accepted");
+	Require(!accepts(R"(["a"])", "stop"), "short array accepted");
+	Require(!accepts(R"(["a",""])", "stop"), "empty string accepted");
+	Require(!accepts(R"(["a",1])", "stop"), "non-string accepted");
+	Require(!accepts(R"({"a":"b"})", "stop"), "object accepted");
+	Require(!accepts("<think>[\"a\",\"b\"]", "stop"), "open think accepted");
+	Require(!accepts("```", "stop"), "empty fence accepted");
+	std::cout << "PASS: Nagram LLM protocols and tolerant parsing" << std::endl;
+}
+
+void TestPresets() {
+	using namespace Nagram;
+	auto ids = std::set<std::string>();
+	auto anthropic = 0;
+	for (const auto &preset : ServicePresets()) {
+		Require(ids.emplace(preset.id).second, "duplicate preset id");
+		auto service = ServiceFromPreset(
+			preset,
+			u"00000000-0000-0000-0000-000000000001"_q,
+			u"00000000-0000-0000-0000-000000000002"_q);
+		Require(service.model.isEmpty(), "preset recommends a model");
+		Require(service.baseUrl.scheme() == u"https"_q
+			&& service.baseUrl.path().endsWith('/'), "preset address");
+		Require(!service.name.isEmpty(), "preset name");
+		if (LlmProtocol(service.protocol)) {
+			service.model = u"model"_q;
+		}
+		Require(ParseService(SerializeService(service)).has_value(),
+			"preset does not make a valid service");
+		anthropic += (service.protocol == u"anthropic"_q) ? 1 : 0;
+	}
+	Require(ids.size() == 17 && anthropic == 1, "preset list");
+	std::cout << "PASS: Nagram service presets" << std::endl;
 }
 
 } // namespace
@@ -133,4 +340,7 @@ void TestServices() {
 	Require(!ParseService(SerializeService(yandexTranscription)),
 		"non-OpenAI transcription accepted");
 	std::cout << "PASS: Nagram service config and credential binding" << std::endl;
+	TestServicesV2(service);
+	TestLlmProtocols(service);
+	TestPresets();
 }

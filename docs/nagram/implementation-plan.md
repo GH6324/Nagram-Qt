@@ -238,6 +238,12 @@ P3 功能不在本计划内。每项先在 `docs/nagram/` 下单独写设计并�
 | ☐ S152 | `feat(rules): remote inline bot rules with reviewed updates` | I07 的远程规则 | 待确认规则源：`@nagram_remote_metadata` 的归属与维护状态确认前不实施；条目、文案与请求均未进入代码 |
 | ✅ S153 | `feat(rules): open matching web app links in the browser` | I08 | 条目放在已有的“网页应用”分组。表达式忽略大小写、多行，保存时编译。不外送启动地址（去掉片段后比较）和任何含 `tgWebAppData` 的地址；频率限制按整个进程计（设计为每个面板），每秒最多外部打开一次，超出的导航留在面板内并写日志。三个平台的 webview 后端对子框架与脚本跳转是否触发导航回调、Linux 外部壳、小程序内点击命中链接的实际效果均未现场验证。**P3-05 的 V2（rebase 到上游 `dev`、完整构建、三平台 CI）未做** |
 
+已实现的步骤（P3-04，2026-10-01）。每个步骤一个提交，macOS arm64 Debug 增量构建与 `test_nagram` 通过；没有启动应用，没有向任何外部服务发请求，界面与网络行为未现场核验。
+
+| 步骤 | 提交 | 条目 | 备注 |
+| --- | --- | --- | --- |
+| ✅ S140 | `feat(ai): LLM provider presets, Anthropic protocol and services config v2` | H03 扩展 | `nagram.services` 升到 v2（顶层 `summary`、实例 `summaryPrompt`），v1 读入时在内存中补默认值，下次保存写出 v2；v2 没有实例级 `useContext`（上下文是本机级开关，见 S141）。预设只保留能从 Nagram Android／iOS 源码核对到的地址，出处见专项设计 2.5；Groq、SiliconFlow 的转写预设核对不到，未加入。厂商名不设文案键。预设框、Anthropic 实例的“测试翻译”与“读取模型列表”、v1 配置升级后的界面均未现场验证，也没有用真实密钥联调 |
+
 | 包 | 专项设计 | 步骤 | 设置页条目 |
 | --- | --- | --- | --- |
 | P3-03（已实现） | [内容保护与敏感内容](p3-03-content-protection.md) | S120–S123 | G13–G16 |

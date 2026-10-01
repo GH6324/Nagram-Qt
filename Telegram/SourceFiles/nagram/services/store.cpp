@@ -18,10 +18,11 @@ std::optional<QJsonObject> Services() {
 		LOG(("Nagram Error: Invalid services configuration; external services disabled."));
 		return std::nullopt;
 	}
-	return document.object();
+	return UpgradeServices(document.object());
 }
 
-bool SetServices(const QJsonObject &value) {
+bool SetServices(const QJsonObject &stored) {
+	const auto value = UpgradeServices(stored);
 	return ValidServices(value) && ForDevice().Set(kServicesConfig,
 		value == ServicesDefaults() ? QByteArray()
 			: QJsonDocument(value).toJson(QJsonDocument::Compact));

@@ -125,7 +125,7 @@ void ServiceRequest::json(
 void ServiceRequest::models(
 		const ServiceDefinition &service,
 		Fn<void(ServiceResult)> done) {
-	if (service.protocol != u"openai"_q) {
+	if (!LlmProtocol(service.protocol)) {
 		cancel();
 		done({ .error = ServiceError::Configuration });
 		return;

@@ -219,23 +219,29 @@ enum class Mode { Inherit, On, Off };
    - 结果仍必须是与输入等长的非空字符串数组，否则失败。
 5. **错误信息**：`ServiceErrorText` 已覆盖配置、凭据、网络、HTTP 状态、重定向、过大、响应不兼容；不新增类型。日志不含密钥和正文。
 
-预设候选（base URL 为待核对值，实现时逐项对照各厂商官方文档，核对不通过的不放入预设表）：
+实际纳入的预设（S140，2026-10-01）。实现时没有联网核对官方文档，只保留能从本机参考源码核对到的地址；每条的出处如下。Android 指 Nagram Android 的 `TMessagesProj/src/main/java/tw/nekomimi/nekogram/transtale/source/LLMTranslator.kt`，iOS 指 Nagram iOS 的 `Nagram/Settings/NagramSettings.swift`。地址可能已变化，预设框的说明提示用户以服务商文档为准。
 
-| 预设 | 协议 | base URL（待核对） | endpoint |
-| --- | --- | --- | --- |
-| OpenAI | `openai` | `https://api.openai.com/v1/`（已有） | `chat/completions` |
-| Gemini | `openai` | `https://generativelanguage.googleapis.com/v1beta/openai/` | `chat/completions` |
-| Groq | `openai` | `https://api.groq.com/openai/v1/` | `chat/completions` |
-| DeepSeek | `openai` | `https://api.deepseek.com/v1/` | `chat/completions` |
-| xAI | `openai` | `https://api.x.ai/v1/` | `chat/completions` |
-| 智谱 | `openai` | `https://open.bigmodel.cn/api/paas/v4/` | `chat/completions` |
-| Mistral | `openai` | `https://api.mistral.ai/v1/` | `chat/completions` |
-| OpenRouter | `openai` | `https://openrouter.ai/api/v1/` | `chat/completions` |
-| Qwen | `openai` | `https://dashscope.aliyuncs.com/compatible-mode/v1/` | `chat/completions` |
-| Moonshot | `openai` | `https://api.moonshot.cn/v1/` | `chat/completions` |
-| SiliconFlow | `openai` | `https://api.siliconflow.cn/v1/` | `chat/completions` |
-| Anthropic | `anthropic` | `https://api.anthropic.com/v1/` | `messages` |
-| 自定义 | `openai` | 空，由用户填写 | `chat/completions` |
+| 预设 | 协议 | base URL | endpoint | 出处 |
+| --- | --- | --- | --- | --- |
+| OpenAI | `openai` | `https://api.openai.com/v1/` | `chat/completions` | Android `providerUrls`；S62 已有 |
+| Gemini | `openai` | `https://generativelanguage.googleapis.com/v1beta/openai/` | `chat/completions` | Android `providerUrls` |
+| Groq | `openai` | `https://api.groq.com/openai/v1/` | `chat/completions` | Android `providerUrls` |
+| DeepSeek | `openai` | `https://api.deepseek.com/v1/` | `chat/completions` | Android `providerUrls` |
+| xAI | `openai` | `https://api.x.ai/v1/` | `chat/completions` | Android `providerUrls` |
+| Zhipu AI | `openai` | `https://open.bigmodel.cn/api/paas/v4/` | `chat/completions` | Android `providerUrls` |
+| Mistral | `openai` | `https://api.mistral.ai/v1/` | `chat/completions` | Android `providerUrls` |
+| OpenRouter | `openai` | `https://openrouter.ai/api/v1/` | `chat/completions` | Android `providerUrls` |
+| Qwen | `openai` | `https://dashscope.aliyuncs.com/compatible-mode/v1/` | `chat/completions` | Android `providerUrls` |
+| Moonshot | `openai` | `https://api.moonshot.cn/v1/` | `chat/completions` | Android `providerUrls` |
+| SiliconFlow | `openai` | `https://api.siliconflow.cn/v1/` | `chat/completions` | Android `providerUrls` |
+| Anthropic | `anthropic` | `https://api.anthropic.com/v1/` | `messages` | iOS `NagramTranslationLLMAPIFormat`（`defaultBaseURL`、`/v1/messages`、`/v1/models`）；Android `doAnthropicTranslate`（`$baseUrl/messages`） |
+| DeepL、Google Cloud Translation、Microsoft Translator、Yandex Translate | 各自协议 | 仓库已有（S62、S108） | 仓库已有 | 原 `ServicesBox` 的模板，原样移入预设表 |
+| OpenAI（转写） | `openai` | `https://api.openai.com/v1/` | `audio/transcriptions` | 仓库已有（S64）；iOS `NagramSTTConfiguration.swift` 的 `defaultBaseURL`、`defaultEndpoint` |
+| 自定义 | `openai` | 空，由用户填写 | `chat/completions` | 不是预设表的条目，“自定义 OpenAI 兼容翻译”单独一行 |
+
+预设不带模型名（Android 的 `providerModels` 不采用）。Anthropic 的请求格式与两端参考源码一致：请求头 `x-api-key`、`anthropic-version: 2023-06-01`，请求体 `{model, max_tokens: 4096, system, messages:[{role:"user"}]}`，响应取 `content` 中 `type == "text"` 的片段；`stop_reason == "end_turn"` 的要求和 `temperature` 字段来自本设计，参考源码不校验结束原因。Groq、SiliconFlow 的转写地址在参考源码中查不到，没有加入。
+
+与上文草案的差异：厂商名直接写在预设表里，不设 11 个 `lng_nagram_service_preset_<vendor>` 文案键（三语相同，没有翻译内容）；预设行的标题用 `lng_nagram_service_preset_translation` / `lng_nagram_service_preset_transcription`（“{name} — 翻译 / 转写”）。原有的 6 个 `lng_nagram_service_add_*` 模板文案随模板一起删除。`finish_reason` 只接受 `stop`、缺失或 `null`，其余取值一律按 `Response` 错误处理。v2 不含实例级 `useContext`：上下文改为本机级开关（见 2.3 的实施说明）。
 
 **无上游改动。关闭时与上游一致**：不创建实例、H01 保持默认时没有任何行为变化；已有实例的请求格式不变，响应容错只让原先被拒绝的合法结果通过。
 

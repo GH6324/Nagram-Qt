@@ -98,6 +98,7 @@ set(nagram_sources
     nagram/settings/services.cpp
     nagram/services/credentials.cpp
     nagram/services/model.cpp
+    nagram/services/presets.cpp
     nagram/services/store.cpp
     nagram/services/request.cpp
     nagram/services/translation.cpp
@@ -225,6 +226,7 @@ if (DESKTOP_APP_TEST_APPS)
         nagram/interface/main_menu_model.cpp
         nagram/menu/model.cpp
         nagram/services/model.cpp
+        nagram/services/presets.cpp
         nagram/filters/model.cpp
         nagram/links/model.cpp
         nagram/links/inline_rules.cpp

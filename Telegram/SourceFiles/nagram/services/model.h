@@ -45,11 +45,13 @@ struct ServiceDefinition {
 	bool useKey = true;
 	QString systemPrompt;
 	QString prompt;
+	QString summaryPrompt;
 	QString language;
 	std::optional<double> temperature;
 };
 
 [[nodiscard]] QJsonObject ServicesDefaults();
+[[nodiscard]] QJsonObject UpgradeServices(QJsonObject value);
 [[nodiscard]] std::optional<ServiceDefinition> ParseService(const QJsonObject &value);
 [[nodiscard]] QJsonObject SerializeService(const ServiceDefinition &value);
 [[nodiscard]] bool ValidServices(const QJsonObject &value);
@@ -67,6 +69,14 @@ struct TranslationCall {
 };
 
 [[nodiscard]] bool TranslationProtocol(const QString &protocol);
+[[nodiscard]] bool LlmProtocol(const QString &protocol);
+[[nodiscard]] QJsonObject BuildLlmBody(
+	const ServiceDefinition &service,
+	const QString &system,
+	const QString &user);
+[[nodiscard]] std::optional<QString> ParseLlmText(
+	const ServiceDefinition &service,
+	const QByteArray &body);
 [[nodiscard]] TranslationCall BuildTranslationCall(
 	const ServiceDefinition &service,
 	const QStringList &texts,

@@ -5,6 +5,7 @@
 #include "core/file_utilities.h"
 #include "lang/lang_keys.h"
 #include "nagram/services/credentials.h"
+#include "nagram/services/presets.h"
 #include "nagram/services/request.h"
 #include "nagram/services/system_ai.h"
 #include "platform/platform_translate_provider.h"
@@ -232,7 +233,7 @@ void ServiceTestBox(
 	const auto status = [=](ServiceResult response) {
 		result->setText(ServiceErrorText(response.error, response.status));
 	};
-	if (service.protocol == u"openai"_q) {
+	if (LlmProtocol(service.protocol)) {
 		box->addButton(tr::lng_nagram_service_models(), [=] {
 			stop();
 			result->setText(tr::lng_nagram_service_testing(tr::now));
@@ -368,7 +369,7 @@ void ServiceBox(
 	const auto name = add(tr::lng_nagram_service_name(), original.name);
 	const auto url = add(tr::lng_nagram_service_url(), original.baseUrl.toString());
 	const auto endpoint = add(tr::lng_nagram_service_endpoint(), original.endpoint);
-	const auto openai = original.protocol == u"openai"_q;
+	const auto openai = LlmProtocol(original.protocol);
 	const auto translation = original.kind == ServiceKind::Translation;
 	const auto model = openai ? add(tr::lng_nagram_service_model(), original.model) : nullptr;
 	const auto option = (original.protocol == u"deepl"_q)
@@ -499,7 +500,10 @@ void ServiceBox(
 						}
 					}
 					updated.insert(u"instances"_q, instances);
-					for (const auto &key : { u"translation"_q, u"transcription"_q }) {
+					for (const auto &key : {
+							u"translation"_q,
+							u"transcription"_q,
+							u"summary"_q }) {
 						if (updated.value(key) == original.id) {
 							updated.insert(key, QString());
 						}
@@ -521,6 +525,34 @@ void ServiceBox(
 				}),
 				.confirmText = tr::lng_box_delete(),
 			}));
+		});
+	}
+	box->addButton(tr::lng_cancel(), [=] { box->closeBox(); });
+}
+
+QString NewId() {
+	return QUuid::createUuid().toString(QUuid::WithoutBraces);
+}
+
+void PresetsBox(
+		not_null<Ui::GenericBox*> box,
+		Fn<void(ServiceDefinition)> create) {
+	box->setTitle(tr::lng_nagram_service_presets());
+	box->addRow(object_ptr<Ui::FlatLabel>(
+		box, tr::lng_nagram_service_presets_about(), st::boxLabel));
+	for (const auto &preset : ServicePresets()) {
+		const auto name = QString::fromUtf16(preset.name);
+		const auto row = box->addRow(object_ptr<Ui::SettingsButton>(
+			box,
+			(preset.kind == ServiceKind::Translation)
+				? tr::lng_nagram_service_preset_translation(
+					lt_name, rpl::single(name))
+				: tr::lng_nagram_service_preset_transcription(
+					lt_name, rpl::single(name)),
+			st::settingsButtonNoIcon), style::margins());
+		row->setClickedCallback([=] {
+			create(ServiceFromPreset(preset, NewId(), NewId()));
+			box->closeBox();
 		});
 	}
 	box->addButton(tr::lng_cancel(), [=] { box->closeBox(); });
@@ -551,43 +583,21 @@ void ServicesBox(not_null<Ui::GenericBox*> box, QJsonObject initial) {
 				});
 			}
 		}
-		struct Template {
-			QString title;
-			ServiceKind kind = ServiceKind::Translation;
-			QString protocol;
-			QString baseUrl;
-			QString endpoint;
-		};
-		const auto templates = std::vector<Template>{
-			{ tr::lng_nagram_service_add_openai(tr::now), ServiceKind::Translation,
-				u"openai"_q, u"https://api.openai.com/v1/"_q, u"chat/completions"_q },
-			{ tr::lng_nagram_service_add_deepl(tr::now), ServiceKind::Translation,
-				u"deepl"_q, u"https://api.deepl.com/v2/"_q, u"translate"_q },
-			{ tr::lng_nagram_service_add_google(tr::now), ServiceKind::Translation,
-				u"google"_q, u"https://translation.googleapis.com/"_q,
-				u"language/translate/v2"_q },
-			{ tr::lng_nagram_service_add_microsoft(tr::now), ServiceKind::Translation,
-				u"microsoft"_q, u"https://api.cognitive.microsofttranslator.com/"_q,
-				u"translate"_q },
-			{ tr::lng_nagram_service_add_yandex(tr::now), ServiceKind::Translation,
-				u"yandex"_q, u"https://translate.api.cloud.yandex.net/"_q,
-				u"translate/v2/translate"_q },
-			{ tr::lng_nagram_service_add_transcription(tr::now), ServiceKind::Transcription,
-				u"openai"_q, u"https://api.openai.com/v1/"_q, u"audio/transcriptions"_q },
-		};
-		for (const auto &entry : templates) {
-			add(entry.title, [=] {
-				auto service = ServiceDefinition{
-					.id = QUuid::createUuid().toString(QUuid::WithoutBraces),
-					.kind = entry.kind,
-					.protocol = entry.protocol,
-					.baseUrl = QUrl(entry.baseUrl),
-					.endpoint = entry.endpoint,
-					.credentialRef = QUuid::createUuid().toString(QUuid::WithoutBraces),
-				};
-				box->uiShow()->showBox(Box(ServiceBox, current, std::move(service), changed));
+		const auto create = crl::guard(box, [=](ServiceDefinition service) {
+			box->uiShow()->showBox(
+				Box(ServiceBox, current, std::move(service), changed));
+		});
+		add(tr::lng_nagram_service_presets(tr::now), [=] {
+			box->uiShow()->showBox(Box(PresetsBox, create));
+		});
+		add(tr::lng_nagram_service_add_custom(tr::now), [=] {
+			create(ServiceDefinition{
+				.id = NewId(),
+				.protocol = u"openai"_q,
+				.endpoint = u"chat/completions"_q,
+				.credentialRef = NewId(),
 			});
-		}
+		});
 	}, box->lifetime());
 	box->addButton(tr::lng_box_ok(), [=] { box->closeBox(); });
 }
