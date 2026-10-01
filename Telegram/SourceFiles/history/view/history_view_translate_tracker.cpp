@@ -24,6 +24,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "iv/iv_rich_page.h"
 #include "lang/translate_provider.h"
 #include "main/main_session.h"
+#include "nagram/services/chat_translation.h"
 #include "spellcheck/platform/platform_language.h"
 
 namespace HistoryView {
@@ -39,7 +40,7 @@ constexpr auto kRequestCountLimit = 20;
 
 TranslateTracker::TranslateTracker(not_null<History*> history)
 : _history(history)
-, _provider(Ui::CreateTranslateProvider(&_history->session()))
+, _provider(Nagram::CreateChatTranslateProvider(_history))
 , _api(&_history->session().mtp())
 , _limit(kEnoughForRecognition) {
 	setup();
@@ -241,6 +242,7 @@ void TranslateTracker::cancelToRequest() {
 
 void TranslateTracker::cancelSentRequest() {
 	if (_requestInProcess) {
+		Nagram::CancelChatTranslation(_provider.get());
 		const auto owner = &_history->owner();
 		for (const auto &id : base::take(_requested)) {
 			if (const auto item = owner->message(id)) {

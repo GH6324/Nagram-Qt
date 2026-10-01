@@ -426,7 +426,7 @@ Telegram/cmake/td_lang.cmake. Every key uses the lng_nagram_ prefix.
 "lng_nagram_service_url" = "Base URL";
 "lng_nagram_service_use_key" = "Authenticate with an API key";
 "lng_nagram_services" = "Translation and transcription services";
-"lng_nagram_services_about" = "External services receive only the text or audio you explicitly request to process. Automatic chat translation keeps its existing provider. API keys stay in the system credential store and are excluded from configuration exports.";
+"lng_nagram_services_about" = "External services receive only the text or audio you explicitly ask them to process, unless “Use the selected service to translate whole chats” is turned on below. API keys stay in the system credential store and are excluded from configuration exports.";
 "lng_nagram_draft_changed" = "The draft changed while this preview was open. Close it and translate the current draft again.";
 "lng_nagram_inherit" = "Inherit";
 "lng_nagram_service_system" = "System translation";
@@ -692,3 +692,7 @@ Telegram/cmake/td_lang.cmake. Every key uses the lng_nagram_ prefix.
 "lng_nagram_summary_truncated" = "Only the most recent text that fits the limit will be sent.";
 "lng_nagram_summary_generate" = "Generate / retry";
 "lng_nagram_summary_missing" = "These messages are no longer available.";
+"lng_nagram_chat_translation" = "Chat translation";
+"lng_nagram_chat_translation_service" = "Use the selected service to translate whole chats";
+"lng_nagram_chat_translation_service_about" = "When on, chats in which translation is turned on send their loaded messages to the service chosen under “Manual translation” (now: {name}). Only messages in view are sent: text of incoming messages and of the messages they reply to, up to 20 messages per batch; a message over 16 KiB is not sent. If a request fails, the original text stays and no other service is tried; after three failed batches translation pauses until you change the service or toggle translation in the chat. Has no effect while the service is “Inherit” or Telegram.";
+"lng_nagram_chat_translation_paused" = "Translation paused after repeated failures from {name}. Check the service, then turn translation off and on again in the chat.";

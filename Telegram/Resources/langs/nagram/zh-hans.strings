@@ -422,7 +422,7 @@
 "lng_nagram_service_url" = "基础 URL";
 "lng_nagram_service_use_key" = "使用 API 密钥认证";
 "lng_nagram_services" = "翻译与转写服务";
-"lng_nagram_services_about" = "外部服务仅接收你手动请求处理的文本或音频。自动聊天翻译仍使用原服务。API 密钥保存在系统凭据库，不随配置导出。";
+"lng_nagram_services_about" = "外部服务只接收你手动请求处理的文本或音频，除非在下方开启“翻译整个对话时使用所选翻译服务”。API 密钥保存在系统凭据库，不随配置导出。";
 "lng_nagram_draft_changed" = "预览期间草稿已更改。请关闭预览并重新翻译当前草稿。";
 "lng_nagram_inherit" = "跟随上游";
 "lng_nagram_service_system" = "系统翻译";
@@ -688,3 +688,7 @@
 "lng_nagram_summary_truncated" = "超出上限，只发送最近的部分。";
 "lng_nagram_summary_generate" = "生成 / 重试";
 "lng_nagram_summary_missing" = "这些消息已不可用。";
+"lng_nagram_chat_translation" = "对话翻译";
+"lng_nagram_chat_translation_service" = "翻译整个对话时使用所选翻译服务";
+"lng_nagram_chat_translation_service_about" = "开启后，打开了翻译的对话会把已加载的消息发送到“手动翻译”所选的服务（当前：{name}）。只发送当前视图中的消息：收到的消息及其回复的消息的文字，每批最多 20 条；超过 16 KiB 的消息不发送。请求失败时保留原文，不会改用其他服务；连续三批失败后暂停翻译，直到修改服务或在对话中重新切换翻译。服务为“跟随上游”或 Telegram 时不生效。";
+"lng_nagram_chat_translation_paused" = "{name} 连续失败，翻译已暂停。请检查服务，然后在对话中重新开启翻译。";

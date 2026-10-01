@@ -422,7 +422,7 @@
 "lng_nagram_service_url" = "基礎 URL";
 "lng_nagram_service_use_key" = "使用 API 金鑰驗證";
 "lng_nagram_services" = "翻譯與轉寫服務";
-"lng_nagram_services_about" = "外部服務僅接收你手動請求處理的文字或音訊。自動聊天翻譯仍使用原服務。API 金鑰儲存在系統憑證庫，不隨設定匯出。";
+"lng_nagram_services_about" = "外部服務只接收你手動請求處理的文字或音訊，除非在下方開啟「翻譯整個對話時使用所選翻譯服務」。API 金鑰儲存在系統憑證庫，不隨設定匯出。";
 "lng_nagram_draft_changed" = "預覽期間草稿已變更。請關閉預覽並重新翻譯目前草稿。";
 "lng_nagram_inherit" = "跟隨上游";
 "lng_nagram_service_system" = "系統翻譯";
@@ -688,3 +688,7 @@
 "lng_nagram_summary_truncated" = "超出上限，只傳送最近的部分。";
 "lng_nagram_summary_generate" = "產生 / 重試";
 "lng_nagram_summary_missing" = "這些訊息已無法使用。";
+"lng_nagram_chat_translation" = "對話翻譯";
+"lng_nagram_chat_translation_service" = "翻譯整個對話時使用所選翻譯服務";
+"lng_nagram_chat_translation_service_about" = "開啟後，開啟了翻譯的對話會把已載入的訊息傳送到「手動翻譯」所選的服務（目前：{name}）。只傳送目前檢視中的訊息：收到的訊息及其回覆的訊息的文字，每批最多 20 則；超過 16 KiB 的訊息不傳送。請求失敗時保留原文，不會改用其他服務；連續三批失敗後暫停翻譯，直到修改服務或在對話中重新切換翻譯。服務為「跟隨上游」或 Telegram 時不生效。";
+"lng_nagram_chat_translation_paused" = "{name} 連續失敗，翻譯已暫停。請檢查服務，然後在對話中重新開啟翻譯。";

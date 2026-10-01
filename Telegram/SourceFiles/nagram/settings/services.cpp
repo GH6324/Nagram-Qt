@@ -765,6 +765,31 @@ const auto kMeta = BuildHelper({
 		rpl::single(QString::number(kSummaryMessages)),
 		lt_total,
 		rpl::single(QString::number(kSummaryLength))));
+	builder.addSubsectionTitle({
+		.id = u"nagram/services/chat-translation"_q,
+		.title = tr::lng_nagram_chat_translation(),
+		.keywords = { u"auto translate"_q, u"translation"_q },
+	});
+	const auto chatButton = builder.addButton({
+		.id = u"nagram/services/chat-translation-service"_q,
+		.title = tr::lng_nagram_chat_translation_service(),
+		.st = &st::settingsButtonNoIcon,
+		.toggled = ForDevice().Value(kChatTranslationUseService),
+		.keywords = { u"auto translate"_q, u"translate bar"_q, u"LLM"_q },
+	});
+	if (chatButton) {
+		chatButton->toggledChanges(
+		) | rpl::on_next([](bool value) {
+			Expects(ForDevice().Set(kChatTranslationUseService, value));
+		}, chatButton->lifetime());
+	}
+	builder.addDividerText(ForDevice().Value(kServicesConfig)
+		| rpl::map([](const QByteArray &) {
+			return tr::lng_nagram_chat_translation_service_about(
+				tr::now,
+				lt_name,
+				TranslationSelectionName(Services()));
+		}));
 });
 
 const SectionBuildMethod ServicesSection::kBuild = kMeta.build;

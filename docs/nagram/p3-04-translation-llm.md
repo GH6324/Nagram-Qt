@@ -150,6 +150,17 @@ enum class Mode { Inherit, On, Off };
 
 **关闭时与上游一致**：转发 provider 的 `supportsMessageId()`、`request`、`requestBatch` 原样转发给 `Ui::CreateTranslateProvider` 的结果；`CancelChatTranslation` 对上游 provider 不做任何事。
 
+**实施说明（S143）**
+
+- 代码在 `nagram/services/chat_translation.{h,cpp}`（provider）与 `chat_translation_model.{h,cpp}`（拆分、队列、熔断、提示节流，纯逻辑，有单元测试）。批量请求没有加到原有的 `ExternalTranslateProvider` 上，而是由新的转发 provider 自己实现 `requestBatch`；`ExternalTranslateProvider` 仍只用于翻译框的单条请求，它的 `request()` 开头取消上一个请求的行为保持不变，`TranslateTracker` 不再经过它。
+- 工厂签名是 `Nagram::CreateChatTranslateProvider(history)`（设计为 `session`）：provider 订阅该对话的 `TranslatedTo` 更新，以便在用户重新切换翻译时解除熔断。熔断在服务配置或 H09 变化、对话的翻译目标变化、重新打开对话时解除。
+- H01 为系统翻译时转给 `Platform::CreateTranslateProvider()`，按它自己的方式逐条请求；系统翻译不可用时整批标记失败并提示原因，不改用 Telegram。上游自己的“使用系统翻译”设置在 H09 关闭时照旧生效。
+- 每条消息的可翻译片段按 UTF-8 序列化后的字节数计入 16 KiB 与 96 KiB 上限；没有可翻译片段的消息直接返回原文，不发请求。
+- 网络错误的重试成功时不提示；一批失败时提示一次，熔断后另提示一次（`lng_nagram_chat_translation_paused`），都按“服务 + 错误”30 秒节流，节流状态在进程内共用。
+- 服务配置或 H09 在一批进行中变化时，中止 HTTP 请求，本批未完成的消息按失败处理，后续批次用新配置。
+- `nagram.services` 无法读取而 H09 开启时，整批按配置错误失败，不改用 Telegram。
+- `CancelChatTranslation` 用 `dynamic_cast` 识别 Nagram 的 provider，加在 `cancelSentRequest()` 的 `if (_requestInProcess)` 内。
+
 ### 2.3 LLM 上下文（I054、A186）
 
 **范围**：只用于整条消息的手动翻译（消息菜单“翻译”→ `Ui::TranslateBox`），且所选实例是 LLM 协议（`openai`、`anthropic`）并开启了实例级 `useContext`。选中文字翻译（`msgId` 为空）、草稿翻译、整页翻译都不带上下文：整页翻译的批次本身已含相邻消息，再附上下文会重复发送正文。
