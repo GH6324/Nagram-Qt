@@ -53,6 +53,7 @@ struct Option {
 	std::string_view titleKey;
 	unsigned flags = 0;
 	bool (*validate)(const Type &) = nullptr;
+	Type (*imported)(const Type &) = nullptr;
 };
 
 struct OptionInfo {
@@ -65,6 +66,7 @@ struct OptionInfo {
 	ValueType type;
 	QByteArray fallbackRaw;
 	std::function<bool(const QJsonValue &)> accepts;
+	std::function<QJsonValue(const QJsonValue &)> imported;
 };
 
 class Registry final {
@@ -123,13 +125,23 @@ public:
 					QJsonDocument(value.toObject()).toJson(QJsonDocument::Compact)));
 			}
 		};
+		auto imported = std::function<QJsonValue(const QJsonValue &)>();
+		if constexpr (std::is_same_v<Type, QByteArray>) {
+			if (const auto adjust = option.imported) {
+				imported = [adjust](const QJsonValue &value) {
+					return QJsonValue(QJsonDocument::fromJson(adjust(
+						QJsonDocument(value.toObject()).toJson(
+							QJsonDocument::Compact))).object());
+				};
+			}
+		}
 		const auto exportable = (option.scope == Scope::Device)
 			&& !(option.flags & static_cast<unsigned>(Flag::Hidden));
 		_entries.push_back({
 			option.key, option.scope, option.category,
 			option.titleKey,
 			option.flags | (exportable ? static_cast<unsigned>(Flag::Exportable) : 0),
-			type, fallbackRaw, accepts });
+			type, fallbackRaw, accepts, std::move(imported) });
 		return true;
 	}
 

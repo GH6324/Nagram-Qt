@@ -128,6 +128,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "nagram/compose/confirm.h"
 #include "nagram/compose/format_toolbar.h"
 #include "nagram/compose/placeholder.h"
+#include "nagram/links/inline_bot.h"
 #include "nagram/chats/reading_position.h"
 #include "history/view/history_view_chat_section.h"
 #include "history/view/history_view_cursor_state.h"
@@ -2122,6 +2123,8 @@ void HistoryWidget::applyInlineBotQuery(UserData *bot, const QString &query) {
 		if (_inlineBot != bot) {
 			_inlineBot = bot;
 			_inlineLookingUpBot = false;
+			inlineBotChanged();
+		} else if (Nagram::Links::AutoInlineBotEnabled()) {
 			inlineBotChanged();
 		}
 		if (!_inlineResults) {
@@ -6757,7 +6760,9 @@ bool HistoryWidget::showRecordButton() const {
 }
 
 bool HistoryWidget::showInlineBotCancel() const {
-	return _inlineBot && !_inlineLookingUpBot;
+	return _inlineBot
+		&& !_inlineLookingUpBot
+		&& !Nagram::Links::AutomaticInlineQuery(_field);
 }
 
 bool HistoryWidget::showStopButton() const {
@@ -7652,7 +7657,7 @@ void HistoryWidget::updateFieldPlaceholder() {
 	_voiceRecordBar->setPauseInsteadSend(_history
 		&& _history->peer->starsPerMessageChecked() > 0);
 
-	if (!_editMsgId && _inlineBot && !_inlineLookingUpBot) {
+	if (!_editMsgId && showInlineBotCancel()) {
 		_field->setPlaceholder(
 			rpl::single(_inlineBot->botInfo->inlinePlaceholder.mid(1)),
 			_inlineBotUsername.size() + 2);

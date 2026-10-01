@@ -20,6 +20,7 @@ struct ExchangeExport {
 struct ExchangePlan {
 	std::vector<ExchangeChange> changes;
 	QStringList skippedKeys;
+	QStringList adjustedKeys;
 	QString error;
 };
 

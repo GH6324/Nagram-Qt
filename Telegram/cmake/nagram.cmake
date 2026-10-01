@@ -70,6 +70,9 @@ set(nagram_sources
     nagram/links/model.cpp
     nagram/links/open.cpp
     nagram/links/behavior.cpp
+    nagram/links/inline_bot.cpp
+    nagram/links/inline_rules.cpp
+    nagram/links/inline_settings.cpp
     nagram/links/settings.cpp
     nagram/network/model.cpp
     nagram/network/runtime.cpp
@@ -209,6 +212,7 @@ if (DESKTOP_APP_TEST_APPS)
         nagram/tests/test_filters.cpp
         nagram/tests/test_filter_scopes.cpp
         nagram/tests/test_links.cpp
+        nagram/tests/test_inline_rules.cpp
         nagram/tests/test_privacy.cpp
         nagram/tests/test_p3_misc.cpp
         nagram/tests/test_local_lists.cpp
@@ -222,6 +226,7 @@ if (DESKTOP_APP_TEST_APPS)
         nagram/services/model.cpp
         nagram/filters/model.cpp
         nagram/links/model.cpp
+        nagram/links/inline_rules.cpp
         nagram/privacy/protection_model.cpp
         nagram/chats/local_pins_model.cpp
         nagram/media/local_faved_model.cpp

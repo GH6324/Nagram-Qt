@@ -153,7 +153,13 @@ ExchangePlan Exchange::PlanImport(
 			result.changes.clear();
 			return result;
 		}
-		const auto after = Encode(*info, it.value());
+		const auto value = info->imported
+			? info->imported(it.value())
+			: it.value();
+		if (value != it.value()) {
+			result.adjustedKeys.push_back(it.key());
+		}
+		const auto after = Encode(*info, value);
 		const auto before = options._prefs.read(info->key);
 		if (before != after) {
 			result.changes.push_back({ it.key(), before, after });

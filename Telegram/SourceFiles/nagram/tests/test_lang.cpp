@@ -15,6 +15,7 @@ void TestServices();
 void TestFilters();
 void TestFilterScopes();
 void TestLinks();
+void TestInlineRules();
 void TestPrivacy();
 void TestP3Misc();
 void TestLocalLists();
@@ -167,6 +168,7 @@ int main() {
 		TestFilters();
 		TestFilterScopes();
 		TestLinks();
+		TestInlineRules();
 		TestPrivacy();
 		TestP3Misc();
 		TestLocalLists();

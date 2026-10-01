@@ -9,6 +9,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 
 #include "nagram/compose/options.h"
 #include "nagram/compose/text.h"
+#include "nagram/links/inline_bot.h"
 #include "nagram/services/draft_translation.h"
 
 #include "history/history_widget.h"
@@ -939,6 +940,7 @@ InlineBotQuery ParseInlineBotQuery(
 		result.username = QString();
 	}
 	result.query = QString();
+	Nagram::Links::FillAutomaticInlineQuery(session, full, result);
 	return result;
 }
 

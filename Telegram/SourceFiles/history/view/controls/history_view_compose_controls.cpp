@@ -90,6 +90,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "nagram/compose/buttons.h"
 #include "nagram/compose/format_toolbar.h"
 #include "nagram/compose/placeholder.h"
+#include "nagram/links/inline_bot.h"
 #include "history/view/controls/history_view_voice_record_bar.h"
 #include "history/view/controls/history_view_webpage_processor.h"
 #include "history/view/history_view_reply.h"
@@ -4133,7 +4134,8 @@ void ComposeControls::clearInlineBot() {
 }
 
 void ComposeControls::inlineBotChanged() {
-	const auto isInlineBot = (_inlineBot && !_inlineLookingUpBot);
+	const auto isInlineBot = (_inlineBot && !_inlineLookingUpBot)
+		&& !Nagram::Links::AutomaticInlineQuery(_field);
 	if (_isInlineBot != isInlineBot) {
 		_isInlineBot = isInlineBot;
 		updateFieldPlaceholder();
@@ -6405,6 +6407,8 @@ void ComposeControls::applyInlineBotQuery(
 		if (_inlineBot != bot) {
 			_inlineBot = bot;
 			_inlineLookingUpBot = false;
+			inlineBotChanged();
+		} else if (Nagram::Links::AutoInlineBotEnabled()) {
 			inlineBotChanged();
 		}
 		if (!_inlineResults) {

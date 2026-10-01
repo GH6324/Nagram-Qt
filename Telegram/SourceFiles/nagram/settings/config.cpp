@@ -182,6 +182,9 @@ void ShowImport(
 					+ u" → "_q + ValueText(*info, change.after));
 			}
 		}
+		if (plan.adjustedKeys.contains(u"nagram.inlineBotRules"_q)) {
+			AddText(box, tr::lng_nagram_inline_import_disabled(tr::now));
+		}
 		if (!plan.skippedKeys.isEmpty()) {
 			AddText(box, tr::lng_nagram_config_unknown(
 				tr::now, lt_amount, QString::number(plan.skippedKeys.size()))

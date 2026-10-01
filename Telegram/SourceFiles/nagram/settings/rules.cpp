@@ -5,6 +5,8 @@
 #include "nagram/filters/hidden_messages.h"
 #include "nagram/filters/model.h"
 #include "nagram/links/options.h"
+#include "nagram/links/inline_rules.h"
+#include "nagram/links/inline_settings.h"
 #include "nagram/links/settings.h"
 #include "lang/lang_keys.h"
 #include "settings/settings_builder.h"
@@ -158,6 +160,20 @@ const auto kMeta = BuildHelper({
 		},
 		.keywords = { u"filter"_q, u"chat"_q, u"topic"_q },
 	});
+	AddToggle(builder, Links::kAutoInlineBot,
+		tr::lng_nagram_inline_auto(),
+		u"nagram/rules/inline-auto"_q,
+		{ u"inline"_q, u"bot"_q, u"link"_q });
+	builder.addButton({
+		.id = u"nagram/rules/inline-rules"_q,
+		.title = tr::lng_nagram_inline_rules(),
+		.st = &st::settingsButtonNoIcon,
+		.onClick = [=] {
+			controller->show(Box(Links::InlineRulesBox));
+		},
+		.keywords = { u"inline"_q, u"bot"_q, u"regex"_q },
+	});
+	builder.addDividerText(tr::lng_nagram_inline_auto_about());
 	builder.addSubsectionTitle({
 		.id = u"nagram/rules/links-search"_q,
 		.title = tr::lng_nagram_links_search_group(),
