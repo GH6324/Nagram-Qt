@@ -57,10 +57,10 @@ const FolderCache &Cache(not_null<Main::Session*> session) {
 	ResetCache(session);
 	auto &cache = Caches.emplace_back();
 	cache.session = base::make_weak(session);
-	for (const auto id : ReadRecent(session)) {
+	for (const auto &id : ReadRecent(session)) {
 		cache.peers.emplace(id);
 	}
-	for (const auto id : ReadRecentFolders(session)) {
+	for (const auto &id : ReadRecentFolders(session)) {
 		cache.folders.emplace(id);
 	}
 	return cache;
@@ -70,7 +70,7 @@ void RefreshFolders(
 		not_null<Main::Session*> session,
 		const std::vector<PeerId> &ids) {
 	const auto owner = &session->data();
-	for (const auto id : ids) {
+	for (const auto &id : ids) {
 		if (const auto history = owner->historyLoaded(id)) {
 			owner->chatsFilters().refreshHistory(history);
 		}
@@ -82,7 +82,7 @@ void WriteRecent(
 		const std::vector<PeerId> &ids) {
 	const auto previous = ReadRecent(session);
 	auto parts = QStringList();
-	for (const auto id : ids) {
+	for (const auto &id : ids) {
 		parts.push_back(QString::number(id.value));
 	}
 	Expects(ForAccount(session).Set(kRecentChatsList, parts.join(u',')));
@@ -91,12 +91,12 @@ void WriteRecent(
 		return;
 	}
 	auto changed = std::vector<PeerId>();
-	for (const auto id : previous) {
+	for (const auto &id : previous) {
 		if (!ranges::contains(ids, id)) {
 			changed.push_back(id);
 		}
 	}
-	for (const auto id : ids) {
+	for (const auto &id : ids) {
 		if (!ranges::contains(previous, id)) {
 			changed.push_back(id);
 		}
@@ -160,7 +160,7 @@ public:
 	void prepare() override {
 		auto &owner = session().data();
 		const auto current = _window->activeChatCurrent().peer();
-		for (const auto id : ReadRecent(&session())) {
+		for (const auto &id : ReadRecent(&session())) {
 			const auto peer = owner.peerLoaded(id);
 			if (peer && peer != current) {
 				delegate()->peerListAppendRow(
@@ -216,7 +216,7 @@ void ForEachRecentShareTarget(
 		return;
 	}
 	auto &owner = session->data();
-	for (const auto id : ReadRecent(session)) {
+	for (const auto &id : ReadRecent(session)) {
 		if (const auto peer = owner.peerLoaded(id); peer && !peer->isSelf()) {
 			callback(owner.history(peer));
 		}
@@ -230,7 +230,7 @@ void ForEachRecentChat(
 		return;
 	}
 	auto &owner = session->data();
-	for (const auto id : ReadRecent(session)) {
+	for (const auto &id : ReadRecent(session)) {
 		if (const auto peer = owner.peerLoaded(id)) {
 			callback(owner.history(peer));
 		}
@@ -272,7 +272,7 @@ void SetRecentFolderEnabled(
 		ids.erase(ranges::remove(ids, folderId), ids.end());
 	}
 	auto parts = QStringList();
-	for (const auto id : ids) {
+	for (const auto &id : ids) {
 		parts.push_back(QString::number(id));
 	}
 	Expects(ForAccount(session).Set(kRecentFolderIds, parts.join(u',')));

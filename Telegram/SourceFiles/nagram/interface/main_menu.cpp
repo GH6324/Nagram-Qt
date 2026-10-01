@@ -194,7 +194,7 @@ void MainMenuBox(not_null<Ui::GenericBox*> box) {
 	const auto state = box->lifetime().make_state<State>();
 	state->order = current->value(u"order"_q).toArray();
 	state->hidden = current->value(u"hidden"_q).toArray();
-	for (const auto id : kMainMenuIds) {
+	for (const auto &id : kMainMenuIds) {
 		const auto text = QString::fromLatin1(id);
 		if (!state->order.contains(text)) {
 			state->order.push_back(text);
@@ -251,7 +251,7 @@ void MainMenuBox(not_null<Ui::GenericBox*> box) {
 		result.insert(u"title"_q, title->getLastText().trimmed());
 		result.insert(u"seasonalDecorations"_q, seasonal->checked());
 		auto natural = QJsonArray();
-		for (const auto id : kMainMenuIds) {
+		for (const auto &id : kMainMenuIds) {
 			natural.push_back(QLatin1String(id));
 		}
 		result.insert(u"order"_q, state->order == natural

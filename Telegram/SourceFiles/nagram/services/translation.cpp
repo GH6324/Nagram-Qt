@@ -199,7 +199,7 @@ std::optional<TranslationPlan> PlanTranslation(TextWithEntities text) {
 	}
 	auto result = TranslationPlan{ .original = std::move(text) };
 	auto previous = 0;
-	for (const auto boundary : boundaries) {
+	for (const auto &boundary : boundaries) {
 		if (boundary == previous) {
 			continue;
 		}

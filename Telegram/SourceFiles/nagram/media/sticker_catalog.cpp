@@ -78,8 +78,8 @@ Orders CurrentOrders(not_null<Main::Session*> session) {
 
 bool ValidInstalledOrders(not_null<Main::Session*> session) {
 	const auto &sets = session->data().stickers().sets();
-	for (const auto type : kTypes) {
-		for (const auto id : InstalledOrder(session, type)) {
+	for (const auto &type : kTypes) {
+		for (const auto &id : InstalledOrder(session, type)) {
 			const auto i = sets.find(id);
 			if (i == sets.end()
 				|| !(i->second->flags & Data::StickersSetFlag::Installed)
@@ -203,8 +203,8 @@ std::variant<StickerCatalog, QString> CurrentStickerCatalog(
 	if (!ValidInstalledOrders(session)) {
 		return tr::lng_nagram_catalog_incomplete(tr::now);
 	}
-	for (const auto type : kTypes) {
-		for (const auto id : InstalledOrder(session, type)) {
+	for (const auto &type : kTypes) {
+		for (const auto &id : InstalledOrder(session, type)) {
 			const auto i = sets.find(id);
 			if (i == sets.end()) {
 				return tr::lng_nagram_catalog_incomplete(tr::now);
@@ -229,7 +229,7 @@ Data::StickersSetsOrder CatalogStickerOrder(
 	const auto &original = InstalledOrder(session, type);
 	const auto &sets = session->data().stickers().sets();
 	auto byName = QHash<QString, uint64>();
-	for (const auto id : original) {
+	for (const auto &id : original) {
 		const auto i = sets.find(id);
 		if (i != sets.end() && !i->second->shortName.isEmpty()) {
 			byName.insert(i->second->shortName.toLower(), id);
@@ -244,7 +244,7 @@ Data::StickersSetsOrder CatalogStickerOrder(
 			}
 		}
 	}
-	for (const auto id : original) {
+	for (const auto &id : original) {
 		if (!result.contains(id)) {
 			result.push_back(id);
 		}

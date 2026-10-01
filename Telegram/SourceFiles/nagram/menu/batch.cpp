@@ -51,7 +51,7 @@ std::optional<TextWithEntities> Prepare(
 		ranges::reverse(ids);
 	}
 	auto text = TextWithEntities();
-	for (const auto id : ids) {
+	for (const auto &id : ids) {
 		const auto item = session->data().message(id);
 		if (!Available(item)) {
 			return std::nullopt;

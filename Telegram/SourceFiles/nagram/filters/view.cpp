@@ -96,7 +96,7 @@ Result Project(HistoryItem *item, const TextWithEntities &source) {
 	const auto hiddenAuthors = config.value(u"hiddenAuthors"_q).toArray();
 	auto author = QString();
 	auto blocked = false;
-	for (const auto source : sources) {
+	for (const auto &source : sources) {
 		if (!source) {
 			continue;
 		}

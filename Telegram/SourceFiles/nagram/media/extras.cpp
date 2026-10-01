@@ -23,7 +23,7 @@ template <std::size_t Size>
 bool HasSuffix(
 		const QString &suffix,
 		const std::array<const char*, Size> &list) {
-	for (const auto entry : list) {
+	for (const auto &entry : list) {
 		if (suffix == QLatin1String(entry)) {
 			return true;
 		}

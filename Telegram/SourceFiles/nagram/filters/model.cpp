@@ -36,7 +36,7 @@ bool IdList(const QJsonValue &value) {
 		return false;
 	}
 	auto seen = QSet<QString>();
-	for (const auto entry : value.toArray()) {
+	for (const auto &entry : value.toArray()) {
 		const auto id = entry.toString();
 		auto ok = false;
 		const auto number = id.toULongLong(&ok);
@@ -79,7 +79,7 @@ bool ValidObject(const QJsonObject &config) {
 		return false;
 	}
 	auto seen = QSet<QString>();
-	for (const auto entry : config.value(u"rules"_q).toArray()) {
+	for (const auto &entry : config.value(u"rules"_q).toArray()) {
 		if (!entry.isObject()) {
 			return false;
 		}
@@ -250,7 +250,7 @@ Result Apply(
 		result.error = u"filter Zalgo edit failed"_q;
 		return { .text = source, .error = result.error };
 	}
-	for (const auto entry : config.value(u"rules"_q).toArray()) {
+	for (const auto &entry : config.value(u"rules"_q).toArray()) {
 		const auto rule = entry.toObject();
 		if (!rule.value(u"enabled"_q).toBool()) {
 			continue;

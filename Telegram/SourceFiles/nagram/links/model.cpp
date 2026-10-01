@@ -39,7 +39,7 @@ bool ValidObject(const QJsonObject &config) {
 		return false;
 	}
 	auto ids = QSet<QString>();
-	for (const auto entry : config.value(u"rules"_q).toArray()) {
+	for (const auto &entry : config.value(u"rules"_q).toArray()) {
 		if (!entry.isObject()) {
 			return false;
 		}
@@ -64,7 +64,7 @@ bool ValidObject(const QJsonObject &config) {
 		auto names = QSet<QString>();
 		static const auto pattern = QRegularExpression(
 			u"\\A[a-zA-Z0-9_+.-]{1,64}\\*?\\z"_q);
-		for (const auto parameter : parameters) {
+		for (const auto &parameter : parameters) {
 			const auto name = parameter.toString();
 			if (!parameter.isString() || !pattern.match(name).hasMatch()
 				|| names.contains(name)) {
@@ -78,7 +78,7 @@ bool ValidObject(const QJsonObject &config) {
 }
 
 bool Removes(const QString &name, const QJsonArray &patterns) {
-	for (const auto value : patterns) {
+	for (const auto &value : patterns) {
 		const auto pattern = value.toString();
 		if (pattern.endsWith('*')
 			? name.startsWith(pattern.chopped(1)) : name == pattern) {
@@ -141,7 +141,7 @@ Result Rewrite(const QByteArray &raw, const QString &original) {
 	const auto originalUrl = result.url;
 	const auto config = raw.isEmpty()
 		? Defaults() : QJsonDocument::fromJson(raw).object();
-	for (const auto entry : config.value(u"rules"_q).toArray()) {
+	for (const auto &entry : config.value(u"rules"_q).toArray()) {
 		const auto rule = entry.toObject();
 		if (!rule.value(u"enabled"_q).toBool()
 			|| QString::fromLatin1(QUrl::toAce(result.url.host())).toLower()

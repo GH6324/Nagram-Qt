@@ -181,7 +181,7 @@ void SettingsBox(not_null<Ui::GenericBox*> box) {
 				menu->addAction(tr::lng_nagram_link_rule(tr::now), [=] {
 					box->getDelegate()->show(Box(RuleBox, *config, index), Ui::LayerOption::KeepOther);
 				});
-				for (const auto delta : { -1, 1 }) {
+				for (const auto &delta : { -1, 1 }) {
 					if (index + delta < 0 || index + delta >= rules.size()) {
 						continue;
 					}

@@ -149,7 +149,7 @@ void DelayBox(
 	box->setTitle(std::move(title));
 	const auto group = std::make_shared<Ui::RadiobuttonGroup>(
 		ForDevice().Get(option));
-	for (const auto value : { 0, 500, 1000, 2000, 5000, 10000, 30000, 60000 }) {
+	for (const auto &value : { 0, 500, 1000, 2000, 5000, 10000, 30000, 60000 }) {
 		box->addRow(object_ptr<Ui::Radiobutton>(
 			box, group, value, DelayLabel(value), st::settingsSendType),
 			st::settingsSendTypePadding);

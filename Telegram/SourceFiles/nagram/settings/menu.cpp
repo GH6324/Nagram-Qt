@@ -123,7 +123,7 @@ void VisibilityBox(not_null<Ui::GenericBox*> box, Menu::ActionId id) {
 	const auto current = Menu::ReadVisibility(
 		ForDevice().Get(Menu::kMenuConfig), id);
 	const auto group = std::make_shared<Ui::RadiobuttonGroup>(int(current));
-	for (const auto state : { Menu::Visibility::Show,
+	for (const auto &state : { Menu::Visibility::Show,
 			Menu::Visibility::Hide, Menu::Visibility::WithOption }) {
 		box->addRow(object_ptr<Ui::Radiobutton>(
 			box, group, int(state), VisibilityLabel(state),

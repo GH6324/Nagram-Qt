@@ -209,12 +209,12 @@ void InstallFieldHooks(not_null<Ui::InputField*> field) {
 			prefixes.push_back(tr::lng_menu_formatting_link_edit(tr::now));
 		}
 		const auto title = tr::lng_menu_formatting(tr::now);
-		for (const auto action : request.menu->actions()) {
+		for (const auto &action : request.menu->actions()) {
 			const auto submenu = action->menu();
 			if (!submenu || action->text() != title) {
 				continue;
 			}
-			for (const auto item : submenu->actions()) {
+			for (const auto &item : submenu->actions()) {
 				const auto text = item->text();
 				for (const auto &prefix : prefixes) {
 					if (text.startsWith(prefix)) {

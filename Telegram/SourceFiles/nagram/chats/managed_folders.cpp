@@ -67,7 +67,7 @@ void AddManagedOnlyAction(
 		auto ids = SelectedFolders(session);
 		if (!ids.erase(folderId)) ids.insert(folderId);
 		auto parts = QStringList();
-		for (const auto id : ids) parts.push_back(QString::number(id));
+		for (const auto &id : ids) parts.push_back(QString::number(id));
 		Expects(ForAccount(session).Set(kManagedFolderIds, parts.join(u","_q)));
 		RefreshFolder(session);
 	}, selected ? &st::mediaPlayerMenuCheck : nullptr);

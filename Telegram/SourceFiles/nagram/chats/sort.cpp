@@ -118,7 +118,7 @@ void RefreshSorting(gsl::not_null<Main::Session*> session) {
 	for (const auto &filter : session->data().chatsFilters().list()) {
 		collect(session->data().chatsFilters().chatsList(filter.id()));
 	}
-	for (const auto entry : entries) {
+	for (const auto &entry : entries) {
 		entry->updateChatListSortPosition();
 	}
 }
@@ -185,7 +185,7 @@ void ChatSortBox(gsl::not_null<Ui::GenericBox*> box) {
 	const auto rows = box->addRow(object_ptr<Ui::VerticalLayout>(box));
 	state->refresh = [=] {
 		rows->clear();
-		for (const auto id : state->order) {
+		for (const auto &id : state->order) {
 			const auto row = rows->add(object_ptr<SortRow>(
 				rows, id, [=](int from, int to) {
 					const auto first = std::find(

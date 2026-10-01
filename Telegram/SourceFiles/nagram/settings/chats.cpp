@@ -123,7 +123,7 @@ void StartupFolderBox(
 		? options->Get(Chats::kStartupFolderId) + 2
 		: mode;
 	const auto group = std::make_shared<Ui::RadiobuttonGroup>(current);
-	for (const auto value : { 0, 1 }) {
+	for (const auto &value : { 0, 1 }) {
 		box->addRow(object_ptr<Ui::Radiobutton>(
 			box, group, value,
 			value ? tr::lng_nagram_startup_folder_last(tr::now)

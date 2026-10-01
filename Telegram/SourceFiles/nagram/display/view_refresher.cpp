@@ -35,7 +35,7 @@ void ViewRefresher::Refresh(Data::Session &data) {
 			}
 		}
 	}
-	for (const auto id : ids) {
+	for (const auto &id : ids) {
 		if (const auto item = data.message(id); item && item->mainView()) {
 			data.requestItemViewRefresh(item);
 			if (const auto refreshed = data.message(id);

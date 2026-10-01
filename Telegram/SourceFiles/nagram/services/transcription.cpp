@@ -201,7 +201,7 @@ void ExternalTranscriptions::clear() {
 		removed.push_back(id);
 	}
 	_entries.clear();
-	for (const auto id : removed) {
+	for (const auto &id : removed) {
 		refresh(id);
 	}
 }

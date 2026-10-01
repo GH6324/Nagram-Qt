@@ -89,7 +89,7 @@ inline const auto kDefaultCodeLanguage = Option<QString>{
 	Category::Compose, "lng_nagram_default_code_language", 0,
 	[](const QString &value) {
 		if (value.size() > 32) return false;
-		for (const auto ch : value) {
+		for (const auto &ch : value) {
 			const auto code = ch.unicode();
 			if (!((code >= 'a' && code <= 'z')
 				|| (code >= 'A' && code <= 'Z')

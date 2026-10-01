@@ -179,7 +179,7 @@ void RuleBox(
 		box->uiShow()->showBox(Box(PreviewBox, updated));
 	});
 	if (index < rules.size()) {
-		for (const auto delta : { -1, 1 }) {
+		for (const auto &delta : { -1, 1 }) {
 			if (index + delta < 0 || index + delta >= rules.size()) {
 				continue;
 			}

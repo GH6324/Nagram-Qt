@@ -38,7 +38,7 @@ void Selection::Select(HistoryInner *widget, HistoryItem *source) {
 	}
 	auto selected = widget->_selected;
 	auto views = std::vector<not_null<HistoryItem*>>();
-	for (const auto history : { widget->_migrated, widget->_history.get() }) {
+	for (const auto &history : { widget->_migrated, widget->_history.get() }) {
 		if (history) {
 			for (const auto &block : history->blocks) {
 				for (const auto &view : block->messages) {
