@@ -1,6 +1,7 @@
 #pragma once
 
 #include "nagram/core/options.h"
+#include "nagram/media/url_template.h"
 
 namespace Nagram::Media {
 
@@ -18,6 +19,11 @@ inline constexpr auto kGroupCallRawAudio = Option<bool>{
 	"nagram.groupCallRawAudio", Scope::Device, false,
 	Category::Media, "lng_nagram_group_call_raw_audio" };
 
+inline const auto kMusicCoverUrl = Option<QString>{
+	"nagram.musicCoverUrl", Scope::Device, QString(),
+	Category::Media, "lng_nagram_music_cover_url",
+	static_cast<unsigned>(Flag::Hidden), ValidCoverUrl };
+
 [[nodiscard]] constexpr int ResolveVoiceBitrate(int kbps, int fallback) {
 	return (kbps > 0 && ValidVoiceBitrate(kbps)) ? (kbps * 1000) : fallback;
 }
@@ -26,9 +32,20 @@ inline constexpr auto kGroupCallRawAudio = Option<bool>{
 	return ResolveVoiceBitrate(options.Get(kVoiceRecordBitrate), fallback);
 }
 
+[[nodiscard]] inline QString CoverRequestUrl(
+		Options &options,
+		const QString &artist,
+		const QString &title) {
+	const auto address = options.Get(kMusicCoverUrl);
+	return address.isEmpty()
+		? QString()
+		: ExpandCoverUrl(address, artist, title);
+}
+
 inline void RegisterBackendOptions(Registry &registry) {
 	Expects(registry.Add(kVoiceRecordBitrate));
 	Expects(registry.Add(kGroupCallRawAudio));
+	Expects(registry.Add(kMusicCoverUrl));
 }
 
 } // namespace Nagram::Media

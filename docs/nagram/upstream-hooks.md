@@ -1,3 +1,4 @@
+| F21 | `data/data_document.cpp` | `DocumentData::refreshPossibleCoverThumbnail` 的 `{ AudioAlbumThumbLocation{ id } }` 改为 `Nagram::Media::CoverLocation(this, { AudioAlbumThumbLocation{ id } })`；地址为空或存储值非法时原样返回传入的位置，否则返回 `PlainUrlLocation`，由上游 `webFileLoader` 下载（沿用其重定向限制、缓存和体积上限） | 替换 |
 | F20 | `calls/group/calls_group_call.cpp` | `GroupCall::tryCreateController` 的 `tgcalls::GroupInstanceDescriptor` 在 `.requestVideoBroadcastPart` 与 `.videoContentType` 之间加一行 `.disableOutgoingAudioProcessing = Nagram::Media::GroupCallRawAudio()`（位置须符合结构体声明顺序）；屏幕共享的描述符不改 | 读取 |
 # 上游处理点
 

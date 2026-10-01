@@ -613,3 +613,8 @@ Telegram/cmake/td_lang.cmake. Every key uses the lng_nagram_ prefix.
 "lng_nagram_voice_record_bitrate_value" = "{value} kbps";
 "lng_nagram_group_call_raw_audio" = "Turn off audio processing in group calls";
 "lng_nagram_group_call_raw_audio_about" = "Skips echo cancellation, noise suppression and automatic gain for your microphone. Applies the next time you join a call. Speakers may cause echo, so headphones are recommended.";
+"lng_nagram_music_cover" = "Music cover";
+"lng_nagram_music_cover_url" = "Custom cover address";
+"lng_nagram_music_cover_url_about" = "Leave empty to let Telegram provide covers. When set, the artist and title of music without its own cover are sent to this address, which must return an image directly. Put {artist} and {title} in the address, or leave them out to have “artist - title” added to its end. The address must start with https. No cover is shown when the request fails. Applies to audio loaded from now on; not exported.";
+"lng_nagram_external_url_default" = "Default";
+"lng_nagram_external_url_invalid" = "Enter a valid https address.";

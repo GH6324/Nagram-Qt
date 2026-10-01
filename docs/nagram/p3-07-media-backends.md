@@ -85,7 +85,9 @@
 
 **挂钩**：`refreshPossibleCoverThumbnail()` 中的 `{ AudioAlbumThumbLocation{ id } }` 改为 `{ Nagram::Media::CoverLocation(this, AudioAlbumThumbLocation{ id }) }`，一行。函数在 `nagram/media/` 中：模板为空时原样返回传入的位置；非空时用表演者与标题展开模板，返回 `PlainUrlLocation`。
 
-**桌面端协议**：模板是一个 URL，必须直接返回图片。占位符 `{artist}`、`{title}`，展开时做百分号编码。校验规则：`https`，或回环地址的 `http`；长度不超过 512；至少包含 `{title}`；不含换行。校验不通过时设置页拒绝保存。Android 端 `CustomArtworkApi` 的响应格式本次没有核对源码，两端字段不互通。
+**Android 端协议**（2026-10-01 核对 Nagram Android 源码 `MessageObject.getArtworkUrl` 与 `ImageLoader`，只记录事实）：`CustomArtworkApi` 是一个字符串，默认空。非空时请求地址为“该字符串 + 表单编码的查询词”，查询词是“表演者 - 标题”，表演者为空时只有标题；表演者中的若干固定分隔词先被替换成空格。语音消息和 `audio/ogg` 不取封面。以 `http` 开头的地址走普通图片下载，响应体就是图片；只有内置的 iTunes 地址才解析 JSON。没有校验、鉴权头或体积限制。
+
+**桌面端协议**：地址必须直接返回图片。不含占位符时与 Android 相同，在末尾追加百分号编码的“表演者 - 标题”（空格编码为 `%20`，Android 为 `+`；不替换分隔词）；含占位符时按模板展开，占位符 `{artist}`、`{title}`，只能出现在路径或查询串中，且必须包含 `{title}`。校验规则：`https`，或回环地址的 `http`；长度不超过 512；不含空白、控制字符、用户名密码和片段。校验不通过时设置页拒绝保存，存储中的非法值按空处理并报告读取错误。Android 上填写的 `https` 前缀地址可以直接用于桌面端，非回环的 `http` 地址不接受。
 
 **与上游一致**：模板为空（默认）时位置对象与上游完全相同，不发起任何外部请求。
 

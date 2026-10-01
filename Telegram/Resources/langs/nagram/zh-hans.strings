@@ -609,3 +609,8 @@
 "lng_nagram_voice_record_bitrate_value" = "{value} kbps";
 "lng_nagram_group_call_raw_audio" = "关闭群组通话的音频处理";
 "lng_nagram_group_call_raw_audio_about" = "不对麦克风做回声消除、降噪和自动增益，下次加入通话时生效。外放时可能产生回声，建议使用耳机。";
+"lng_nagram_music_cover" = "音乐封面";
+"lng_nagram_music_cover_url" = "自定义封面地址";
+"lng_nagram_music_cover_url_about" = "留空时由 Telegram 提供封面。填写后，没有自带封面的音乐会把表演者和标题发送到该地址；地址须直接返回图片。可在地址中使用 {artist} 和 {title}，不使用时会把“表演者 - 标题”接在地址末尾。地址必须以 https 开头。获取失败时不显示封面。对之后加载的音频生效；不会导出。";
+"lng_nagram_external_url_default" = "默认";
+"lng_nagram_external_url_invalid" = "请输入有效的 https 地址。";

@@ -129,10 +129,156 @@ void TestGroupCallRawAudio() {
 		"group call audio processing must stay on by default");
 }
 
+void TestCoverAddress() {
+	using namespace Nagram;
+	using namespace Nagram::Media;
+	for (const auto &address : {
+			u"https://covers.example/art?artist={artist}&title={title}"_q,
+			u"https://covers.example/{title}.jpg"_q,
+			u"https://covers.example/{title}/{title}"_q,
+			u"https://covers.example:8443/search?q="_q,
+			u"https://covers.example/search/"_q,
+			u"http://localhost:8080/cover?q={title}"_q,
+			u"http://127.0.0.1:8080/cover?q="_q,
+			u"http://127.10.20.30/cover?q="_q,
+			u"http://[::1]:8080/cover?q={title}"_q }) {
+		Require(ValidCoverAddress(address) && ValidCoverUrl(address),
+			"valid cover address rejected");
+	}
+	const auto tooLong = u"https://covers.example/"_q
+		+ QString(kMaxCoverUrlLength, u'a');
+	for (const auto &address : {
+			QString(),
+			u"http://covers.example/cover?q={title}"_q,
+			u"http://127.evil.example/cover?q="_q,
+			u"http://127.0.0.1.evil.example/cover?q="_q,
+			u"http://1270.0.0.1/cover?q="_q,
+			u"file:///etc/passwd"_q,
+			u"file://localhost/c:/cover?q={title}"_q,
+			u"ftp://covers.example/{title}"_q,
+			u"covers.example/cover?q={title}"_q,
+			u"https://"_q,
+			u"https:///cover?q={title}"_q,
+			u"https://user:pass@covers.example/{title}"_q,
+			u"https://covers.example/{title}#part"_q,
+			u"https://covers.example/cover\nHost: other?q={title}"_q,
+			u"https://covers.example/co ver?q={title}"_q,
+			u"https://covers.example/\tcover?q="_q,
+			u"https://covers.example/cover?a={artist}"_q,
+			u"https://covers.example/cover?q={title}&x={album}"_q,
+			u"https://covers.example/cover?q={title"_q,
+			u"https://covers.example/cover?q=title}"_q,
+			u"https://covers.example/cover?q={}"_q,
+			u"https://{title}.example/cover"_q,
+			u"https://covers.example{title}"_q,
+			u"https://covers.example:0/{title}"_q,
+			u"https://covers.example:99999/{title}"_q,
+			u" https://covers.example/{title}"_q,
+			tooLong }) {
+		Require(!ValidCoverAddress(address), "invalid cover address accepted");
+	}
+	Require(ValidCoverUrl(QString()), "empty cover address must be allowed");
+	Require(CoverUrlHost(u"https://Covers.Example:8443/{title}"_q)
+		== u"covers.example"_q
+		&& CoverUrlHost(u"file:///etc/passwd"_q).isEmpty(),
+		"cover address host");
+}
+
+void TestCoverExpansion() {
+	using namespace Nagram::Media;
+	const auto artist = QString::fromUtf8("AC/DC & Friends #1");
+	const auto title = QString::fromUtf8("周杰伦 🎵 a+b?");
+	const auto encodedArtist = u"AC%2FDC%20%26%20Friends%20%231"_q;
+	const auto encodedTitle = u"%E5%91%A8%E6%9D%B0%E4%BC%A6%20"
+		"%F0%9F%8E%B5%20a%2Bb%3F"_q;
+	Require(ExpandCoverUrl(
+		u"https://covers.example/art?artist={artist}&title={title}"_q,
+		artist,
+		title) == u"https://covers.example/art?artist="_q + encodedArtist
+			+ u"&title="_q + encodedTitle,
+		"cover template expansion");
+	Require(ExpandCoverUrl(
+		u"https://covers.example/{title}/{title}.jpg"_q,
+		artist,
+		u"a b"_q) == u"https://covers.example/a%20b/a%20b.jpg"_q,
+		"repeated cover placeholder");
+	Require(ExpandCoverUrl(
+		u"https://covers.example/?a={artist}&t={title}"_q,
+		u"{title}"_q,
+		u"{artist}"_q)
+		== u"https://covers.example/?a=%7Btitle%7D&t=%7Bartist%7D"_q,
+		"placeholder text inside a value must not expand again");
+	Require(ExpandCoverUrl(
+		u"https://covers.example/search?q="_q,
+		u"Artist"_q,
+		u"Song Name"_q)
+		== u"https://covers.example/search?q=Artist%20-%20Song%20Name"_q
+		&& ExpandCoverUrl(
+			u"https://covers.example/search?q="_q,
+			QString(),
+			u"Song"_q) == u"https://covers.example/search?q=Song"_q,
+		"address without placeholders must get the query appended");
+	Require(ExpandCoverUrl(u"file:///cover?q="_q, artist, title).isEmpty()
+		&& ExpandCoverUrl(QString(), artist, title).isEmpty(),
+		"invalid cover address must not produce a request");
+}
+
+void TestCoverOption() {
+	using namespace Nagram;
+	using namespace Nagram::Media;
+	auto registry = Registry();
+	RegisterBackendOptions(registry);
+	const auto info = registry.Find(kMusicCoverUrl.key);
+	Require(info != nullptr
+		&& info->scope == Scope::Device
+		&& info->category == Category::Media
+		&& info->type == OptionInfo::ValueType::String
+		&& registry.HasFlag(kMusicCoverUrl.key, Flag::Hidden)
+		&& !registry.HasFlag(kMusicCoverUrl.key, Flag::Exportable)
+		&& !registry.HasFlag(kMusicCoverUrl.key, Flag::RequiresRestart),
+		"cover address must be a hidden device option");
+	Require(kMusicCoverUrl.fallback.isEmpty(),
+		"covers must come from Telegram by default");
+
+	auto prefs = MemoryPrefs();
+	auto options = Options(prefs);
+	Require(CoverRequestUrl(options, u"Artist"_q, u"Song"_q).isEmpty()
+		&& prefs.values.empty(),
+		"default cover address must keep the upstream location");
+	Require(!options.Set(kMusicCoverUrl, u"http://covers.example/{title}"_q)
+		&& !options.Set(kMusicCoverUrl, u"file:///cover?q={title}"_q)
+		&& !options.Set(kMusicCoverUrl, u"https://covers.example/{album}"_q)
+		&& prefs.values.empty(), "invalid cover address stored");
+	const auto address = u"https://covers.example/?token=secret&q={title}"_q;
+	Require(options.Set(kMusicCoverUrl, address)
+		&& CoverRequestUrl(options, u"Artist"_q, u"Song"_q)
+			== u"https://covers.example/?token=secret&q=Song"_q,
+		"cover address write");
+	const auto exported = Exchange::Export(options, registry);
+	Require(!exported.data.contains("musicCoverUrl")
+		&& !exported.data.contains("secret"),
+		"cover address must not be exported");
+
+	auto errors = 0;
+	auto lifetime = rpl::lifetime();
+	options.readErrors() | rpl::on_next([&](std::string_view key) {
+		errors += (key == kMusicCoverUrl.key) ? 1 : 0;
+	}, lifetime);
+	prefs.values[std::string(kMusicCoverUrl.key)]
+		= "shttp://covers.example/{title}";
+	Require(CoverRequestUrl(options, u"Artist"_q, u"Song"_q).isEmpty()
+		&& errors == 1
+		&& options.invalidKeys().contains(kMusicCoverUrl.key),
+		"stored invalid cover address must fall back and be reported");
+}
+
 } // namespace
 
 void TestMedia() {
 	TestVoiceBitrate();
 	TestGroupCallRawAudio();
+	TestCoverAddress();
+	TestCoverExpansion();
+	TestCoverOption();
 	std::cout << "PASS: Nagram media backends" << std::endl;
 }

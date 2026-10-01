@@ -151,6 +151,30 @@ void VoiceBitrateBox(not_null<Ui::GenericBox*> box) {
 	});
 }
 
+void MusicCoverBox(not_null<Ui::GenericBox*> box) {
+	box->setTitle(tr::lng_nagram_music_cover_url());
+	const auto field = box->addRow(object_ptr<Ui::InputField>(
+		box,
+		st::defaultInputField,
+		tr::lng_nagram_custom_doh_placeholder(),
+		ForDevice().Get(Media::kMusicCoverUrl)));
+	field->setMaxLength(Media::kMaxCoverUrlLength);
+	box->setFocusCallback([=] { field->setFocusFast(); });
+	const auto submit = [=] {
+		const auto value = field->getLastText().trimmed();
+		if (!ForDevice().Set(Media::kMusicCoverUrl, value)) {
+			field->showError();
+			box->showToast(tr::lng_nagram_external_url_invalid(tr::now));
+			return;
+		}
+		box->closeBox();
+	};
+	field->submits(
+	) | rpl::on_next([=](auto) { submit(); }, field->lifetime());
+	box->addButton(tr::lng_settings_save(), submit);
+	box->addButton(tr::lng_cancel(), [=] { box->closeBox(); });
+}
+
 const auto kMeta = BuildHelper({
 	.id = MediaSection::Id(),
 	.parentId = HomeId(),
@@ -302,6 +326,29 @@ const auto kMeta = BuildHelper({
 		u"nagram/media/group-call-raw-audio"_q,
 		{ u"group call"_q, u"audio"_q, u"noise"_q, u"echo"_q });
 	builder.addDividerText(tr::lng_nagram_group_call_raw_audio_about());
+	builder.addSubsectionTitle({
+		.id = u"nagram/media/music-cover"_q,
+		.title = tr::lng_nagram_music_cover(),
+		.keywords = { u"music"_q, u"cover"_q },
+	});
+	builder.addButton({
+		.id = u"nagram/media/cover-url"_q,
+		.title = tr::lng_nagram_music_cover_url(),
+		.st = &st::settingsButtonNoIcon,
+		.label = ForDevice().Value(Media::kMusicCoverUrl)
+			| rpl::map([](const QString &value) {
+				return value.isEmpty()
+					? tr::lng_nagram_external_url_default(tr::now)
+					: Media::CoverUrlHost(value);
+			}),
+		.onClick = [=] { controller->show(Box(MusicCoverBox)); },
+		.keywords = { u"music"_q, u"cover"_q, u"artwork"_q, u"API"_q },
+	});
+	builder.addDividerText(tr::lng_nagram_music_cover_url_about(
+		lt_artist,
+		rpl::single(u"{artist}"_q),
+		lt_title,
+		rpl::single(u"{title}"_q)));
 });
 
 const SectionBuildMethod MediaSection::kBuild = kMeta.build;
