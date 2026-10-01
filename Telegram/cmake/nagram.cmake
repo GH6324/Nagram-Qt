@@ -11,6 +11,7 @@ set(nagram_sources
     nagram/core/language.cpp
     nagram/core/exchange.cpp
     nagram/core/options.cpp
+    nagram/core/regex.cpp
     nagram/core/diagnostics.cpp
     nagram/core/relaunch.cpp
     nagram/display/view_refresher.cpp
@@ -206,6 +207,7 @@ if (DESKTOP_APP_TEST_APPS)
         nagram/tests/test_spacing.cpp
         nagram/tests/test_services.cpp
         nagram/tests/test_filters.cpp
+        nagram/tests/test_filter_scopes.cpp
         nagram/tests/test_links.cpp
         nagram/tests/test_privacy.cpp
         nagram/tests/test_p3_misc.cpp
@@ -214,6 +216,7 @@ if (DESKTOP_APP_TEST_APPS)
         nagram/tests/test_media.cpp
         nagram/compose/spacing.cpp
         nagram/core/exchange.cpp
+        nagram/core/regex.cpp
         nagram/interface/main_menu_model.cpp
         nagram/menu/model.cpp
         nagram/services/model.cpp

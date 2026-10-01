@@ -15,6 +15,7 @@
 #include <QtCore/QJsonDocument>
 #include <QtCore/QJsonArray>
 #include <QtCore/QCache>
+#include <QtCore/QHash>
 
 #include <array>
 
@@ -73,6 +74,45 @@ QString Searchable(not_null<HistoryItem*> item) {
 	return result;
 }
 
+struct ResolvedCache {
+	Main::Session *session = nullptr;
+	QByteArray account;
+	QByteArray global;
+	QByteArray scopes;
+	QHash<QString, Resolved> places;
+};
+
+Resolved ResolveFor(
+		not_null<Main::Session*> session,
+		const QString &peer,
+		const QString &topic) {
+	static auto cache = ResolvedCache();
+	const auto account = ForAccount(session).Get(kRules);
+	const auto global = ForDevice().Get(kGlobalRules);
+	const auto scopes = ForAccount(session).Get(kScopes);
+	if (global.isEmpty() && scopes.isEmpty()) {
+		return { .config = account };
+	}
+	if (cache.session != session
+		|| cache.account != account
+		|| cache.global != global
+		|| cache.scopes != scopes) {
+		cache = { session, account, global, scopes };
+	}
+	const auto place = peer + u':' + topic;
+	const auto found = cache.places.constFind(place);
+	if (found != cache.places.cend()) {
+		return *found;
+	}
+	const auto result = Resolve(account, global, scopes, peer, topic);
+	if (!result.error.isEmpty()) {
+		LOG(("Nagram filter: %1 (chat %2, topic %3).")
+			.arg(result.error, peer, topic));
+	}
+	cache.places.insert(place, result);
+	return result;
+}
+
 } // namespace
 
 Result Project(HistoryItem *item, const TextWithEntities &source) {
@@ -82,8 +122,16 @@ Result Project(HistoryItem *item, const TextWithEntities &source) {
 	if (MessageHidden(item)) {
 		return { .text = source, .hidden = true };
 	}
-	const auto raw = ForAccount(&item->history()->session()).Get(kRules);
-	if (raw.isEmpty()) {
+	const auto peer = item->history()->peer;
+	const auto peerId = QString::number(SerializePeerId(peer->id));
+	const auto resolved = ResolveFor(
+		&item->history()->session(),
+		peerId,
+		QString::number(peer->isForum() ? item->topicRootId().bare : 0));
+	const auto &raw = resolved.config;
+	if (!resolved.error.isEmpty()) {
+		return { .text = source, .error = resolved.error };
+	} else if (raw.isEmpty()) {
 		return { .text = source };
 	}
 	const auto config = QJsonDocument::fromJson(raw).object();
@@ -106,8 +154,6 @@ Result Project(HistoryItem *item, const TextWithEntities &source) {
 			author = id;
 		}
 	}
-	const auto peer = item->history()->peer;
-	const auto peerId = QString::number(SerializePeerId(peer->id));
 	const auto searchable = Searchable(item);
 	const auto key = reinterpret_cast<quintptr>(item);
 	if (const auto cached = Results().object(key);

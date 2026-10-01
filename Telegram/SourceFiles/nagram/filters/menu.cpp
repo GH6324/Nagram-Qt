@@ -1,13 +1,16 @@
 #include "nagram/filters/menu.h"
 
 #include "nagram/filters/model.h"
+#include "nagram/filters/settings.h"
 #include "nagram/menu/actions.h"
+#include "data/data_forum_topic.h"
 #include "data/data_peer.h"
 #include "data/data_peer_id.h"
 #include "history/history.h"
 #include "history/history_item.h"
 #include "lang/lang_keys.h"
 #include "main/main_session.h"
+#include "ui/layers/generic_box.h"
 #include "ui/widgets/menu/menu_action.h"
 #include "ui/widgets/menu/menu.h"
 #include "ui/widgets/popup_menu.h"
@@ -76,6 +79,46 @@ void InsertAuthorAction(
 	}
 	Menu::Tag(menu->insertAction(position, std::move(widget)),
 		Menu::ActionId::FilterAuthor);
+}
+
+void AddScopeAction(
+		const Ui::Menu::MenuCallback &addAction,
+		not_null<Window::SessionController*> controller,
+		PeerData *peer,
+		Data::ForumTopic *topic) {
+	if (!peer) {
+		return;
+	}
+	const auto session = &controller->session();
+	const auto account = ForAccount(session).Get(kRules);
+	const auto scopes = ForAccount(session).Get(kScopes);
+	const auto peerId = QString::number(SerializePeerId(peer->id));
+	const auto topicId = QString::number(topic ? topic->rootId().bare : 0);
+	const auto own = [&] {
+		for (const auto &entry : QJsonDocument::fromJson(scopes).object(
+				).value(u"scopes"_q).toArray()) {
+			const auto scope = entry.toObject();
+			if (scope.value(u"peer"_q) == peerId
+				&& scope.value(u"topic"_q) == topicId) {
+				return true;
+			}
+		}
+		return false;
+	}();
+	if (!own
+		&& ForDevice().Get(kGlobalRules).isEmpty()
+		&& !QJsonDocument::fromJson(account).object().value(
+			u"enabled"_q).toBool()) {
+		return;
+	}
+	addAction(topic
+		? tr::lng_nagram_filter_scope_topic(tr::now)
+		: tr::lng_nagram_filter_scope_chat(tr::now),
+		crl::guard(controller, [=] {
+			controller->show(
+				Box(ScopeSettingsBox, session, peerId, topicId));
+		}),
+		&st::menuIconBlock);
 }
 
 } // namespace Nagram::Filters

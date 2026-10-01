@@ -229,6 +229,12 @@ P3 功能不在本计划内。每项先在 `docs/nagram/` 下单独写设计并�
 | ✅ S161 | `feat(network): domain resolution` | K03、K04 | 自定义 DoH 只支持 JSON 接口，失败不回退内置端点，失败时提示一次并在 K04 下方显示原因；地址在保存、导入和读取时校验（只接受 `https`）。K03 修改后重启全部账号的连接。域名 SOCKS5 与 MTProto 代理、不可达或只支持二进制格式的端点、失败提示、在途切换、时间同步经自定义端点均未现场验证。**P3-06 的 V2（rebase 到上游 `dev`、完整构建、三平台 CI）未做** |
 | ☐ S162 | `feat(network): transfer acceleration` | K05、K06 | 待基准：按专项设计 3.1、3.2 完成基准并写回取值后再实施；条目、文案与挂钩均未进入代码 |
 
+已实现的步骤（P3-05，2026-10-01）。每个步骤一个提交，macOS arm64 Debug 增量构建与 `test_nagram` 通过；没有启动应用，界面与实际效果未现场核验。
+
+| 步骤 | 提交 | 条目 | 备注 |
+| --- | --- | --- | --- |
+| ✅ S150 | `feat(rules): filter rule inheritance for global, chat and topic scopes` | I04、I05 | 新增 `nagram.filtersGlobal`（本机）与 `nagram.filterScopes`（账号），`nagram.filters` v1 不变；两个新选项为空时结果与原来逐字节相同。正则的限制前缀与编译移到 `nagram/core/regex.*` 共用。生效规则只计已启用的规则，超过 32 条时该范围不过滤并写日志。文案中的数量占位符用 `{amount}`（Nagram 文案不支持复数键）。规则编辑框保存时拒绝 Java 专有写法（字符类交集）并提示位置；已保存的配置不重新按此判定。两套消息视图中的继承效果、双账号、聊天与话题菜单入口、范围编辑框均未现场验证 |
+
 | 包 | 专项设计 | 步骤 | 设置页条目 |
 | --- | --- | --- | --- |
 | P3-03（已实现） | [内容保护与敏感内容](p3-03-content-protection.md) | S120–S123 | G13–G16 |

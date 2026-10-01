@@ -13,6 +13,7 @@ void TestOptions();
 void TestSpacing();
 void TestServices();
 void TestFilters();
+void TestFilterScopes();
 void TestLinks();
 void TestPrivacy();
 void TestP3Misc();
@@ -164,6 +165,7 @@ int main() {
 		TestSpacing();
 		TestServices();
 		TestFilters();
+		TestFilterScopes();
 		TestLinks();
 		TestPrivacy();
 		TestP3Misc();

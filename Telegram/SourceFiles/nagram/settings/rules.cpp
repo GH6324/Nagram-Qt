@@ -140,6 +140,24 @@ const auto kMeta = BuildHelper({
 		},
 		.keywords = { u"hide"_q, u"message"_q },
 	});
+	builder.addButton({
+		.id = u"nagram/rules/filters-global"_q,
+		.title = tr::lng_nagram_filter_global(),
+		.st = &st::settingsButtonNoIcon,
+		.onClick = [=] {
+			controller->show(Box(Filters::GlobalSettingsBox, session));
+		},
+		.keywords = { u"filter"_q, u"regex"_q, u"global"_q },
+	});
+	builder.addButton({
+		.id = u"nagram/rules/filter-scopes"_q,
+		.title = tr::lng_nagram_filter_scopes(),
+		.st = &st::settingsButtonNoIcon,
+		.onClick = [=] {
+			controller->show(Box(Filters::ScopesSettingsBox, session));
+		},
+		.keywords = { u"filter"_q, u"chat"_q, u"topic"_q },
+	});
 	builder.addSubsectionTitle({
 		.id = u"nagram/rules/links-search"_q,
 		.title = tr::lng_nagram_links_search_group(),

@@ -202,6 +202,7 @@ P3-07 外部媒体后端：
 | --- | --- | --- | --- |
 | I01 | `history/view/history_view_element.cpp` | 消息显示文本经过过滤投影；整条隐藏时保留视图并显示本机占位文字 | 替换 |
 | I02 | `core/ui_integration.cpp`（外部链接打开） | 打开链接前按规则改写并确认 | 拦截 |
+| I04、I05 | `window/window_peer_menu.cpp` | `Filler::fillHistoryActions`、`Filler::fillRepliesActions`（仅话题）各加一行 `Nagram::Filters::AddScopeAction(...)`，加入“本对话／本话题的过滤设置”。过滤投影仍走 I01 的挂钩：`Nagram::Filters::Project` 内部先用 `Filters::Resolve` 把全局、账号、对话、话题四层合成一份 v1 形状的配置 | 读取 |
 | I11 | `core/ui_integration.cpp` | `UrlWithAutoLoginToken` 的提前返回条件加入 `Nagram::Links::AutoLoginDisabled()`；`url_auth_domains` 的 `BotAutoLogin` 确认框不动 | 读取 |
 | I12、I13 | `core/click_handler_types.cpp`、`mainwidget.cpp` | `SearchByHashtag` 开头建立 `Nagram::Links::HashtagClickScope`（记录点击所在的对话；`#标签@用户名` 不建立有效标记）；`MainWidget::searchMessages` 在 `state.tab = state.defaultTabForMe()` 之后调用 `Nagram::Links::ApplyHashtagSearchPage(state)`，只在标记有效时改写 `inChat` 与页面 | 替换 |
 | I14、I15 | `ui/chat/attach/attach_bot_webview.cpp` | `Panel::Panel` 的 `setInnerSize` 与 `Panel::createWebview` 中 Linux 外部壳的 `initialSize` 改用 `Nagram::Links::WebAppPanelSize(st::botWebViewPanelSize)`；两个比例都是 100% 时原样返回 | 替换 |

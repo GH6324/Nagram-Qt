@@ -9,6 +9,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "nagram/privacy/options.h"
 #include "nagram/privacy/alias.h"
 #include "nagram/privacy/admin_shortcuts.h"
+#include "nagram/filters/menu.h"
 #include "nagram/chats/recent_chats.h"
 #include "nagram/chats/local_pins.h"
 
@@ -1969,6 +1970,7 @@ void Filler::fillHistoryActions() {
 	addDirectMessages();
 	addExportChat();
 	addTranslate();
+	Nagram::Filters::AddScopeAction(_addAction, _controller, _peer, nullptr);
 	addReport();
 	addClearHistory();
 	addDeleteChat();
@@ -2010,6 +2012,7 @@ void Filler::fillRepliesActions() {
 	if (_topic) {
 		addInfo();
 		addManageTopic();
+		Nagram::Filters::AddScopeAction(_addAction, _controller, _peer, _topic);
 	}
 	addBoostChat();
 	addCreatePoll();
