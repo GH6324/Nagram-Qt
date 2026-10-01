@@ -13,6 +13,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "mtproto/session.h"
 #include "base/unixtime.h"
 #include "base/random.h"
+#include "nagram/network/runtime.h"
 
 #include <QtCore/QtEndian>
 
@@ -188,7 +189,7 @@ ConnectionPointer AbstractConnection::Create(
 			return ConnectionPointer::New<HttpConnection>(thread, proxy);
 		}
 	}();
-	if (proxy.tryCustomResolve()) {
+	if (proxy.tryCustomResolve() && !Nagram::Network::UseSystemDns()) {
 		return ConnectionPointer::New<ResolvingConnection>(
 			instance,
 			thread,

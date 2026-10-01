@@ -598,3 +598,12 @@ Telegram/cmake/td_lang.cmake. Every key uses the lng_nagram_ prefix.
 "lng_nagram_ip_strategy_about" = "Reconnects after a change. With IPv6 only, a network without IPv6 can't connect. A non-default value overrides “Try connecting through IPv6” in proxy settings.";
 "lng_nagram_disable_backup_addresses" = "Don't request backup server addresses";
 "lng_nagram_disable_backup_addresses_about" = "Stops looking up backup addresses through DNS and cloud services when the connection fails. Telegram already skips this while a proxy is used.";
+"lng_nagram_network_dns" = "Domain resolution";
+"lng_nagram_use_system_dns" = "Resolve proxy hosts with system DNS";
+"lng_nagram_use_system_dns_about" = "Reconnects after a change. Affects only SOCKS5 and MTProto proxies with a domain name; direct connections don't resolve domains.";
+"lng_nagram_custom_doh" = "Custom DoH address";
+"lng_nagram_custom_doh_about" = "Leave empty to use Telegram's built-in DoH services. The address must start with https and support the JSON query API. Built-in services are not used when it is unavailable; a failed request is reported here and in a notice.";
+"lng_nagram_custom_doh_placeholder" = "https://…";
+"lng_nagram_custom_doh_invalid" = "Enter an https address without a query string.";
+"lng_nagram_custom_doh_failed" = "The custom DoH address could not be reached: {error}. Built-in services are not used.";
+"lng_nagram_custom_doh_bad_response" = "The custom DoH address did not return a JSON DNS answer. Built-in services are not used.";

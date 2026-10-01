@@ -594,3 +594,12 @@
 "lng_nagram_ip_strategy_about" = "修改后重新连接。选择“仅 IPv6”时，网络不支持 IPv6 将无法连接。非默认值优先于代理设置中的“尝试通过 IPv6 连接”。";
 "lng_nagram_disable_backup_addresses" = "不请求备用服务器地址";
 "lng_nagram_disable_backup_addresses_about" = "无法连接时不再通过 DNS 和云服务查询备用地址。使用代理时 Telegram 本来就不请求。";
+"lng_nagram_network_dns" = "域名解析";
+"lng_nagram_use_system_dns" = "用系统 DNS 解析代理域名";
+"lng_nagram_use_system_dns_about" = "修改后重新连接。只影响主机名为域名的 SOCKS5 和 MTProto 代理；直连不需要解析域名。";
+"lng_nagram_custom_doh" = "自定义 DoH 地址";
+"lng_nagram_custom_doh_about" = "留空使用 Telegram 内置的 DoH 服务。地址必须以 https 开头，并支持 JSON 查询接口。该地址不可用时不会改用内置服务；请求失败会在此处和提示中显示。";
+"lng_nagram_custom_doh_placeholder" = "https://…";
+"lng_nagram_custom_doh_invalid" = "请输入不带查询参数的 https 地址。";
+"lng_nagram_custom_doh_failed" = "无法访问自定义 DoH 地址：{error}。不会改用内置服务。";
+"lng_nagram_custom_doh_bad_response" = "自定义 DoH 地址没有返回 JSON 格式的 DNS 结果。不会改用内置服务。";

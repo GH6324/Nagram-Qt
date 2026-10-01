@@ -135,11 +135,136 @@ void TestOrderIps() {
 	}
 }
 
+void TestDohAddress() {
+	using namespace Nagram;
+	using namespace Nagram::Network;
+	auto registry = Registry();
+	RegisterOptions(registry);
+	CheckDeviceOption(registry, kUseSystemDns, true);
+	CheckDeviceOption(registry, kCustomDoh,
+		u"https://dns.example/dns-query"_q);
+	Require(!kUseSystemDns.fallback && kCustomDoh.fallback.isEmpty(),
+		"domain resolution must follow Telegram by default");
+
+	for (const auto &address : {
+			u"https://dns.example"_q,
+			u"https://dns.example/"_q,
+			u"https://dns.example/dns-query"_q,
+			u"https://dns.example:8443/custom/resolve"_q,
+			u"HTTPS://DNS.EXAMPLE/dns-query"_q,
+			u"https://192.0.2.1/dns-query"_q,
+			u"https://[2001:db8::1]:8443/dns-query"_q }) {
+		Require(ValidDohAddress(address) && ValidCustomDoh(address),
+			"valid DoH address rejected");
+	}
+	const auto tooLong = u"https://dns.example/"_q
+		+ QString(kMaxDohAddressLength, u'a');
+	for (const auto &address : {
+			QString(),
+			u"http://dns.example/dns-query"_q,
+			u"dns.example/dns-query"_q,
+			u"ftp://dns.example/dns-query"_q,
+			u"https://"_q,
+			u"https:///dns-query"_q,
+			u"https://user@dns.example/dns-query"_q,
+			u"https://user:pass@dns.example/dns-query"_q,
+			u"https://dns.example/dns-query?token=1"_q,
+			u"https://dns.example/dns-query?"_q,
+			u"https://dns.example/dns-query#part"_q,
+			u"https://dns.example/dns query"_q,
+			u"https://dns.example/dns-query\nHost: other"_q,
+			u"https://dns.example/\tdns-query"_q,
+			u"https://dns.example:0/dns-query"_q,
+			u"https://dns.example:99999/dns-query"_q,
+			u" https://dns.example/dns-query"_q,
+			tooLong }) {
+		Require(!ValidDohAddress(address), "invalid DoH address accepted");
+	}
+	Require(ValidCustomDoh(QString()), "empty custom DoH must be allowed");
+	Require(!ValidCustomDoh(u"http://dns.example"_q)
+		&& !kCustomDoh.validate(u"http://dns.example"_q),
+		"custom DoH option must reject http");
+
+	auto prefs = MemoryPrefs();
+	auto options = Options(prefs);
+	Require(!options.Set(kCustomDoh, u"http://dns.example/dns-query"_q)
+		&& !options.Set(kCustomDoh, u"https://a@dns.example/"_q)
+		&& prefs.values.empty(), "invalid DoH address stored");
+	prefs.values[std::string(kCustomDoh.key)] = "shttp://dns.example";
+	Require(options.Get(kCustomDoh).isEmpty()
+		&& options.invalidKeys().contains(kCustomDoh.key),
+		"stored invalid DoH address must fall back to the built-in services");
+}
+
+void TestDohEndpoint() {
+	using namespace Nagram::Network;
+	const auto make = [](const QString &data) {
+		auto url = QUrl();
+		url.setScheme(u"https"_q);
+		SetDohEndpoint(url, data);
+		return url;
+	};
+	auto upstream = QUrl();
+	upstream.setScheme(u"https"_q);
+	upstream.setHost(u"mozilla.cloudflare-dns.com"_q);
+	upstream.setPath(u"/dns-query"_q);
+	Require(make(u"mozilla.cloudflare-dns.com"_q) == upstream,
+		"built-in DoH endpoint must match the upstream URL");
+
+	const auto custom = make(u"https://dns.example:8443/custom/resolve"_q);
+	Require(custom.host() == u"dns.example"_q
+		&& custom.port() == 8443
+		&& custom.path() == u"/custom/resolve"_q,
+		"custom DoH endpoint must keep host, port and path");
+	Require(make(u"https://dns.example"_q).toString()
+		== u"https://dns.example/dns-query"_q
+		&& make(u"https://dns.example/"_q).toString()
+		== u"https://dns.example/dns-query"_q,
+		"custom DoH endpoint without a path must use /dns-query");
+
+	auto query = make(u"https://dns.example:8443/custom/resolve"_q);
+	query.setQuery(u"name=%1&type=%2&random_padding=%3"_q.arg(
+		u"proxy.example"_q).arg(28).arg(u"abc"_q));
+	Require(query.toString() == u"https://dns.example:8443/custom/resolve"
+		"?name=proxy.example&type=28&random_padding=abc"_q,
+		"custom DoH query");
+
+	const auto address = u"https://dns.example/dns-query"_q;
+	Require(SameDohEndpoint(make(address), address)
+		&& SameDohEndpoint(query, u"https://DNS.example:8443/custom/resolve"_q)
+		&& SameDohEndpoint(
+			QUrl(u"https://dns.example:443/dns-query?name=a"_q),
+			address),
+		"custom DoH reply not recognized");
+	Require(!SameDohEndpoint(upstream, address)
+		&& !SameDohEndpoint(make(address), QString())
+		&& !SameDohEndpoint(
+			QUrl(u"https://dns.example/resolve"_q),
+			address)
+		&& !SameDohEndpoint(
+			QUrl(u"https://firestore.googleapis.com/v1/projects"_q),
+			address),
+		"reply from another endpoint treated as custom DoH");
+
+	Require(IsDnsJson("{\"Status\":0,\"Answer\":[]}")
+		&& IsDnsJson("{\"Status\":3}")
+		&& IsDnsJson("{\"Answer\":[{\"data\":\"192.0.2.1\"}]}"),
+		"JSON DNS answer rejected");
+	Require(!IsDnsJson(QByteArray())
+		&& !IsDnsJson("<html></html>")
+		&& !IsDnsJson("[]")
+		&& !IsDnsJson("{}")
+		&& !IsDnsJson(QByteArray("\x00\x00\x81\x80\x00\x01", 6)),
+		"non-JSON DNS answer accepted");
+}
+
 } // namespace
 
 void TestNetwork() {
 	TestConnectionOptions();
 	TestIpChoice();
 	TestOrderIps();
+	TestDohAddress();
+	TestDohEndpoint();
 	std::cout << "PASS: Nagram network options" << std::endl;
 }

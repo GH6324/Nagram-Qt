@@ -1,7 +1,9 @@
 #pragma once
 
 #include <QtCore/QString>
+#include <QtCore/QByteArray>
 #include <QtCore/QStringList>
+#include <QtCore/QUrl>
 
 namespace Nagram::Network {
 
@@ -29,5 +31,13 @@ struct IpChoice {
 
 [[nodiscard]] IpChoice ResolveIpChoice(int strategy, IpChoice upstream);
 [[nodiscard]] QStringList OrderIps(int strategy, const QStringList &ips);
+
+inline constexpr auto kMaxDohAddressLength = 256;
+
+[[nodiscard]] bool ValidDohAddress(const QString &address);
+[[nodiscard]] bool ValidCustomDoh(const QString &value);
+void SetDohEndpoint(QUrl &url, const QString &data);
+[[nodiscard]] bool SameDohEndpoint(const QUrl &request, const QString &custom);
+[[nodiscard]] bool IsDnsJson(const QByteArray &bytes);
 
 } // namespace Nagram::Network

@@ -213,6 +213,7 @@ P3 功能不在本计划内。每项先在 `docs/nagram/` 下单独写设计并�
 | 步骤 | 提交 | 条目 | 备注 |
 | --- | --- | --- | --- |
 | ✅ S160 | `feat(network): connection options` | K01、K02 | 新增“网络”分栏与 `Category::Network`。K01 修改后重启全部账号的连接；“仅 IPv6”下临时 DC 不可用、代理测速仍测 IPv4。五种策略下的连接、双账号重连、登录页、K02 开启后的断网重连均未现场验证 |
+| ✅ S161 | `feat(network): domain resolution` | K03、K04 | 自定义 DoH 只支持 JSON 接口，失败不回退内置端点，失败时提示一次并在 K04 下方显示原因；地址在保存、导入和读取时校验（只接受 `https`）。K03 修改后重启全部账号的连接。域名 SOCKS5 与 MTProto 代理、不可达或只支持二进制格式的端点、失败提示、在途切换、时间同步经自定义端点均未现场验证。**P3-06 的 V2（rebase 到上游 `dev`、完整构建、三平台 CI）未做** |
 | ☐ S162 | `feat(network): transfer acceleration` | K05、K06 | 待基准：按专项设计 3.1、3.2 完成基准并写回取值后再实施；条目、文案与挂钩均未进入代码 |
 
 | 包 | 专项设计 | 步骤 | 设置页条目 |
@@ -220,7 +221,7 @@ P3 功能不在本计划内。每项先在 `docs/nagram/` 下单独写设计并�
 | P3-03（已实现） | [内容保护与敏感内容](p3-03-content-protection.md) | S120–S123 | G13–G16 |
 | P3-04 | [自动翻译继承与 LLM](p3-04-translation-llm.md) | S140–S145 | H06–H10、E36–E37 |
 | P3-05 | [规则继承与 inline bot](p3-05-rules-inline-bot.md) | S150–S153 | I04–I08 |
-| P3-06（S160 已实现，S162 待基准） | [网络](p3-06-network.md) | S160–S162 | K01–K06 |
+| P3-06（S160、S161 已实现，S162 待基准） | [网络](p3-06-network.md) | S160–S162 | K01–K06 |
 | P3-07 | [外部媒体后端](p3-07-media-backends.md) | S170–S175 | F19–F25、I09–I10 |
 | P3-08 | [云同步与独立服务](p3-08-sync-services.md) | S180–S182 | J08–J11 |
 | P3-09 与 F16 未归包项（已实现） | [低频高级项](p3-09-advanced-misc.md) | S190–S195 | B25–B26、F26–F27、G17、I11–I15 |

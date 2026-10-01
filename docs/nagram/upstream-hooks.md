@@ -242,8 +242,11 @@ Nagram 侧代码在 `nagram/network/`：`model.*` 是纯逻辑，`runtime.*` 读
 | K01 | `mtproto/mtp_instance.cpp` | `Instance::Private::resolveProxyDomain` 的回调把 `ips` 先经 `Nagram::Network::OrderIps(ips)` 过滤与排序 | 替换 |
 | K01 | `boxes/connection_box.cpp`（两处）、`core/proxy_rotation_manager.cpp`（一处） | `MTP::StartProxyCheck` 的 `tryIPv6` 实参包一层 `Nagram::Network::UseIPv6(...)` | 替换 |
 | K02 | `mtproto/config_loader.cpp` | `ConfigLoader::refreshSpecialLoader` 与 `sendSpecialRequest` 的条件增加 `Nagram::Network::BackupAddressesDisabled()` | 读取 |
+| K03 | `mtproto/connection_abstract.cpp` | `AbstractConnection::Create` 的 `proxy.tryCustomResolve()` 条件增加 `&& !Nagram::Network::UseSystemDns()`（会话线程，读原子值） | 读取 |
+| K04 | `mtproto/details/mtproto_domain_resolver.cpp` | `DomainResolver::resolve(const AttemptKey &)` 构造完 `attempts` 后，自定义地址非空时替换为单个 `{ Type::Mozilla, <地址> }`（3 行短块，需要私有类型 `Attempt` / `Type`）；`performRequest` 的 `Type::Mozilla` 分支改用 `Nagram::Network::SetDohEndpoint(url, attempt.data)`；`finalizeRequest` 读完响应后一行 `Nagram::Network::CheckDohReply(reply, result)` | 短块、替换 |
+| K04 | `mtproto/special_config_request.cpp` | 构造函数在 `ranges::reverse(_attempts)` 之前加 8 行短块：自定义地址非空时移除 `Type::Google`、`Type::Mozilla` 两项并在最前插入指向自定义地址的 `Type::Mozilla` 项（需要私有类型，上游原有各行不改）；`performRequest` 的 `Type::Mozilla` 分支改用 `SetDohEndpoint`；`finalizeRequest` 同样加一行 `CheckDohReply` | 短块、替换 |
 
-K01 修改后由 `nagram/network/runtime.cpp` 对每个账号的 `MTP::Instance` 调用 `restart()`，不经过上游文件。策略为 0 时各函数原样返回传入值。
+K01、K03 修改后由 `nagram/network/runtime.cpp` 对每个账号的 `MTP::Instance` 调用 `restart()`，不经过上游文件。策略为 0 时各函数原样返回传入值。`SetDohEndpoint` 对不含协议的内置主机名的结果与上游原来的两行相同（`test_nagram` 覆盖）。`CheckDohReply` 只处理发往自定义地址的响应：失败时记录日志、提示一次并更新 K04 的状态，Firestore 与内置端点的响应不受影响。
 
 ## 3. 改动面预估
 
