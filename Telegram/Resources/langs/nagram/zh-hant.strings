@@ -674,3 +674,6 @@
 "lng_nagram_inline_test_none" = "沒有已啟用的規則符合。";
 "lng_nagram_inline_test_not_link" = "請輸入單個不含空白的 http 或 https 連結。";
 "lng_nagram_inline_import_disabled" = "匯入的 inline 機器人規則已停用。請在 Nagram → 規則中啟用。";
+"lng_nagram_webview_external" = "網頁應用程式中改用瀏覽器開啟的連結";
+"lng_nagram_webview_external_about" = "一個正規表示式。網頁應用程式跳往符合的位址時，改由瀏覽器開啟。應用程式自身的啟動位址一律在應用程式內開啟。留空則不啟用。";
+"lng_nagram_webview_external_invalid" = "正規表示式在位置 {index} 處無效：{error}";

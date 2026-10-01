@@ -29,5 +29,8 @@ void ApplyHashtagSearchPage(Dialogs::SearchState &state);
 
 [[nodiscard]] QSize WebAppPanelSize(QSize base);
 [[nodiscard]] const char *WebAppPlatform(not_null<UserData*> bot);
+[[nodiscard]] bool OpenOutsideWebview(
+	const QString &uri,
+	const QString &startUrl);
 
 } // namespace Nagram::Links

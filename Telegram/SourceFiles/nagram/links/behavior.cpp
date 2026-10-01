@@ -1,6 +1,8 @@
 #include "nagram/links/behavior.h"
 
 #include "nagram/links/options.h"
+#include "nagram/links/webview.h"
+#include "core/file_utilities.h"
 #include "core/click_handler_types.h"
 #include "data/data_channel.h"
 #include "data/data_session.h"
@@ -95,6 +97,31 @@ QSize WebAppPanelSize(QSize base) {
 
 const char *WebAppPlatform(not_null<UserData*> bot) {
 	return WebAppPlatformName(ForDevice().Get(kWebAppAndroidPlatform));
+}
+
+bool OpenOutsideWebview(const QString &uri, const QString &startUrl) {
+	const auto pattern = ForDevice().Get(kWebviewExternalPattern);
+	if (pattern.isEmpty()) {
+		return false;
+	}
+	static auto compiledFor = QString();
+	static auto compiled = QRegularExpression();
+	static auto lastOpen = qint64();
+	if (compiledFor != pattern) {
+		compiledFor = pattern;
+		compiled = CompileWebviewPattern(pattern);
+	}
+	const auto decision = MatchOutsideWebview(compiled, uri, startUrl);
+	if (!decision.error.isEmpty()) {
+		LOG(("Nagram web app link: %1.").arg(decision.error));
+	} else if (decision.open && !AllowOutsideOpen(lastOpen, crl::now())) {
+		LOG(("Nagram web app link: more than one per second, kept inside."));
+		return false;
+	}
+	if (decision.open) {
+		File::OpenUrl(uri);
+	}
+	return decision.open;
 }
 
 } // namespace Nagram::Links

@@ -1606,7 +1606,8 @@ bool WebViewInstance::botHandleLocalUri(QString uri, bool keepOpen) {
 	} else if (!local.startsWith(u"tg://"_q, Qt::CaseInsensitive)
 		&& !local.startsWith(u"tonsite://"_q, Qt::CaseInsensitive)
 		&& !local.startsWith(u"ton://"_q, Qt::CaseInsensitive)) {
-		return false;
+		return !keepOpen
+			&& Nagram::Links::OpenOutsideWebview(uri, _panelUrl);
 	}
 	const auto bot = _bot;
 	const auto context = std::make_shared<WebViewContext>(_context);

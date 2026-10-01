@@ -678,3 +678,6 @@ Telegram/cmake/td_lang.cmake. Every key uses the lng_nagram_ prefix.
 "lng_nagram_inline_test_none" = "No enabled rule matches.";
 "lng_nagram_inline_test_not_link" = "Enter a single http or https link without spaces.";
 "lng_nagram_inline_import_disabled" = "Imported inline bot rules are turned off. Enable them in Nagram → Rules.";
+"lng_nagram_webview_external" = "Links from web apps to open in the browser";
+"lng_nagram_webview_external_about" = "A regular expression. When a web app navigates to a matching address, it opens in your browser instead. The app's own start address always opens inside the app. Leave empty to turn this off.";
+"lng_nagram_webview_external_invalid" = "Invalid regular expression at position {index}: {error}";

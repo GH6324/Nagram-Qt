@@ -73,6 +73,7 @@ set(nagram_sources
     nagram/links/inline_bot.cpp
     nagram/links/inline_rules.cpp
     nagram/links/inline_settings.cpp
+    nagram/links/webview.cpp
     nagram/links/settings.cpp
     nagram/network/model.cpp
     nagram/network/runtime.cpp
@@ -227,6 +228,7 @@ if (DESKTOP_APP_TEST_APPS)
         nagram/filters/model.cpp
         nagram/links/model.cpp
         nagram/links/inline_rules.cpp
+        nagram/links/webview.cpp
         nagram/privacy/protection_model.cpp
         nagram/chats/local_pins_model.cpp
         nagram/media/local_faved_model.cpp

@@ -7,6 +7,7 @@
 #include "nagram/links/options.h"
 #include "nagram/links/inline_rules.h"
 #include "nagram/links/inline_settings.h"
+#include "nagram/links/webview.h"
 #include "nagram/links/settings.h"
 #include "lang/lang_keys.h"
 #include "settings/settings_builder.h"
@@ -16,6 +17,7 @@
 #include "ui/boxes/confirm_box.h"
 #include "ui/widgets/buttons.h"
 #include "ui/widgets/checkbox.h"
+#include "ui/widgets/fields/input_field.h"
 #include "main/main_session.h"
 #include "window/window_session_controller.h"
 
@@ -92,6 +94,36 @@ void ChoiceBox(
 		Expects(ForDevice().Set(*option, value));
 		box->closeBox();
 	});
+}
+
+void WebviewPatternBox(not_null<Ui::GenericBox*> box) {
+	box->setTitle(tr::lng_nagram_webview_external());
+	const auto field = box->addRow(object_ptr<Ui::InputField>(
+		box,
+		st::defaultInputField,
+		tr::lng_nagram_filter_pattern(),
+		ForDevice().Get(Links::kWebviewExternalPattern)));
+	field->setMaxLength(Links::kMaxWebviewPattern);
+	box->setFocusCallback([=] { field->setFocusFast(); });
+	const auto submit = [=] {
+		const auto value = field->getLastText();
+		if (const auto problem = Links::CheckWebviewPattern(value)) {
+			field->showError();
+			box->showToast(tr::lng_nagram_webview_external_invalid(
+				tr::now,
+				lt_index,
+				QString::number(problem->position),
+				lt_error,
+				problem->text));
+			return;
+		}
+		Expects(ForDevice().Set(Links::kWebviewExternalPattern, value));
+		box->closeBox();
+	};
+	field->submits(
+	) | rpl::on_next([=](auto) { submit(); }, field->lifetime());
+	box->addButton(tr::lng_settings_save(), submit);
+	box->addButton(tr::lng_cancel(), [=] { box->closeBox(); });
 }
 
 const auto kMeta = BuildHelper({
@@ -257,6 +289,17 @@ const auto kMeta = BuildHelper({
 		u"nagram/rules/web-app-platform"_q,
 		{ u"web app"_q, u"mini app"_q, u"platform"_q, u"Android"_q });
 	builder.addDividerText(tr::lng_nagram_web_app_android_platform_about());
+	builder.addButton({
+		.id = u"nagram/rules/web-app-external"_q,
+		.title = tr::lng_nagram_webview_external(),
+		.st = &st::settingsButtonNoIcon,
+		.label = ForDevice().Value(Links::kWebviewExternalPattern),
+		.onClick = [=] {
+			controller->show(Box(WebviewPatternBox));
+		},
+		.keywords = { u"web app"_q, u"mini app"_q, u"browser"_q, u"regex"_q },
+	});
+	builder.addDividerText(tr::lng_nagram_webview_external_about());
 });
 
 const SectionBuildMethod RulesSection::kBuild = kMeta.build;

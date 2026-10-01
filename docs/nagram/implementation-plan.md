@@ -236,12 +236,13 @@ P3 功能不在本计划内。每项先在 `docs/nagram/` 下单独写设计并�
 | ✅ S150 | `feat(rules): filter rule inheritance for global, chat and topic scopes` | I04、I05 | 新增 `nagram.filtersGlobal`（本机）与 `nagram.filterScopes`（账号），`nagram.filters` v1 不变；两个新选项为空时结果与原来逐字节相同。正则的限制前缀与编译移到 `nagram/core/regex.*` 共用。生效规则只计已启用的规则，超过 32 条时该范围不过滤并写日志。文案中的数量占位符用 `{amount}`（Nagram 文案不支持复数键）。规则编辑框保存时拒绝 Java 专有写法（字符类交集）并提示位置；已保存的配置不重新按此判定。两套消息视图中的继承效果、双账号、聊天与话题菜单入口、范围编辑框均未现场验证 |
 | ✅ S151 | `feat(rules): local inline bot rules and automatic link queries` | I06、I07 | 只有本地规则，I07 子页没有“远程规则”小节。只在输入框去掉首尾空白后是单个 `http://` 或 `https://` 链接、没有格式标记时触发，只填入查询，不发送。一轮匹配有 20 ms 预算，超限按未命中处理并写日志。配置导入时本地规则一律停用，并在预览中注明（`Option` 增加可选的导入转换函数）。上游改动比设计多一处：`HistoryWidget::updateFieldPlaceholder` 的 inline 占位符条件改用 `showInlineBotCancel()`，否则自动模式下链接短于“用户名 + 2”时会显示机器人的占位符。自动模式下上游仍把输入框视为有 inline 机器人，因此不发送“正在输入”、不保存云端草稿。两套输入框的结果面板、回车发送、显式与自动模式切换、机器人不可解析、断网、D22／D23 确认均未现场验证 |
 | ☐ S152 | `feat(rules): remote inline bot rules with reviewed updates` | I07 的远程规则 | 待确认规则源：`@nagram_remote_metadata` 的归属与维护状态确认前不实施；条目、文案与请求均未进入代码 |
+| ✅ S153 | `feat(rules): open matching web app links in the browser` | I08 | 条目放在已有的“网页应用”分组。表达式忽略大小写、多行，保存时编译。不外送启动地址（去掉片段后比较）和任何含 `tgWebAppData` 的地址；频率限制按整个进程计（设计为每个面板），每秒最多外部打开一次，超出的导航留在面板内并写日志。三个平台的 webview 后端对子框架与脚本跳转是否触发导航回调、Linux 外部壳、小程序内点击命中链接的实际效果均未现场验证。**P3-05 的 V2（rebase 到上游 `dev`、完整构建、三平台 CI）未做** |
 
 | 包 | 专项设计 | 步骤 | 设置页条目 |
 | --- | --- | --- | --- |
 | P3-03（已实现） | [内容保护与敏感内容](p3-03-content-protection.md) | S120–S123 | G13–G16 |
 | P3-04 | [自动翻译继承与 LLM](p3-04-translation-llm.md) | S140–S145 | H06–H10、E36–E37 |
-| P3-05 | [规则继承与 inline bot](p3-05-rules-inline-bot.md) | S150–S153 | I04–I08 |
+| P3-05（S150、S151、S153 已实现，S152 待确认规则源） | [规则继承与 inline bot](p3-05-rules-inline-bot.md) | S150–S153 | I04–I08 |
 | P3-06（S160、S161 已实现，S162 待基准） | [网络](p3-06-network.md) | S160–S162 | K01–K06 |
 | P3-07（S170–S174 已实现，S175 未决定） | [外部媒体后端](p3-07-media-backends.md) | S170–S175 | F19–F25、I09–I10 |
 | P3-08 | [云同步与独立服务](p3-08-sync-services.md) | S180–S182 | J08–J11 |
