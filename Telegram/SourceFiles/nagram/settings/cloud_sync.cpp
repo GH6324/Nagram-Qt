@@ -39,6 +39,9 @@ struct Progress {
 	case Error::Damaged: return tr::lng_nagram_sync_invalid(tr::now);
 	case Error::Foreign: return tr::lng_nagram_sync_foreign(tr::now);
 	case Error::Newer: return tr::lng_nagram_sync_newer_format(tr::now);
+	case Error::Timeout: return tr::lng_nagram_sync_timeout(tr::now);
+	case Error::RemoteChanged:
+		return tr::lng_nagram_sync_remote_newer(tr::now);
 	}
 	Unexpected("Sync error.");
 }
@@ -253,7 +256,7 @@ void DeleteCloudBackup(not_null<Window::SessionController*> controller) {
 
 rpl::producer<QString> CloudSyncStatus(not_null<Main::Session*> session) {
 	const auto user = session->userId().bare;
-	return ForAccount(session).Value(
+	auto last = ForAccount(session).Value(
 		Sync::kState
 	) | rpl::map([=](const QByteArray &raw) {
 		const auto state = Sync::ParseState(raw);
@@ -263,6 +266,69 @@ rpl::producer<QString> CloudSyncStatus(not_null<Main::Session*> session) {
 				lt_date,
 				langDateTime(base::unixtime::parse(state->updatedAt)))
 			: tr::lng_nagram_sync_never(tr::now);
+	});
+	const auto service = Service::Find(session);
+	if (!service) {
+		return last;
+	}
+	return rpl::combine(
+		std::move(last),
+		service->autoIssueValue()
+	) | rpl::map([](const QString &last, Error issue) {
+		return (issue == Error::None)
+			? last
+			: (issue == Error::RemoteChanged)
+			? tr::lng_nagram_sync_auto_paused(tr::now)
+			: tr::lng_nagram_sync_auto_failed_short(tr::now);
+	});
+}
+
+rpl::producer<bool> CloudSyncAutoValue(not_null<Main::Session*> session) {
+	const auto user = session->userId().bare;
+	return ForAccount(session).Value(
+		Sync::kAutoOwner
+	) | rpl::map([=](const QString &owner) {
+		return Sync::AutoEnabled(owner, user);
+	}) | rpl::distinct_until_changed();
+}
+
+void SetCloudSyncAuto(not_null<Main::Session*> session, bool enabled) {
+	Expects(ForAccount(session).Set(Sync::kAutoOwner, enabled
+		? QString::number(session->userId().bare)
+		: QString()));
+}
+
+void AttachCloudSync(not_null<Main::Session*> session) {
+	crl::on_main(session, [=] {
+		const auto issues = session->lifetime().make_state<rpl::lifetime>();
+		CloudSyncAutoValue(
+			session
+		) | rpl::on_next([=](bool enabled) {
+			issues->destroy();
+			if (!enabled) {
+				if (const auto service = Service::Find(session)) {
+					service->setAuto(false);
+				}
+				return;
+			}
+			auto &service = Service::For(session);
+			service.setAuto(true);
+			service.autoIssueValue(
+			) | rpl::filter([](Error issue) {
+				return (issue != Error::None);
+			}) | rpl::on_next([=](Error issue) {
+				const auto &windows = session->windows();
+				if (windows.empty()) {
+					return;
+				}
+				windows.front()->showToast((issue == Error::RemoteChanged)
+					? ErrorText(issue)
+					: tr::lng_nagram_sync_auto_failed(
+						tr::now,
+						lt_reason,
+						ErrorText(issue)));
+			}, *issues);
+		}, session->lifetime());
 	});
 }
 

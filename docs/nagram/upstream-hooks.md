@@ -224,6 +224,10 @@ E21 截图在 `history_view_element.h/.cpp`、`history_view_message.cpp`、`hist
 
 云端备份（P3-08，S181）仍无上游改动，全部经公开接口：`Storage::Uploader` 的 `SendMediaType::SecondaryFile` 上传（只取得 `InputFile`，不建文档、不写本地文件）、`MTPmessages_SendMedia`、`MTPmessages_Search`／`MTPmessages_GetMessages`、`DocumentData::save` 与 `Data::Histories::deleteMessages`。没有使用 `ApiWrap::sendFiles`：它不返回消息 ID 也不报告失败，无法确认发送结果和取消；`Storage::PrepareMediaList` 因此也不需要。
 
+| 条目 | 文件 | 改动 | 私有成员 |
+| --- | --- | --- | --- |
+| J11 | `main/main_session.cpp` | `Main::Session` 构造函数在 `Nagram::Privacy::AttachSensitive(this)` 之后加一行 `Nagram::AttachCloudSync(this)`（另加一行 `#include`）。自动备份要在会话建立后、没有打开设置页时就能运行，Nagram 侧没有不经上游的会话创建通知。该调用只订阅本账号的 J11 开关，开关关闭时不创建同步服务 | 读取 |
+
 ### 2.11 P1／P2 补全第二轮
 
 | 条目 | 上游文件 | 改动 | 方式 |

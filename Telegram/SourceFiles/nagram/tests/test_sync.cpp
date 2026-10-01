@@ -369,6 +369,83 @@ void TestState() {
 		"sync state crossed accounts");
 }
 
+void TestAutoBackup() {
+	using namespace Nagram;
+	using namespace Nagram::Sync;
+
+	const auto a = QByteArray("a");
+	const auto b = QByteArray("b");
+	const auto now = qint64(1790000000);
+	Require(PlanAuto(now, 0, a, a).step == AutoStep::Skip
+		&& PlanAuto(now, now - 5, a, a).step == AutoStep::Skip
+		&& PlanAuto(now, 0, QByteArray(), b).step == AutoStep::Skip,
+		"unchanged or unreadable settings must not be uploaded");
+	Require(PlanAuto(now, 0, a, b).step == AutoStep::Run
+		&& PlanAuto(now, 0, a, QByteArray()).step == AutoStep::Run,
+		"changed settings without an earlier attempt must run");
+	const auto recent = PlanAuto(now, now - 60, a, b);
+	Require(recent.step == AutoStep::Wait
+		&& recent.wait == kAutoIntervalSeconds - 60,
+		"a recent attempt must delay the next one");
+	Require(PlanAuto(now, now, a, b).step == AutoStep::Wait
+		&& PlanAuto(now, now, a, b).wait == kAutoIntervalSeconds
+		&& PlanAuto(now, now - kAutoIntervalSeconds + 1, a, b).wait == 1,
+		"automatic backup interval bounds");
+	Require(PlanAuto(now, now - kAutoIntervalSeconds, a, b).step
+			== AutoStep::Run
+		&& PlanAuto(now, now + 3600, a, b).step == AutoStep::Run,
+		"an old attempt or a clock set back must not block the backup");
+	Require(kAutoDebounceSeconds > 0
+		&& kAutoIntervalSeconds >= 10 * kAutoDebounceSeconds
+		&& kAutoTimeoutSeconds < kAutoIntervalSeconds,
+		"automatic backup timing");
+
+	Require(ValidAutoOwner(QString())
+		&& ValidAutoOwner(QString::fromLatin1("777000111"))
+		&& !ValidAutoOwner(QString::fromLatin1("0"))
+		&& !ValidAutoOwner(QString(30, QChar(u'1')))
+		&& !ValidAutoOwner(QString::fromLatin1("on"))
+		&& !ValidAutoOwner(QString::fromLatin1("-1")),
+		"automatic backup owner format");
+	Require(!AutoEnabled(QString(), kUser)
+		&& AutoEnabled(QString::number(kUser), kUser)
+		&& !AutoEnabled(QString::number(kUser), kOtherUser)
+		&& !AutoEnabled(QString::number(kUser), 0)
+		&& !AutoEnabled(QString::fromLatin1("1"), kUser),
+		"automatic backup must be on only for the user who enabled it");
+
+	auto registry = Registry();
+	Sync::RegisterOptions(registry);
+	const auto info = registry.Find(kAutoOwner.key);
+	Require(info
+		&& info->scope == Scope::Account
+		&& info->fallbackRaw == "s"
+		&& !registry.HasFlag(kAutoOwner.key, Flag::Exportable),
+		"automatic backup must be an account option, off by default");
+
+	auto firstPrefs = MemoryPrefs();
+	auto secondPrefs = MemoryPrefs();
+	auto first = Options(firstPrefs, Scope::Account);
+	auto second = Options(secondPrefs, Scope::Account);
+	Require(!AutoEnabled(first.Get(kAutoOwner), kUser)
+		&& first.Set(kAutoOwner, QString::number(kUser))
+		&& !first.Set(kAutoOwner, QString::fromLatin1("yes"))
+		&& AutoEnabled(first.Get(kAutoOwner), kUser)
+		&& !AutoEnabled(second.Get(kAutoOwner), kOtherUser)
+		&& !AutoEnabled(first.Get(kAutoOwner), kOtherUser),
+		"automatic backup switch crossed accounts or users");
+
+	auto devicePrefs = MemoryPrefs();
+	auto device = Options(devicePrefs);
+	devicePrefs.values["nagram.cloudSyncAuto"] = "s777000111";
+	const auto exported = Exchange::Export(
+		device,
+		registry,
+		ExchangeTarget::Sync);
+	Require(!exported.data.contains("cloudSyncAuto"),
+		"the automatic backup switch must not be backed up");
+}
+
 void TestAllowlist() {
 	using namespace Nagram;
 	using namespace Nagram::Sync;
@@ -590,4 +667,6 @@ void TestSync() {
 	TestAllowlist();
 	TestLocalOnlyList();
 	std::cout << "PASS: Nagram cloud backup" << std::endl;
+	TestAutoBackup();
+	std::cout << "PASS: Nagram automatic cloud backup" << std::endl;
 }

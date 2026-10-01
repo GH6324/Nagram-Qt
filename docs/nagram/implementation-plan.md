@@ -257,7 +257,7 @@ P3 功能不在本计划内。每项先在 `docs/nagram/` 下单独写设计并�
 | --- | --- | --- | --- |
 | ✅ S180 | `feat(menu): cloud theme for message screenshots` | D024–D028、S30（E21 的“云主题”行） | 无上游改动。引用存在所属账号的偏好 `nagram.snapshotCloudTheme`，本机只存账号指针 `nagram.snapshotCloudAccount`，都不导出。引用比设计多一个 `user` 字段（写入时的用户 ID，读取时核对），原因同 S193：`Storage::Account::reset()` 不清空内存偏好。已核实 `Window::Theme::LoadFromContent` 能直接解析压缩主题文件，没有改用 `PreviewFromFile`。每次打开截图框先用 `MTPaccount_GetTheme` 取当前文档，再下载；解析结果只在截图框存活期间保留，不另做缓存。主题文件不带背景图时用窗口背景色填充（上游应用主题时用默认背景）。内置浅色主题勾选时优先于云主题。选择框、单账号与跨账号渲染、所属账号退出、主题被删除、下载失败、加载中关闭或复制均未现场验证 |
 | ✅ S181 | `feat(config): backup and restore settings via Saved Messages` | J08–J10 | 无上游改动。新增 `Flag::LocalOnly` 与只留本机清单（见设置页设计 3.10，`test_nagram` 固定）；`Exchange` 的导出与导入预览增加目标参数，备份与本地文件共用同一份校验。与设计不同之处：上传不用 `ApiWrap::sendFiles`（不返回消息 ID、不报告失败、不能取消），改用上游 `Storage::Uploader` 的 `SecondaryFile` 上传加自己发 `MTPmessages_SendMedia`，备份不落临时文件；定位备份不用 `Api::MessagesSearch`（失败时不通知），改为自己发搜索请求，并补查本机记录的消息 ID；信封不含 `device` 字段，也不注册 `nagram.cloudSyncDevice`，判定只看三份内容散列；同步状态多一个 `user` 字段；“删除云端备份”是单独一行，不是长按菜单；旧备份在新备份发送成功后全部删除，不只删本机记录的那一条。操作期间显示可取消的进度框，关闭即取消在途请求；同一账号同时只允许一个操作。发送请求已到达服务端后才取消时会留下一条未记录的备份，下次备份时一并删除。备份、恢复、同步、删除的实际收发，断线与重连，取消，双设备冲突，损坏或较新版本的文件，收藏夹搜索能否按 `#nagram_sync` 命中，设置页布局与搜索均未现场验证 |
-| ☐ S182 | `feat(config): automatic settings backup` | J11 | 待做 |
+| ✅ S182 | `feat(config): automatic settings backup` | J11 | 上游改动一处：`main/main_session.cpp` 构造函数加一行 `Nagram::AttachCloudSync(this)`（设计预计无上游改动；自动备份需要在会话建立时启动）。开关默认关闭，按账号保存；值是开启它的用户 ID 而不是布尔值（设计为 `bool`），避免退出登录后留在内存里的偏好让同一位置上的另一个用户继承开启状态。去抖 30 秒，两次尝试至少间隔 15 分钟，内容散列与上次同步相同时不发任何请求；单次 60 秒超时后取消。云端被其他设备改过时只提示，不上传、不应用。失败后不自动重试，直到设置再次变更或重启；失败与暂停用提示条和 J10 右侧文字显示（没有打开的窗口时只有后者）。开启后和每次启动时如果本机内容与上次同步不同，会在去抖后尝试一次。连续修改只上传一次、上传中再点备份、上传中切换或退出账号、双账号各自开启、断网与超时、关闭后无请求均未现场验证。**P3-08 的 V2（rebase 到上游 `dev`、完整构建、三平台 CI）未做** |
 | ☐ S01 | `feat(config): iCloud sync backend` | — | 未实施：缺 Apple Developer 团队签名、iCloud 键值存储的 entitlement 与 provisioning profile（专项设计 2.2、第 8 节）。条目、文案与代码均未进入仓库 |
 | ☐ S18 | `build: Nagram update trust root and release workflow`；`feat(core): update feed from GitHub Releases` | — | 未实施：缺 Nagram 的 Ed25519 根密钥与密钥清单、发行签名密钥和发行流程（专项设计 2.4、第 8 节）。自动更新保持在构建层关闭，`UpdateApplication()` 与更新检查代码未改 |
 | ☐ D117 | `feat(config): crash reports to the Nagram collector` | J12（预留） | 未实施：缺崩溃报告收集端、符号文件存储与符号化流程（专项设计 2.5、第 8 节）。崩溃上报保持在构建层关闭，条目与文案未进入代码 |
@@ -269,7 +269,7 @@ P3 功能不在本计划内。每项先在 `docs/nagram/` 下单独写设计并�
 | P3-05（S150、S151、S153 已实现，S152 待确认规则源） | [规则继承与 inline bot](p3-05-rules-inline-bot.md) | S150–S153 | I04–I08 |
 | P3-06（S160、S161 已实现，S162 待基准） | [网络](p3-06-network.md) | S160–S162 | K01–K06 |
 | P3-07（S170–S174 已实现，S175 未决定） | [外部媒体后端](p3-07-media-backends.md) | S170–S175 | F19–F25、I09–I10 |
-| P3-08（S180、S181 已实现） | [云同步与独立服务](p3-08-sync-services.md) | S180–S182 | J08–J11 |
+| P3-08（S180–S182 已实现；S01、S18、D117 条件不满足） | [云同步与独立服务](p3-08-sync-services.md) | S180–S182 | J08–J11 |
 | P3-09 与 F16 未归包项（已实现） | [低频高级项](p3-09-advanced-misc.md) | S190–S195 | B25–B26、F26–F27、G17、I11–I15 |
 
 ## 5. 每个功能提交的检查清单

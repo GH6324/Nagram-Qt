@@ -204,6 +204,29 @@ bool ValidState(const QByteArray &raw) {
 	return raw.isEmpty() || ParseState(raw).has_value();
 }
 
+AutoPlan PlanAuto(
+		qint64 now,
+		qint64 lastAttempt,
+		const QByteArray &local,
+		const QByteArray &synced) {
+	if (local.isEmpty() || local == synced) {
+		return { AutoStep::Skip };
+	}
+	const auto passed = now - lastAttempt;
+	if (lastAttempt > 0 && passed >= 0 && passed < kAutoIntervalSeconds) {
+		return { AutoStep::Wait, kAutoIntervalSeconds - passed };
+	}
+	return { AutoStep::Run };
+}
+
+bool ValidAutoOwner(const QString &value) {
+	return value.isEmpty() || DecimalId(QJsonValue(value)).has_value();
+}
+
+bool AutoEnabled(const QString &value, quint64 user) {
+	return user && (DecimalId(QJsonValue(value)) == user);
+}
+
 QStringList LocalOnlyKeys(const Registry &registry) {
 	auto result = QStringList();
 	for (const auto &info : registry.All()) {

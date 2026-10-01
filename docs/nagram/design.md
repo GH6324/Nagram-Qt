@@ -233,6 +233,10 @@ M1、M2、M3 之间没有依赖，但按计划顺序提交，避免并行分支�
 | F15 | 可执行文件、压缩包的自动下载例外 | 补做 F17、F18 |
 | F17 | 显示 RPC 错误、诊断日志 | 补做 J05–J07 |
 
+### P3-08 实施记录（2026-10-01）
+
+P3-08 按[专项设计](p3-08-sync-services.md)实施为 S180–S182：消息截图的云主题引用（E21）与设置的云端备份（J08–J11，载体为当前账号收藏夹里的文件消息）。各步 macOS arm64 Debug 增量构建与 `test_nagram`（新增“screenshot cloud theme reference”“cloud backup”“automatic cloud backup”三组）通过；没有启动应用，没有向 Telegram 发送任何消息，全部界面与网络场景未现场验证，V2 未做。上游改动 1 个已有文件：`main/main_session.cpp`（一行调用加一行 `#include`，用于自动备份）。备份为不加密的明文文件，只含可导出且未标 `Flag::LocalOnly` 的本机设置；恢复一律经导入差异预览。未实施：S01 iCloud 后端（缺签名与 entitlement）、S18 独立更新服务与发行通道（缺信任根、签名密钥与发行流程）、D117 崩溃报告服务（缺收集端），三者的条目、文案与代码均未进入仓库，更新与崩溃上报相关的上游代码未改。
+
 ### P3-09 实施记录（2026-10-01）
 
 P3-09 与 F16 未归包项按[专项设计](p3-09-advanced-misc.md)实施为 S190–S194，条目为 B25–B26、F26–F27、G17、I11–I15。各步 macOS arm64 Debug 增量构建与 `test_nagram`（新增“P3-09 options”“local lists”两组）通过；没有启动应用，全部界面场景未现场验证，V2 未做。上游改动 10 个已有文件：`core/ui_integration.cpp`、`core/click_handler_types.cpp`、`mainwidget.cpp`、`ui/chat/attach/attach_bot_webview.cpp`、`info/profile/info_profile_actions.cpp`、`dialogs/dialogs_entry.cpp`、`window/window_peer_menu.cpp`、`dialogs/ui/dialogs_layout.cpp`、`data/stickers/data_stickers.cpp`、`chat_helpers/stickers_list_widget.cpp`，没有新增 `friend` 声明。本地置顶与本机收藏不进入上游列表、不上传，按账号保存并带用户归属校验。未实施：按用户 ID 估算注册日期、标签搜索的“公开帖子”、其他设备造成的收藏溢出。

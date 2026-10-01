@@ -759,3 +759,10 @@ Telegram/cmake/td_lang.cmake. Every key uses the lng_nagram_ prefix.
 "lng_nagram_sync_delete_remote" = "Delete the cloud backup";
 "lng_nagram_sync_delete_remote_confirm" = "Delete the Nagram backup files from Saved Messages of this account? Settings on this device stay unchanged.";
 "lng_nagram_sync_deleted" = "The cloud backup was deleted.";
+"lng_nagram_sync_auto" = "Back up automatically after changes";
+"lng_nagram_sync_auto_about" = "Off by default. When on, Nagram sends a new backup to Saved Messages of this account about 30 seconds after exportable settings change on this device, at most once every 15 minutes, and removes the older backup files. Unchanged settings are not sent again. A backup changed on another device is never applied or replaced automatically. A failed attempt is reported and not repeated until settings change again or the app restarts.";
+"lng_nagram_sync_remote_newer" = "The backup in Saved Messages was changed on another device, so automatic backup did not replace it. Use “Sync now” to choose which settings to keep.";
+"lng_nagram_sync_auto_failed" = "Automatic backup failed. {reason}";
+"lng_nagram_sync_auto_failed_short" = "Automatic backup failed";
+"lng_nagram_sync_auto_paused" = "Changed on another device";
+"lng_nagram_sync_timeout" = "The backup did not finish within a minute and was cancelled. Check the connection and try again.";

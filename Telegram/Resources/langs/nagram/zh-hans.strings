@@ -755,3 +755,10 @@
 "lng_nagram_sync_delete_remote" = "删除云端备份";
 "lng_nagram_sync_delete_remote_confirm" = "要从这个账号的收藏夹删除 Nagram 备份文件吗？本机的设置不受影响。";
 "lng_nagram_sync_deleted" = "云端备份已删除。";
+"lng_nagram_sync_auto" = "设置变更后自动备份";
+"lng_nagram_sync_auto_about" = "默认关闭。开启后，本机的可导出设置变更约 30 秒后，Nagram 会向这个账号的收藏夹发送新的备份并移除旧的备份文件，每 15 分钟最多一次。内容没有变化时不会重复发送。其他设备改过的备份不会被自动应用或覆盖。失败时会提示，并且在设置再次变更或应用重启之前不会重试。";
+"lng_nagram_sync_remote_newer" = "收藏夹中的备份已被其他设备修改，自动备份没有覆盖它。请用“立即同步”选择保留哪一边的设置。";
+"lng_nagram_sync_auto_failed" = "自动备份失败。{reason}";
+"lng_nagram_sync_auto_failed_short" = "自动备份失败";
+"lng_nagram_sync_auto_paused" = "已被其他设备修改";
+"lng_nagram_sync_timeout" = "备份在一分钟内没有完成，已取消。请检查网络后重试。";

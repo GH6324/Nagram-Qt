@@ -11,6 +11,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "nagram/messages/badges.h"
 #include "nagram/media/sticker_export.h"
 #include "nagram/privacy/protection.h"
+#include "nagram/settings/cloud_sync.h"
 
 #include "apiwrap.h"
 #include "api/api_peer_colors.h"
@@ -189,6 +190,7 @@ Session::Session(
 	Nagram::ViewRefresher::Attach(this);
 	Nagram::Media::StickerExport::Attach(this);
 	Nagram::Privacy::AttachSensitive(this);
+	Nagram::AttachCloudSync(this);
 	Nagram::InstallRpcErrorObserver();
 
 	_api->requestTermsUpdate();

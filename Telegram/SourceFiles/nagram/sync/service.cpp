@@ -9,6 +9,19 @@
 namespace Nagram::Sync {
 namespace {
 
+struct Entry {
+	base::weak_ptr<Main::Session> session;
+	Service *service = nullptr;
+};
+
+[[nodiscard]] std::vector<Entry> &Entries() {
+	static auto result = std::vector<Entry>();
+	std::erase_if(result, [](const Entry &entry) {
+		return !entry.session;
+	});
+	return result;
+}
+
 [[nodiscard]] Error FromBackend(BackendError error) {
 	switch (error) {
 	case BackendError::None: return Error::None;
@@ -36,28 +49,32 @@ namespace {
 
 Service::Service(not_null<Main::Session*> session)
 : _session(session)
-, _backend(MakeSavedMessagesBackend(session)) {
+, _backend(MakeSavedMessagesBackend(session))
+, _autoTimer([=] { autoRun(); })
+, _autoTimeout([=] {
+	cancel();
+	autoFinish(Error::Timeout);
+}) {
 }
 
 Service::~Service() = default;
 
 Service &Service::For(not_null<Main::Session*> session) {
-	struct Entry {
-		base::weak_ptr<Main::Session> session;
-		Service *service = nullptr;
-	};
-	static auto entries = std::vector<Entry>();
-	std::erase_if(entries, [](const Entry &entry) {
-		return !entry.session;
-	});
-	for (const auto &entry : entries) {
-		if (entry.session.get() == session) {
-			return *entry.service;
-		}
+	if (const auto found = Find(session)) {
+		return *found;
 	}
 	const auto service = session->lifetime().make_state<Service>(session);
-	entries.push_back({ base::make_weak(session), service });
+	Entries().push_back({ base::make_weak(session), service });
 	return *service;
+}
+
+Service *Service::Find(not_null<Main::Session*> session) {
+	for (const auto &entry : Entries()) {
+		if (entry.session.get() == session) {
+			return entry.service;
+		}
+	}
+	return nullptr;
 }
 
 bool Service::busy() const {
@@ -86,6 +103,88 @@ void Service::save(
 void Service::cancel() {
 	_backend->cancel();
 	_busy = false;
+	_autoRunning = false;
+	_autoTimeout.cancel();
+}
+
+void Service::setAuto(bool enabled) {
+	if (_auto == enabled) {
+		return;
+	}
+	_auto = enabled;
+	_autoLifetime.destroy();
+	_autoTimer.cancel();
+	_autoIssue = Error::None;
+	if (!enabled) {
+		if (_autoRunning) {
+			cancel();
+		}
+		return;
+	}
+	ForDevice().changes(
+	) | rpl::on_next([=] {
+		autoSchedule(kAutoDebounceSeconds);
+	}, _autoLifetime);
+	autoSchedule(kAutoDebounceSeconds);
+}
+
+rpl::producer<Error> Service::autoIssueValue() const {
+	return _autoIssue.value();
+}
+
+void Service::autoSchedule(qint64 seconds) {
+	_autoTimer.callOnce(seconds * crl::time(1000));
+}
+
+void Service::autoRun() {
+	if (!_auto) {
+		return;
+	} else if (_busy) {
+		autoSchedule(kAutoDebounceSeconds);
+		return;
+	}
+	const auto exported = Exchange::Export(
+		ForDevice(),
+		RegisteredOptions(),
+		ExchangeTarget::Sync);
+	if (!exported.invalidKeys.isEmpty()) {
+		_autoIssue = Error::LocalInvalid;
+		return;
+	}
+	const auto known = state();
+	const auto now = qint64(base::unixtime::now());
+	const auto plan = PlanAuto(
+		now,
+		_autoAttempt,
+		PayloadHash(exported.data),
+		known ? known->hash : QByteArray());
+	if (plan.step == AutoStep::Skip) {
+		_autoIssue = Error::None;
+		return;
+	} else if (plan.step == AutoStep::Wait) {
+		autoSchedule(plan.wait);
+		return;
+	}
+	_autoAttempt = now;
+	_autoRunning = true;
+	_autoTimeout.callOnce(kAutoTimeoutSeconds * crl::time(1000));
+	check([=](Checked checked) {
+		if (checked.error != Error::None) {
+			autoFinish(checked.error);
+		} else if (!checked.found || checked.action == Action::Upload) {
+			upload([=](Error error) { autoFinish(error); });
+		} else if (checked.action == Action::UpToDate) {
+			autoFinish(Error::None);
+		} else {
+			autoFinish(Error::RemoteChanged);
+		}
+	});
+}
+
+void Service::autoFinish(Error error) {
+	_autoRunning = false;
+	_autoTimeout.cancel();
+	_autoIssue.force_assign(error);
 }
 
 void Service::check(Fn<void(Checked)> done) {

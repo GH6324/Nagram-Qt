@@ -64,13 +64,42 @@ struct State {
 
 [[nodiscard]] QStringList LocalOnlyKeys(const Registry &registry);
 
+inline constexpr auto kAutoDebounceSeconds = 30;
+inline constexpr auto kAutoIntervalSeconds = 15 * 60;
+inline constexpr auto kAutoTimeoutSeconds = 60;
+
+enum class AutoStep {
+	Skip,
+	Wait,
+	Run,
+};
+
+struct AutoPlan {
+	AutoStep step = AutoStep::Skip;
+	qint64 wait = 0;
+};
+
+[[nodiscard]] AutoPlan PlanAuto(
+	qint64 now,
+	qint64 lastAttempt,
+	const QByteArray &local,
+	const QByteArray &synced);
+
+[[nodiscard]] bool ValidAutoOwner(const QString &value);
+[[nodiscard]] bool AutoEnabled(const QString &value, quint64 user);
+
 inline const auto kState = Option<QByteArray>{
 	"nagram.cloudSyncState", Scope::Account, QByteArray(),
 	Category::Services, "lng_nagram_sync_title",
 	static_cast<unsigned>(Flag::Hidden), ValidState };
 
+inline const auto kAutoOwner = Option<QString>{
+	"nagram.cloudSyncAuto", Scope::Account, QString(),
+	Category::Services, "lng_nagram_sync_auto", 0, ValidAutoOwner };
+
 inline void RegisterOptions(Registry &registry) {
 	Expects(registry.Add(kState));
+	Expects(registry.Add(kAutoOwner));
 }
 
 } // namespace Nagram::Sync

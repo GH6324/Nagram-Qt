@@ -327,6 +327,21 @@ const auto kMeta = BuildHelper({
 		.keywords = { u"backup"_q, u"delete"_q },
 	});
 	builder.addDividerText(tr::lng_nagram_sync_about());
+	const auto session = builder.session();
+	const auto automatic = builder.addButton({
+		.id = u"nagram/config/sync-auto"_q,
+		.title = tr::lng_nagram_sync_auto(),
+		.st = &st::settingsButtonNoIcon,
+		.toggled = CloudSyncAutoValue(session),
+		.keywords = { u"backup"_q, u"automatic"_q },
+	});
+	if (automatic) {
+		automatic->toggledChanges(
+		) | rpl::on_next([=](bool value) {
+			SetCloudSyncAuto(session, value);
+		}, automatic->lifetime());
+	}
+	builder.addDividerText(tr::lng_nagram_sync_auto_about());
 });
 
 const SectionBuildMethod ConfigSection::kBuild = kMeta.build;
