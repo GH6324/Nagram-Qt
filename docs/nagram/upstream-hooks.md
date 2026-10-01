@@ -187,6 +187,7 @@ E21 截图在 `history_view_element.h/.cpp`、`history_view_message.cpp`、`hist
 | B23 | `data/data_channel.h`、`history/history.cpp`、`window/window_peer_menu.cpp`、`boxes/peers/community_box.cpp`、`dialogs/dialogs_row.cpp`、`dialogs/dialogs_widget.cpp` | `collapsedInDialogs()` 在总开关开启时返回 false；两处直接读标志位的判断改走该函数；隐藏“合并显示”开关；会话头像不画社区展开角标，点头像不进入社区 | 替换 |
 | B24 | `boxes/share_box.cpp`、`boxes/peer_list_controllers.cpp`、`window/window_peer_menu.cpp` | 分享框与转发选择框的默认列表在收藏夹后插入最近会话，并对后续列表去重；编辑文件夹的会话选择框同样先列最近会话，并在 `boxes/filters/edit_filter_chats_list.cpp` 的类型列表末尾加入“最近会话”行（图标 `folders_type_recent`），`boxes/filters/edit_filter_box.cpp` 在保存选择时写入按文件夹的本地开关，`data/data_chat_filters.cpp` 的 `ChatFilter::contains` 在排除列表之后判断动态成员（只依赖 B16） | 读取 |
 | 重启 | `platform/mac/launcher_mac.mm` | 包内没有 Updater（关闭自动更新的构建）时，`JustRelaunch` 改由 `nagram/core/relaunch.cpp` 等待当前进程退出后重新打开应用，并带上工作目录等启动参数 | 替换 |
+| 构建 | `Telegram/cmake/telegram_apple_swift_runtime.cmake` | `CMAKE_Swift_COMPILER` 是 `/usr/bin/` 下的转发壳时（本机 Ninja 构建），改用 `xcrun --find swiftc` 定位工具链，否则 Swift 运行库目录不存在、链接失败 | 条件 |
 | C28 | 无（`nagram/messages/format.cpp`） | 编辑标记文字来源 | 替换 |
 | C29 | `apiwrap.cpp` | 加入频道时不设置 `SimilarExpanded` | 读取 |
 | C30 | `history/view/history_view_reply.cpp` | 回复块按非气泡样式绘制底色，跳过背景图案 | 读取 |

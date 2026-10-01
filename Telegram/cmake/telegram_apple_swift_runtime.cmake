@@ -9,7 +9,8 @@ function(telegram_add_apple_swift_runtime target_name)
         return()
     endif()
 
-    if (CMAKE_Swift_COMPILER)
+    # Nagram: /usr/bin/swiftc is a shim with no toolchain next to it.
+    if (CMAKE_Swift_COMPILER AND NOT CMAKE_Swift_COMPILER MATCHES "^/usr/bin/")
         set(swift_compiler "${CMAKE_Swift_COMPILER}")
     else()
         execute_process(
