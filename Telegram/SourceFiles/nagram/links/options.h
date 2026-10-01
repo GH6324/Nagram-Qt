@@ -33,6 +33,14 @@ inline constexpr auto kWebAppHeightScale = Option<int>{
 	"nagram.webAppHeightScale", Scope::Device, 100,
 	Category::Rules, "lng_nagram_web_app_height", 0, ValidWebAppScale };
 
+inline constexpr auto kWebAppAndroidPlatform = Option<bool>{
+	"nagram.webAppAndroidPlatform", Scope::Device, false,
+	Category::Rules, "lng_nagram_web_app_android_platform" };
+
+[[nodiscard]] constexpr const char *WebAppPlatformName(bool android) {
+	return android ? "android" : "tdesktop";
+}
+
 [[nodiscard]] inline QSize ScaledPanelSize(
 		QSize base,
 		int widthScale,
@@ -68,6 +76,7 @@ inline void RegisterBehaviorOptions(Registry &registry) {
 	Expects(registry.Add(kHashtagSearchPageChat));
 	Expects(registry.Add(kWebAppWidthScale));
 	Expects(registry.Add(kWebAppHeightScale));
+	Expects(registry.Add(kWebAppAndroidPlatform));
 }
 
 } // namespace Nagram::Links

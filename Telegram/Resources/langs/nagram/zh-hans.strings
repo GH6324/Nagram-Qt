@@ -632,3 +632,5 @@
 "lng_nagram_sticker_export_error_path" = "导出目录不存在或不可写。请恢复该目录或重新选择，然后再次同步。";
 "lng_nagram_sticker_export_error_write" = "无法写入导出目录。请检查剩余空间和权限，然后再次同步。";
 "lng_nagram_sticker_export_error_download" = "{amount} 个贴纸集下载失败。再次同步即可重试。";
+"lng_nagram_web_app_android_platform" = "网页应用使用 Android 平台标识";
+"lng_nagram_web_app_android_platform_about" = "下次打开网页应用时生效。只改变 Telegram 告知网页应用的平台，浏览器标识不变；部分功能可能不可用。";

@@ -636,3 +636,5 @@ Telegram/cmake/td_lang.cmake. Every key uses the lng_nagram_ prefix.
 "lng_nagram_sticker_export_error_path" = "The export folder is missing or not writable. Restore it or choose another folder, then sync again.";
 "lng_nagram_sticker_export_error_write" = "Couldn't write to the export folder. Check free space and permissions, then sync again.";
 "lng_nagram_sticker_export_error_download" = "{amount} sets couldn't be downloaded. Sync again to retry.";
+"lng_nagram_web_app_android_platform" = "Use Android platform identity in web apps";
+"lng_nagram_web_app_android_platform_about" = "Applies the next time a web app is opened. Changes only the platform that Telegram reports to the web app; the browser identity stays the same. Some features may not work.";

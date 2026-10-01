@@ -1,4 +1,5 @@
 #include "nagram/core/exchange.h"
+#include "nagram/links/options.h"
 #include "nagram/media/backend_options.h"
 #include "base/basic_types.h"
 
@@ -632,6 +633,32 @@ void TestExportRun() {
 		"a successful manual round resumes automatic sync");
 }
 
+void TestWebAppPlatform() {
+	using namespace Nagram;
+	using namespace Nagram::Links;
+	auto registry = Registry();
+	RegisterBehaviorOptions(registry);
+	CheckDeviceOption(registry, kWebAppAndroidPlatform, Category::Rules, true);
+	Require(!kWebAppAndroidPlatform.fallback,
+		"web apps must get the upstream platform by default");
+
+	auto prefs = MemoryPrefs();
+	auto options = Options(prefs);
+	const auto platform = [&] {
+		return std::string(
+			WebAppPlatformName(options.Get(kWebAppAndroidPlatform)));
+	};
+	Require(platform() == "tdesktop", "default web app platform");
+	Require(options.Set(kWebAppAndroidPlatform, true)
+		&& platform() == "android", "Android web app platform");
+	Require(options.Set(kWebAppAndroidPlatform, false)
+		&& prefs.values.empty()
+		&& platform() == "tdesktop", "web app platform reset");
+	prefs.values[std::string(kWebAppAndroidPlatform.key)] = "broken";
+	Require(platform() == "tdesktop",
+		"stored invalid value must keep the upstream platform");
+}
+
 } // namespace
 
 void TestMedia() {
@@ -645,5 +672,6 @@ void TestMedia() {
 	TestExportManifests();
 	TestExportPlan();
 	TestExportRun();
+	TestWebAppPlatform();
 	std::cout << "PASS: Nagram media backends" << std::endl;
 }

@@ -1,6 +1,7 @@
 #pragma once
 
 class PeerData;
+class UserData;
 class QSize;
 class QString;
 struct ClickContext;
@@ -27,5 +28,6 @@ private:
 void ApplyHashtagSearchPage(Dialogs::SearchState &state);
 
 [[nodiscard]] QSize WebAppPanelSize(QSize base);
+[[nodiscard]] const char *WebAppPlatform(not_null<UserData*> bot);
 
 } // namespace Nagram::Links

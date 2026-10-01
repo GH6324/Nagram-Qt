@@ -632,3 +632,5 @@
 "lng_nagram_sticker_export_error_path" = "匯出資料夾不存在或無法寫入。請復原該資料夾或重新選擇，然後再次同步。";
 "lng_nagram_sticker_export_error_write" = "無法寫入匯出資料夾。請檢查剩餘空間和權限，然後再次同步。";
 "lng_nagram_sticker_export_error_download" = "{amount} 個貼圖集下載失敗。再次同步即可重試。";
+"lng_nagram_web_app_android_platform" = "網頁應用程式使用 Android 平台識別";
+"lng_nagram_web_app_android_platform_about" = "下次開啟網頁應用程式時生效。只改變 Telegram 告知網頁應用程式的平台，瀏覽器識別不變；部分功能可能無法使用。";

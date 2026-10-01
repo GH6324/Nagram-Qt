@@ -218,6 +218,11 @@ const auto kMeta = BuildHelper({
 		&tr::lng_nagram_web_app_height,
 		u"nagram/rules/web-app-height"_q);
 	builder.addDividerText(tr::lng_nagram_web_app_size_about());
+	AddToggle(builder, Links::kWebAppAndroidPlatform,
+		tr::lng_nagram_web_app_android_platform(),
+		u"nagram/rules/web-app-platform"_q,
+		{ u"web app"_q, u"mini app"_q, u"platform"_q, u"Android"_q });
+	builder.addDividerText(tr::lng_nagram_web_app_android_platform_about());
 });
 
 const SectionBuildMethod RulesSection::kBuild = kMeta.build;

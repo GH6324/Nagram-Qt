@@ -93,4 +93,8 @@ QSize WebAppPanelSize(QSize base) {
 	return ScaledPanelSize(base, width, height, available);
 }
 
+const char *WebAppPlatform(not_null<UserData*> bot) {
+	return WebAppPlatformName(ForDevice().Get(kWebAppAndroidPlatform));
+}
+
 } // namespace Nagram::Links
