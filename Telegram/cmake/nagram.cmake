@@ -78,6 +78,8 @@ set(nagram_sources
     nagram/network/model.cpp
     nagram/network/runtime.cpp
     nagram/snapshot/snapshot.cpp
+    nagram/snapshot/cloud_theme.cpp
+    nagram/snapshot/cloud_theme_model.cpp
     nagram/privacy/profile.cpp
     nagram/privacy/alias.cpp
     nagram/privacy/admin_shortcuts.cpp
@@ -231,6 +233,7 @@ if (DESKTOP_APP_TEST_APPS)
         nagram/tests/test_local_lists.cpp
         nagram/tests/test_network.cpp
         nagram/tests/test_media.cpp
+        nagram/tests/test_sync.cpp
         nagram/compose/spacing.cpp
         nagram/core/exchange.cpp
         nagram/core/regex.cpp
@@ -253,6 +256,7 @@ if (DESKTOP_APP_TEST_APPS)
         nagram/network/model.cpp
         nagram/media/url_template.cpp
         nagram/media/sticker_export_model.cpp
+        nagram/snapshot/cloud_theme_model.cpp
     )
 
     target_include_directories(test_nagram PRIVATE

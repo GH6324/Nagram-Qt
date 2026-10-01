@@ -251,6 +251,17 @@ P3 功能不在本计划内。每项先在 `docs/nagram/` 下单独写设计并�
 | ✅ S145 | `feat(ai): batch transcription of selected voice messages` | E37 | 提交标题比设计少了“转写预设”：Groq、SiliconFlow 的转写地址在参考源码中核对不到，没有新增转写预设（预设表保留原有的 OpenAI 转写）。只处理当前在内存中或有本地文件的音频，不触发下载；一次最多 20 条，顺序上传；凭据或配置错误立即停止，连续 3 条网络错误停止，取消后已完成的结果保留。确认框的条数、进度、停止原因与结束统计，气泡刷新，批量期间修改服务配置，重复发起时跳过已有结果均未现场验证。**P3-04 的 V2（rebase 到上游 `dev`、完整构建、三平台 CI）未做** |
 | ☐ S145（非 OpenAI 形态的转写协议） | — | — | 未实施：Gemini 原生音频、Azure OpenAI、Deepgram 等各自需要新的请求构造、鉴权和响应解析，并要有 localhost 桩才能测试，当前没有明确要接入的目标（专项设计 2.6）。条目、文案与协议均未进入代码，`ParseService` 对转写仍只接受 `openai` |
 
+已实现的步骤（P3-08，2026-10-01）。每个步骤一个提交，macOS arm64 Debug 增量构建与 `test_nagram` 通过；没有启动应用，没有向 Telegram 发送任何消息，界面与网络行为未现场核验。
+
+| 步骤 | 提交 | 条目 | 备注 |
+| --- | --- | --- | --- |
+| ✅ S180 | `feat(menu): cloud theme for message screenshots` | D024–D028、S30（E21 的“云主题”行） | 无上游改动。引用存在所属账号的偏好 `nagram.snapshotCloudTheme`，本机只存账号指针 `nagram.snapshotCloudAccount`，都不导出。引用比设计多一个 `user` 字段（写入时的用户 ID，读取时核对），原因同 S193：`Storage::Account::reset()` 不清空内存偏好。已核实 `Window::Theme::LoadFromContent` 能直接解析压缩主题文件，没有改用 `PreviewFromFile`。每次打开截图框先用 `MTPaccount_GetTheme` 取当前文档，再下载；解析结果只在截图框存活期间保留，不另做缓存。主题文件不带背景图时用窗口背景色填充（上游应用主题时用默认背景）。内置浅色主题勾选时优先于云主题。选择框、单账号与跨账号渲染、所属账号退出、主题被删除、下载失败、加载中关闭或复制均未现场验证 |
+| ☐ S181 | `feat(config): backup and restore settings via Saved Messages` | J08–J10 | 待做 |
+| ☐ S182 | `feat(config): automatic settings backup` | J11 | 待做 |
+| ☐ S01 | `feat(config): iCloud sync backend` | — | 未实施：缺 Apple Developer 团队签名、iCloud 键值存储的 entitlement 与 provisioning profile（专项设计 2.2、第 8 节）。条目、文案与代码均未进入仓库 |
+| ☐ S18 | `build: Nagram update trust root and release workflow`；`feat(core): update feed from GitHub Releases` | — | 未实施：缺 Nagram 的 Ed25519 根密钥与密钥清单、发行签名密钥和发行流程（专项设计 2.4、第 8 节）。自动更新保持在构建层关闭，`UpdateApplication()` 与更新检查代码未改 |
+| ☐ D117 | `feat(config): crash reports to the Nagram collector` | J12（预留） | 未实施：缺崩溃报告收集端、符号文件存储与符号化流程（专项设计 2.5、第 8 节）。崩溃上报保持在构建层关闭，条目与文案未进入代码 |
+
 | 包 | 专项设计 | 步骤 | 设置页条目 |
 | --- | --- | --- | --- |
 | P3-03（已实现） | [内容保护与敏感内容](p3-03-content-protection.md) | S120–S123 | G13–G16 |
@@ -258,7 +269,7 @@ P3 功能不在本计划内。每项先在 `docs/nagram/` 下单独写设计并�
 | P3-05（S150、S151、S153 已实现，S152 待确认规则源） | [规则继承与 inline bot](p3-05-rules-inline-bot.md) | S150–S153 | I04–I08 |
 | P3-06（S160、S161 已实现，S162 待基准） | [网络](p3-06-network.md) | S160–S162 | K01–K06 |
 | P3-07（S170–S174 已实现，S175 未决定） | [外部媒体后端](p3-07-media-backends.md) | S170–S175 | F19–F25、I09–I10 |
-| P3-08 | [云同步与独立服务](p3-08-sync-services.md) | S180–S182 | J08–J11 |
+| P3-08（S180 已实现） | [云同步与独立服务](p3-08-sync-services.md) | S180–S182 | J08–J11 |
 | P3-09 与 F16 未归包项（已实现） | [低频高级项](p3-09-advanced-misc.md) | S190–S195 | B25–B26、F26–F27、G17、I11–I15 |
 
 ## 5. 每个功能提交的检查清单

@@ -1,4 +1,5 @@
 #include "nagram/snapshot/snapshot.h"
+#include "nagram/snapshot/cloud_theme.h"
 #include "nagram/menu/actions.h"
 
 #include "core/application.h"
@@ -22,7 +23,9 @@
 #include "ui/widgets/checkbox.h"
 #include "ui/widgets/labels.h"
 #include "ui/widgets/popup_menu.h"
+#include "ui/wrap/slide_wrap.h"
 #include "window/section_widget.h"
+#include "window/themes/window_theme.h"
 #include "window/window_session_controller.h"
 
 #include <QtCore/QJsonDocument>
@@ -68,6 +71,21 @@ private:
 	bool _spoilers = false;
 
 };
+
+[[nodiscard]] Ui::ChatThemeBackground CloudBackground(
+		const Window::Theme::Instance &theme) {
+	if (theme.background.isNull()) {
+		return { .colorForFill = theme.palette.windowBg()->c };
+	}
+	auto prepared = Ui::PreprocessBackgroundImage(theme.background);
+	prepared.setDevicePixelRatio(style::DevicePixelRatio());
+	auto tiled = Ui::PrepareImageForTiled(prepared);
+	return {
+		.prepared = std::move(prepared),
+		.preparedForTiled = std::move(tiled),
+		.tile = theme.tiled,
+	};
+}
 
 bool CanCapture(not_null<HistoryItem*> item) {
 	return item->allowsForward() && !item->isTtlCoveredMedia()
@@ -119,8 +137,14 @@ void SnapshotBox(
 			p.drawImage(QRect(QPoint((preview->width() - size.width()) / 2, 0), size), *image);
 		}
 	}, preview->lifetime());
+	const auto loader = box->lifetime().make_state<CloudThemeLoader>();
 	const auto render = [=] {
-		const auto rendered = Render(controller, ids, *options, *reveal);
+		const auto rendered = Render(
+			controller,
+			ids,
+			*options,
+			*reveal,
+			loader->theme());
 		if (const auto error = std::get_if<QString>(&rendered)) {
 			*image = QImage();
 			label->setText(*error);
@@ -131,6 +155,7 @@ void SnapshotBox(
 		resizePreview();
 		preview->update();
 	};
+	const auto builtin = box->lifetime().make_state<Ui::Checkbox*>();
 	for (const auto &[key, title] : std::array{
 		std::pair(u"background"_q, tr::lng_nagram_snapshot_background(tr::now)),
 		std::pair(u"date"_q, tr::lng_nagram_snapshot_date(tr::now)),
@@ -140,6 +165,9 @@ void SnapshotBox(
 	}) {
 		const auto toggle = box->addRow(object_ptr<Ui::Checkbox>(
 			box, title, options->value(key).toBool()));
+		if (key == u"builtinTheme"_q) {
+			*builtin = toggle;
+		}
 		toggle->checkedChanges() | rpl::on_next([=](bool value) {
 			options->insert(key, value);
 			Expects(ForDevice().Set(kSettings, *options == Defaults()
@@ -148,6 +176,45 @@ void SnapshotBox(
 			render();
 		}, toggle->lifetime());
 	}
+	const auto cloudTitle = box->lifetime().make_state<
+		rpl::variable<QString>>();
+	const auto cloud = box->addRow(object_ptr<Ui::SettingsButton>(
+		box,
+		cloudTitle->value() | rpl::map([](const QString &title) {
+			return tr::lng_nagram_snapshot_cloud_theme_value(
+				tr::now,
+				lt_title,
+				title);
+		}),
+		st::settingsButtonNoIcon));
+	cloud->setClickedCallback([=] {
+		ShowCloudThemePicker(controller, crl::guard(box, [=] {
+			if ((*builtin)->checked()) {
+				(*builtin)->setChecked(false);
+			}
+			loader->reload();
+		}));
+	});
+	const auto note = box->addRow(object_ptr<Ui::SlideWrap<Ui::FlatLabel>>(
+		box,
+		object_ptr<Ui::FlatLabel>(box, QString(), st::boxLabel)));
+	const auto clear = box->addRow(
+		object_ptr<Ui::SlideWrap<Ui::SettingsButton>>(
+			box,
+			object_ptr<Ui::SettingsButton>(
+				box,
+				tr::lng_nagram_snapshot_cloud_theme_clear(),
+				st::settingsButtonNoIcon)));
+	clear->entity()->setClickedCallback([=] { loader->clear(); });
+	loader->updates() | rpl::on_next([=] {
+		*cloudTitle = loader->label();
+		note->entity()->setText(loader->note());
+		note->toggle(!loader->note().isEmpty(), anim::type::instant);
+		clear->toggle(
+			loader->state() != CloudThemeState::None,
+			anim::type::instant);
+		render();
+	}, box->lifetime());
 	const auto spoiler = box->addRow(object_ptr<Ui::Checkbox>(
 		box, tr::lng_nagram_snapshot_spoilers(tr::now), false));
 	spoiler->checkedChanges() | rpl::on_next([=](bool value) {
@@ -156,12 +223,17 @@ void SnapshotBox(
 	}, spoiler->lifetime());
 	const auto refresh = box->addRow(object_ptr<Ui::SettingsButton>(
 		box, tr::lng_nagram_snapshot_refresh(), st::settingsButtonNoIcon));
-	refresh->setClickedCallback(render);
+	refresh->setClickedCallback([=] { loader->reload(); });
 	const auto matchesPreview = [=](const QImage &expected) {
 		if (expected.isNull() || !AllAvailable(controller, ids)) {
 			return false;
 		}
-		const auto current = Render(controller, ids, *options, *reveal);
+		const auto current = Render(
+			controller,
+			ids,
+			*options,
+			*reveal,
+			loader->theme());
 		const auto value = std::get_if<QImage>(&current);
 		return value && *value == expected;
 	};
@@ -203,7 +275,7 @@ void SnapshotBox(
 			}));
 	});
 	box->addButton(tr::lng_close(), [=] { box->closeBox(); });
-	render();
+	loader->reload();
 }
 
 } // namespace
@@ -245,7 +317,8 @@ std::variant<QImage, QString> Render(
 		not_null<Window::SessionController*> controller,
 		const MessageIdsList &ids,
 		const QJsonObject &options,
-		bool revealSpoilers) {
+		bool revealSpoilers,
+		const Window::Theme::Instance *cloud) {
 	if (!Valid(options) || !AllAvailable(controller, ids)) {
 		return tr::lng_nagram_snapshot_unavailable(tr::now);
 	} else if (ids.size() > kMaximumMessages) {
@@ -256,12 +329,24 @@ std::variant<QImage, QString> Render(
 	auto palette = style::palette();
 	palette.finalize();
 	auto snapshotStyle = Ui::ChatStyle(controller->session().colorIndicesValue());
-	auto builtinTheme = Ui::ChatTheme();
-	builtinTheme.setBackground({ .colorForFill = palette.windowBg()->c });
 	const auto builtin = options.value(u"builtinTheme"_q).toBool();
-	snapshotStyle.applyCustomPalette(builtin ? &palette : controller->chatStyle().get());
+	const auto custom = builtin ? nullptr : cloud;
+	auto ownTheme = Ui::ChatTheme();
+	if (builtin) {
+		ownTheme.setBackground({ .colorForFill = palette.windowBg()->c });
+	} else if (custom) {
+		ownTheme.setBackground(CloudBackground(*custom));
+	}
+	const auto current = controller->chatStyle().get();
+	snapshotStyle.applyCustomPalette(builtin
+		? &palette
+		: custom
+		? &custom->palette
+		: static_cast<const style::palette*>(current));
 	const auto chatStyle = &snapshotStyle;
-	const auto theme = builtin ? &builtinTheme : controller->currentChatTheme().get();
+	const auto theme = (builtin || custom)
+		? &ownTheme
+		: controller->currentChatTheme().get();
 	const auto padding = st::nagramSnapshotPadding;
 	const auto width = st::nagramSnapshotWidth;
 	auto height = padding;

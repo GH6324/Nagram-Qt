@@ -216,7 +216,7 @@ P3-07 外部媒体后端：
 | I12、I13 | `core/click_handler_types.cpp`、`mainwidget.cpp` | `SearchByHashtag` 开头建立 `Nagram::Links::HashtagClickScope`（记录点击所在的对话；`#标签@用户名` 不建立有效标记）；`MainWidget::searchMessages` 在 `state.tab = state.defaultTabForMe()` 之后调用 `Nagram::Links::ApplyHashtagSearchPage(state)`，只在标记有效时改写 `inChat` 与页面 | 替换 |
 | I14、I15 | `ui/chat/attach/attach_bot_webview.cpp` | `Panel::Panel` 的 `setInnerSize` 与 `Panel::createWebview` 中 Linux 外部壳的 `initialSize` 改用 `Nagram::Links::WebAppPanelSize(st::botWebViewPanelSize)`；两个比例都是 100% 时原样返回 | 替换 |
 
-E21 截图在 `history_view_element.h/.cpp`、`history_view_message.cpp`、`history_view_text_helper.cpp` 和 `history_view_media.cpp` 增加绘制代理挂钩，预览与导出逻辑留在 `nagram/snapshot/`。E23 通过既有两条消息菜单路径的 `Apply` 插入，作者列表只写入本机账号偏好。
+E21 截图在 `history_view_element.h/.cpp`、`history_view_message.cpp`、`history_view_text_helper.cpp` 和 `history_view_media.cpp` 增加绘制代理挂钩，预览与导出逻辑留在 `nagram/snapshot/`。截图云主题（P3-08，S180）没有上游改动：经 `Data::CloudThemes::list()`、`MTPaccount_GetTheme`、`DocumentData::save` 与 `Window::Theme::LoadFromContent` 这些公开接口取得调色板和背景，不调用 `Window::Theme::Apply`。E23 通过既有两条消息菜单路径的 `Apply` 插入，作者列表只写入本机账号偏好。
 
 ### 2.10 配置管理
 

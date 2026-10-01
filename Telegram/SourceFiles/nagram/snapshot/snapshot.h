@@ -1,13 +1,19 @@
 #pragma once
 
 #include "nagram/core/options.h"
+#include "nagram/snapshot/cloud_theme_model.h"
 
 #include <QtCore/QJsonObject>
 #include <QtGui/QImage>
 
 class HistoryItem;
 namespace Ui { class PopupMenu; }
-namespace Window { class SessionController; }
+namespace Window {
+class SessionController;
+namespace Theme {
+struct Instance;
+} // namespace Theme
+} // namespace Window
 
 namespace Nagram::Snapshot {
 
@@ -18,7 +24,8 @@ namespace Nagram::Snapshot {
 	not_null<Window::SessionController*> controller,
 	const MessageIdsList &ids,
 	const QJsonObject &options,
-	bool revealSpoilers);
+	bool revealSpoilers,
+	const Window::Theme::Instance *cloud = nullptr);
 void InsertAction(
 	Ui::PopupMenu *menu,
 	Window::SessionController *controller,
@@ -31,6 +38,7 @@ inline const auto kSettings = Option<QByteArray>{
 
 inline void RegisterOptions(Registry &registry) {
 	Expects(registry.Add(kSettings));
+	RegisterCloudThemeOptions(registry);
 }
 
 } // namespace Nagram::Snapshot
