@@ -192,6 +192,11 @@ const auto kMeta = BuildHelper({
 		u"nagram/privacy/force-copy"_q,
 		{ u"copy"_q, u"save"_q, u"protected"_q, u"forward"_q });
 	builder.addDividerText(tr::lng_nagram_force_copy_about());
+	AddToggle(builder, Privacy::kIgnoreContentRestrictions,
+		tr::lng_nagram_ignore_restrictions(),
+		u"nagram/privacy/ignore-restrictions"_q,
+		{ u"restriction"_q, u"unavailable"_q });
+	builder.addDividerText(tr::lng_nagram_ignore_restrictions_about());
 	const auto controller = builder.controller();
 	builder.addButton({
 		.id = u"nagram/privacy/profile-id-format"_q,

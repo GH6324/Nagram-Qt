@@ -8,6 +8,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "data/data_peer.h"
 #include "nagram/interface/roundness.h"
 #include "nagram/privacy/alias.h"
+#include "nagram/privacy/protection.h"
 
 #include "api/api_sensitive_content.h"
 #include "data/data_user.h"
@@ -118,6 +119,7 @@ UnavailableReason UnavailableReason::Sensitive() {
 QString UnavailableReason::Compute(
 		not_null<Main::Session*> session,
 		const std::vector<UnavailableReason> &list) {
+	if (Nagram::Privacy::IgnoreRestrictions()) return QString();
 	const auto &skip = IgnoredReasons(session);
 	auto &&filtered = ranges::views::all(
 		list

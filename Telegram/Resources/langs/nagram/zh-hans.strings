@@ -137,6 +137,8 @@
 "lng_nagram_do_not_share_phone_about" = "只改变“分享我的手机号”的初始勾选，仍可在添加时手动勾选。";
 "lng_nagram_force_copy" = "允许复制和保存受保护的内容";
 "lng_nagram_force_copy_about" = "只作用于本机已收到的消息和已下载的媒体。转发仍由 Telegram 限制，限时和付费媒体不受影响。";
+"lng_nagram_ignore_restrictions" = "忽略内容限制";
+"lng_nagram_ignore_restrictions_about" = "显示被标记为在本平台不可用的会话和消息。Telegram 未下发的内容无法显示。";
 "lng_nagram_profile_id_format" = "在资料页显示 ID";
 "lng_nagram_id_off" = "关闭";
 "lng_nagram_id_bot_api" = "Bot API 格式";

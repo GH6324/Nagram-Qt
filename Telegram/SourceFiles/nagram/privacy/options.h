@@ -25,6 +25,10 @@ inline constexpr auto kForceCopy = Option<bool>{
 	"nagram.forceCopy", Scope::Device, false,
 	Category::Privacy, "lng_nagram_force_copy",
 	static_cast<unsigned>(Flag::RefreshMessageView) };
+inline constexpr auto kIgnoreContentRestrictions = Option<bool>{
+	"nagram.ignoreContentRestrictions", Scope::Device, false,
+	Category::Privacy, "lng_nagram_ignore_restrictions",
+	static_cast<unsigned>(Flag::RefreshMessageView) };
 inline constexpr auto kProfileIdFormat = Option<int>{
 	"nagram.profileIdFormat", Scope::Device, 0,
 	Category::Privacy, "lng_nagram_profile_id_format", 0,
@@ -71,6 +75,7 @@ inline void RegisterOptions(Registry &registry) {
 	Expects(registry.Add(kModerateDefaults));
 	Expects(registry.Add(kDoNotSharePhone));
 	Expects(registry.Add(kForceCopy));
+	Expects(registry.Add(kIgnoreContentRestrictions));
 }
 
 } // namespace Nagram::Privacy

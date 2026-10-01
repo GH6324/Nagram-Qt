@@ -141,6 +141,8 @@ Telegram/cmake/td_lang.cmake. Every key uses the lng_nagram_ prefix.
 "lng_nagram_do_not_share_phone_about" = "Only changes the initial state of “Share my phone number”. You can still tick it when adding a contact.";
 "lng_nagram_force_copy" = "Allow copying and saving protected content";
 "lng_nagram_force_copy_about" = "Applies only to messages and media already received on this device. Forwarding is still restricted by Telegram. Self-destructing and paid media are not affected.";
+"lng_nagram_ignore_restrictions" = "Ignore content restrictions";
+"lng_nagram_ignore_restrictions_about" = "Show chats and messages marked as unavailable on this platform. Content that Telegram does not deliver cannot be shown.";
 "lng_nagram_profile_id_format" = "Show ID on profile";
 "lng_nagram_id_off" = "Off";
 "lng_nagram_id_bot_api" = "Bot API format";

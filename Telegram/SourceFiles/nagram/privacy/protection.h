@@ -5,6 +5,9 @@
 
 class HistoryItem;
 class PeerData;
+namespace Window {
+class SessionController;
+} // namespace Window
 
 namespace Nagram::Privacy {
 
@@ -19,5 +22,8 @@ namespace Nagram::Privacy {
 [[nodiscard]] bool ForbidsCopy(gsl::not_null<const HistoryItem*> item);
 [[nodiscard]] rpl::producer<bool> AllowsCopyValue(
 	gsl::not_null<PeerData*> peer);
+
+[[nodiscard]] bool IgnoreRestrictions();
+void WatchRestrictions(gsl::not_null<Window::SessionController*> controller);
 
 } // namespace Nagram::Privacy

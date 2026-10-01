@@ -122,6 +122,7 @@ void TestPrivacy() {
 	Privacy::RegisterOptions(registry);
 	CheckSwitch(registry, Privacy::kDoNotSharePhone, false);
 	CheckSwitch(registry, Privacy::kForceCopy, true);
+	CheckSwitch(registry, Privacy::kIgnoreContentRestrictions, true);
 	CheckCopyRules();
 
 	auto prefs = MemoryPrefs();

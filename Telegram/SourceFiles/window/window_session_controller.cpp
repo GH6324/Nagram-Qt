@@ -1593,6 +1593,7 @@ SessionController::SessionController(
 	Nagram::Chats::WatchRecentChats(this);
 	Nagram::Chats::WatchReadingPositions(this);
 	Nagram::Chats::WatchJoinedChats(this);
+	Nagram::Privacy::WatchRestrictions(this);
 
 	_chatStyleTheme = _defaultChatTheme;
 	_chatStyle->apply(_defaultChatTheme.get());

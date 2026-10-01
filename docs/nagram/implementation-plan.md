@@ -192,6 +192,7 @@ P3 功能不在本计划内。每项先在 `docs/nagram/` 下单独写设计并�
 | --- | --- | --- | --- |
 | ✅ S120 | `feat(privacy): keep phone number unshared by default when adding contacts` | G16 | 只改复选框初始值；添加联系人框的开／关对照未现场验证 |
 | ✅ S121 | `feat(privacy): copy and save protected content` | G13 | 同时解除受保护会话的截屏保护；转发、动态、导出、限时与付费媒体、消息截图（E21）保持不变。受保护会话的复制、保存、共享媒体页与媒体查看器未现场验证 |
+| ✅ S122 | `feat(privacy): ignore content restrictions` | G14 | 只作用于客户端已收到的数据；`sensitive` 原因不受影响。缺少带 `all` 平台限制的样本，会话与消息的开／关对照未现场验证 |
 
 | 包 | 专项设计 | 步骤 | 设置页条目 |
 | --- | --- | --- | --- |
