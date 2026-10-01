@@ -682,3 +682,13 @@ Telegram/cmake/td_lang.cmake. Every key uses the lng_nagram_ prefix.
 "lng_nagram_service_add_custom" = "Custom OpenAI-compatible translation";
 "lng_nagram_service_use_context" = "Include recent messages when translating a message";
 "lng_nagram_service_use_context_about" = "When you translate a whole message with an OpenAI-compatible or Anthropic service, up to {amount} earlier messages already loaded in the same chat or topic are sent along for reference: at most {each} characters each and {total} in total, without sender names, IDs or times. Not used for selected text, drafts, whole-chat translation, other services, or chats and messages that restrict copying.";
+"lng_nagram_summary_service" = "Summary service";
+"lng_nagram_summary_service_about" = "Adds “Summarize” to the message menu; show it in Nagram → Message menu. The text of the chosen messages is sent to this service only after you press Generate: at most {amount} messages and {total} characters, without sender names or IDs, and only the caption of media. The summary is shown to you and is never sent as a message or put into the draft.";
+"lng_nagram_summary_off" = "Off";
+"lng_nagram_service_summary_prompt" = "Summary prompt (blank uses the default)";
+"lng_nagram_menu_summarize" = "Summarize";
+"lng_nagram_summary_title" = "Summary";
+"lng_nagram_summary_about" = "Messages: {amount}, characters: {chars}.\nService: {name}\n{url}\n\nGenerate sends this text to the service. Closing this window cancels the request; the result is not kept.";
+"lng_nagram_summary_truncated" = "Only the most recent text that fits the limit will be sent.";
+"lng_nagram_summary_generate" = "Generate / retry";
+"lng_nagram_summary_missing" = "These messages are no longer available.";

@@ -678,3 +678,13 @@
 "lng_nagram_service_add_custom" = "自訂 OpenAI 相容翻譯";
 "lng_nagram_service_use_context" = "翻譯訊息時附帶近期訊息";
 "lng_nagram_service_use_context_about" = "用 OpenAI 相容或 Anthropic 服務翻譯整則訊息時，同時傳送同一對話或話題中此前已載入的最多 {amount} 則訊息作為參考：每則最多 {each} 個字元，合計最多 {total} 個字元，不含傳送者姓名、ID 和時間。選取的文字、草稿、整頁翻譯、其他服務，以及禁止複製的對話和訊息不附帶。";
+"lng_nagram_summary_service" = "摘要服務";
+"lng_nagram_summary_service_about" = "在訊息選單中加入「摘要」；需在 Nagram → 訊息選單中設為顯示。只有點選「產生」後才把所選訊息的文字傳送到此服務：最多 {amount} 則、{total} 個字元，不含傳送者姓名和 ID，媒體只取說明文字。摘要只顯示給你，不會作為訊息傳送，也不會寫入草稿。";
+"lng_nagram_summary_off" = "關閉";
+"lng_nagram_service_summary_prompt" = "摘要提示詞（留空使用預設）";
+"lng_nagram_menu_summarize" = "摘要";
+"lng_nagram_summary_title" = "摘要";
+"lng_nagram_summary_about" = "訊息：{amount} 則，字元：{chars} 個。\n服務：{name}\n{url}\n\n點選「產生」後把這些文字傳送到該服務。關閉視窗會取消請求，結果不會保留。";
+"lng_nagram_summary_truncated" = "超出上限，只傳送最近的部分。";
+"lng_nagram_summary_generate" = "產生 / 重試";
+"lng_nagram_summary_missing" = "這些訊息已無法使用。";

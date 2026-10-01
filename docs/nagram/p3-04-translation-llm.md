@@ -203,6 +203,8 @@ enum class Mode { Inherit, On, Off };
 | 不重复发送 | 生成中按钮不可重复触发；无自动重试；重试由用户点击 |
 | 消息失效 | 发送前按 `FullMsgId` 重新取消息，已删除的跳过；全部失效时提示并不发送 |
 
+**实施说明（S142）**：代码在 `nagram/services/summary.{h,cpp}` 与 `summary_model.{h,cpp}`。预览框的说明用 `lng_nagram_summary_about`（占位符 `{amount}`、`{chars}`、`{name}`、`{url}`），不用复数键。单条与多选共用一个范围函数 `PlanSummary`：去掉空文本后从最近的消息往前取，最多 50 条、合计 24,000 码元；最近一条本身超过上限时截断。输出语言以两字母代码写入提示词。实例的“总结提示词”留空时用内置的一句英文指令。结果上限 32,768 码元，超出按 `Response` 错误处理。对话禁止复制且 G13 未开启时不提供“复制”按钮，结果文字不可选中。E36 默认隐藏，需在“消息菜单”页设为显示。
+
 **可选方案（默认不做）**：用 LLM 替换气泡内的上游摘要按钮。需要在 `Api::Transcribes::toggleSummary()`、`Api::Transcribes::summary()`、`Api::Transcribes::checkSummaryToTranslate()` 加入类似 `TranscriptionOverride` 的分支，并在 `Message::ensureSummarizeButton()` 放宽 `canBeSummarized()` 条件，共 4 处上游改动，且摘要会进入气泡布局。是否需要见第 8 节问题 3。
 
 **关闭时与上游一致**：H10 默认“关闭”，E36 不插入；上游摘要路径没有改动。

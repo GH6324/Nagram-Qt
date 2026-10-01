@@ -678,3 +678,13 @@
 "lng_nagram_service_add_custom" = "自定义 OpenAI 兼容翻译";
 "lng_nagram_service_use_context" = "翻译消息时附带近期消息";
 "lng_nagram_service_use_context_about" = "用 OpenAI 兼容或 Anthropic 服务翻译整条消息时，同时发送同一对话或话题中此前已加载的最多 {amount} 条消息作为参考：每条最多 {each} 个字符，合计最多 {total} 个字符，不含发送者姓名、ID 和时间。选中文字、草稿、整页翻译、其他服务，以及禁止复制的对话和消息不附带。";
+"lng_nagram_summary_service" = "总结服务";
+"lng_nagram_summary_service_about" = "在消息菜单中加入“总结”；需在 Nagram → 消息菜单中设为显示。只有点击“生成”后才把所选消息的文字发送到此服务：最多 {amount} 条、{total} 个字符，不含发送者姓名和 ID，媒体只取说明文字。摘要只显示给你，不会作为消息发送，也不会写入草稿。";
+"lng_nagram_summary_off" = "关闭";
+"lng_nagram_service_summary_prompt" = "总结提示词（留空使用默认）";
+"lng_nagram_menu_summarize" = "总结";
+"lng_nagram_summary_title" = "总结";
+"lng_nagram_summary_about" = "消息：{amount} 条，字符：{chars} 个。\n服务：{name}\n{url}\n\n点击“生成”后把这些文字发送到该服务。关闭窗口会取消请求，结果不会保留。";
+"lng_nagram_summary_truncated" = "超出上限，只发送最近的部分。";
+"lng_nagram_summary_generate" = "生成 / 重试";
+"lng_nagram_summary_missing" = "这些消息已不可用。";

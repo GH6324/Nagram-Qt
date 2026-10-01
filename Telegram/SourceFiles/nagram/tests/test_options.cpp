@@ -90,6 +90,11 @@ void TestOptions() {
 		== Visibility::Hide, "select between action default");
 	Require(Menu::ReadVisibility({}, ActionId::SeenBy) == Visibility::Show
 		&& Menu::IsUpstream(ActionId::SeenBy), "seen by stays upstream");
+	Require(Menu::ReadVisibility({}, ActionId::Summarize) == Visibility::Hide
+		&& !Menu::IsUpstream(ActionId::Summarize)
+		&& Menu::ValidateConfig(Menu::WriteVisibility(
+			{}, ActionId::Summarize, Visibility::Show)),
+		"summarize is hidden by default");
 	Require(Menu::ReadVisibility({}, ActionId::MessageDetails) == Visibility::Hide
 		&& Menu::ReadVisibility({}, ActionId::SelectAll) == Visibility::Hide,
 		"message tool actions default");

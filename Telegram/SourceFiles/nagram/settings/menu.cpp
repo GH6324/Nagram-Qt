@@ -69,6 +69,7 @@ QString Title(Menu::ActionId id) {
 	case Menu::ActionId::HideMessage: return tr::lng_nagram_hide_message(tr::now);
 	case Menu::ActionId::SaveToSaved: return tr::lng_nagram_menu_save_to_saved(tr::now);
 	case Menu::ActionId::SelectAll: return tr::lng_nagram_menu_select_all(tr::now);
+	case Menu::ActionId::Summarize: return tr::lng_nagram_menu_summarize(tr::now);
 	default: return QString();
 	}
 }

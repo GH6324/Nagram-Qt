@@ -8,6 +8,7 @@
 #include "nagram/filters/hidden_messages.h"
 #include "nagram/menu/reading.h"
 #include "nagram/filters/menu.h"
+#include "nagram/services/summary.h"
 #include "nagram/snapshot/snapshot.h"
 
 #include "ui/widgets/menu/menu.h"
@@ -53,6 +54,7 @@ void Apply(
 			InsertBatchActions(menu, item, controller,
 				selected, select);
 			Snapshot::InsertAction(menu, controller, item, selected);
+			InsertSummaryAction(menu, item, controller, selected);
 		}
 		if (item) {
 			InsertMediaInfoAction(menu, item, controller);

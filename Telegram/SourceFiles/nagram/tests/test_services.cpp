@@ -1,6 +1,7 @@
 #include "nagram/services/context_model.h"
 #include "nagram/services/model.h"
 #include "nagram/services/presets.h"
+#include "nagram/services/summary_model.h"
 #include "base/basic_types.h"
 
 #include <QtCore/QJsonArray>
@@ -323,6 +324,68 @@ void TestContext(const Nagram::ServiceDefinition &service) {
 	std::cout << "PASS: Nagram translation context" << std::endl;
 }
 
+void TestSummary(const Nagram::ServiceDefinition &service) {
+	using namespace Nagram;
+	Require(PlanSummary({}).texts.isEmpty()
+		&& PlanSummary({ u" "_q, QString() }).texts.isEmpty(),
+		"empty summary scope");
+	const auto single = PlanSummary({ u"  hello  "_q });
+	Require(single.texts == QStringList{ u"hello"_q }
+		&& single.characters == 5 && !single.truncated, "single message");
+	const auto huge = PlanSummary({ QString(kSummaryLength + 10, QChar('a')) });
+	Require(huge.texts.size() == 1 && huge.characters == kSummaryLength
+		&& huge.truncated, "single message limit");
+	auto many = QStringList();
+	for (auto i = 0; i != kSummaryMessages + 5; ++i) {
+		many.push_back(u"m%1"_q.arg(i));
+	}
+	const auto counted = PlanSummary(many);
+	Require(counted.texts.size() == kSummaryMessages && counted.truncated
+		&& counted.texts.front() == u"m5"_q
+		&& counted.texts.back() == many.back(),
+		"message count limit keeps the most recent");
+	many.resize(kSummaryMessages);
+	Require(!PlanSummary(many).truncated, "exact message count truncated");
+	const auto half = QString(kSummaryLength / 2, QChar('b'));
+	const auto sized = PlanSummary({ u"old"_q, half, u""_q, half });
+	Require(sized.texts == (QStringList{ half, half })
+		&& sized.characters == kSummaryLength && sized.truncated,
+		"total limit drops the earliest");
+
+	auto llm = service;
+	llm.systemPrompt = u"System."_q;
+	const auto body = BuildSummaryBody(llm, { u"a"_q, u"b \"q\""_q }, u"zh"_q);
+	const auto messages = body.value(u"messages"_q).toArray();
+	const auto content = messages.last().toObject().value(
+		u"content"_q).toString();
+	Require(messages.size() == 2
+		&& messages[0].toObject().value(u"content"_q) == u"System."_q
+		&& content.startsWith(u"Summarize the following"_q)
+		&& content.contains(u"code zh."_q)
+		&& content.endsWith(u"[\"a\",\"b \\\"q\\\"\"]"_q),
+		"summary request");
+	llm.summaryPrompt = u"Three bullet points."_q;
+	llm.protocol = u"anthropic"_q;
+	const auto custom = BuildSummaryBody(llm, { u"a"_q }, u"en"_q);
+	Require(custom.value(u"system"_q) == u"System."_q
+		&& custom.value(u"max_tokens"_q) == QJsonValue(4096)
+		&& custom.value(u"messages"_q).toArray()[0].toObject().value(
+			u"content"_q).toString().startsWith(u"Three bullet points."_q),
+		"custom summary prompt");
+	const auto summary = ParseSummaryResult(
+		service, OpenAiReply("<think>x</think>  Short summary. ", "stop"));
+	Require(summary && *summary == u"Short summary."_q, "summary reply");
+	Require(!ParseSummaryResult(service, OpenAiReply("Cut off", "length")),
+		"truncated summary accepted");
+	Require(!ParseSummaryResult(service, OpenAiReply("  ", "stop")),
+		"empty summary accepted");
+	Require(!ParseSummaryResult(service, "{broken"), "broken reply accepted");
+	Require(!ParseSummaryResult(service, OpenAiReply(
+			QByteArray(kSummaryResultLength + 1, 'x'), "stop")),
+		"oversized summary accepted");
+	std::cout << "PASS: Nagram message summary" << std::endl;
+}
+
 } // namespace
 
 void TestServices() {
@@ -445,4 +508,5 @@ void TestServices() {
 	TestLlmProtocols(service);
 	TestPresets();
 	TestContext(service);
+	TestSummary(service);
 }

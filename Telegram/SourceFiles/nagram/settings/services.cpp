@@ -8,6 +8,7 @@
 #include "nagram/services/credentials.h"
 #include "nagram/services/presets.h"
 #include "nagram/services/request.h"
+#include "nagram/services/summary_model.h"
 #include "nagram/services/system_ai.h"
 #include "platform/platform_translate_provider.h"
 #include "settings/settings_builder.h"
@@ -127,6 +128,60 @@ void TranslationSourceBox(not_null<Ui::GenericBox*> box) {
 		}
 		auto updated = *current;
 		updated.insert(u"translation"_q, ids[value]);
+		if (!SetServices(updated)) {
+			box->showToast(tr::lng_nagram_service_invalid(tr::now));
+			return;
+		}
+		Core::App().saveSettingsDelayed();
+		box->closeBox();
+	});
+}
+
+QString SummarySelectionName(const std::optional<QJsonObject> &config) {
+	if (!config) {
+		return tr::lng_nagram_service_invalid(tr::now);
+	}
+	const auto id = config->value(u"summary"_q).toString();
+	if (id.isEmpty()) {
+		return tr::lng_nagram_summary_off(tr::now);
+	}
+	const auto service = FindService(*config, id);
+	return service ? service->name : tr::lng_nagram_service_invalid(tr::now);
+}
+
+void SummarySourceBox(not_null<Ui::GenericBox*> box) {
+	box->setTitle(tr::lng_nagram_summary_service());
+	const auto current = Services();
+	if (!current) {
+		box->addRow(object_ptr<Ui::FlatLabel>(
+			box, tr::lng_nagram_service_invalid(), st::boxLabel));
+		return;
+	}
+	auto ids = QStringList{ QString() };
+	auto titles = QStringList{ tr::lng_nagram_summary_off(tr::now) };
+	for (const auto &value : current->value(u"instances"_q).toArray()) {
+		const auto service = ParseService(value.toObject());
+		if (service
+			&& service->kind == ServiceKind::Translation
+			&& LlmProtocol(service->protocol)) {
+			ids.push_back(service->id);
+			titles.push_back(service->name);
+		}
+	}
+	const auto selected = std::max<qsizetype>(0, ids.indexOf(
+		current->value(u"summary"_q).toString()));
+	const auto group = std::make_shared<Ui::RadiobuttonGroup>(selected);
+	for (auto index = 0; index != ids.size(); ++index) {
+		box->addRow(object_ptr<Ui::Radiobutton>(
+			box, group, index, titles[index], st::settingsSendType),
+			st::settingsSendTypePadding);
+	}
+	group->setChangedCallback([=](int value) {
+		if (!Current(box, *current)) {
+			return;
+		}
+		auto updated = *current;
+		updated.insert(u"summary"_q, ids[value]);
 		if (!SetServices(updated)) {
 			box->showToast(tr::lng_nagram_service_invalid(tr::now));
 			return;
@@ -383,6 +438,12 @@ void ServiceBox(
 	const auto system = openai && translation
 		? add(tr::lng_nagram_service_system_prompt(), original.systemPrompt, true) : nullptr;
 	const auto prompt = openai ? add(tr::lng_nagram_service_prompt(), original.prompt, true) : nullptr;
+	const auto summary = openai && translation
+		? add(
+			tr::lng_nagram_service_summary_prompt(),
+			original.summaryPrompt,
+			true)
+		: nullptr;
 	const auto language = !translation ? add(tr::lng_nagram_service_language(), original.language) : nullptr;
 	const auto temperature = openai ? add(tr::lng_nagram_service_temperature(),
 		original.temperature ? QString::number(*original.temperature) : QString()) : nullptr;
@@ -416,6 +477,7 @@ void ServiceBox(
 			: QString();
 		service.systemPrompt = system ? system->getLastText() : QString();
 		service.prompt = prompt ? prompt->getLastText() : QString();
+		service.summaryPrompt = summary ? summary->getLastText() : QString();
 		service.language = language ? language->getLastText().trimmed() : QString();
 		service.useKey = *enabled;
 		service.temperature = std::nullopt;
@@ -687,6 +749,22 @@ const auto kMeta = BuildHelper({
 		.keywords = { u"Nagram"_q, u"LLM"_q, u"API"_q },
 	});
 	builder.addDividerText(tr::lng_nagram_services_about());
+	builder.addButton({
+		.id = u"nagram/services/summary"_q,
+		.title = tr::lng_nagram_summary_service(),
+		.st = &st::settingsButtonNoIcon,
+		.label = ForDevice().Value(kServicesConfig)
+			| rpl::map([](const QByteArray &) {
+				return SummarySelectionName(Services());
+			}),
+		.onClick = [=] { controller->show(Box(SummarySourceBox)); },
+		.keywords = { u"summary"_q, u"summarize"_q, u"LLM"_q },
+	});
+	builder.addDividerText(tr::lng_nagram_summary_service_about(
+		lt_amount,
+		rpl::single(QString::number(kSummaryMessages)),
+		lt_total,
+		rpl::single(QString::number(kSummaryLength))));
 });
 
 const SectionBuildMethod ServicesSection::kBuild = kMeta.build;

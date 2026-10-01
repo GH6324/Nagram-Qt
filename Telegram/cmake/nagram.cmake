@@ -102,6 +102,8 @@ set(nagram_sources
     nagram/services/model.cpp
     nagram/services/presets.cpp
     nagram/services/store.cpp
+    nagram/services/summary.cpp
+    nagram/services/summary_model.cpp
     nagram/services/request.cpp
     nagram/services/translation.cpp
     nagram/services/draft_translation.cpp
@@ -230,6 +232,7 @@ if (DESKTOP_APP_TEST_APPS)
         nagram/services/context_model.cpp
         nagram/services/model.cpp
         nagram/services/presets.cpp
+        nagram/services/summary_model.cpp
         nagram/filters/model.cpp
         nagram/links/model.cpp
         nagram/links/inline_rules.cpp

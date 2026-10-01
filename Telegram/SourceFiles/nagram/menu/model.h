@@ -38,6 +38,7 @@ enum class ActionId : int {
 	HideMessage = 30,
 	SaveToSaved = 31,
 	SelectAll = 32,
+	Summarize = 36,
 };
 
 enum class Visibility { Show, Hide, WithOption };
@@ -47,7 +48,7 @@ struct Entry {
 	const char *titleKey;
 };
 
-inline constexpr auto kEntries = std::array<Entry, 31>({{
+inline constexpr auto kEntries = std::array<Entry, 32>({{
 	{ ActionId::Reply, "lng_nagram_menu_reply" },
 	{ ActionId::Edit, "lng_nagram_menu_edit" },
 	{ ActionId::Copy, "lng_nagram_menu_copy" },
@@ -79,6 +80,7 @@ inline constexpr auto kEntries = std::array<Entry, 31>({{
 	{ ActionId::HideMessage, "lng_nagram_hide_message" },
 	{ ActionId::SaveToSaved, "lng_nagram_menu_save_to_saved" },
 	{ ActionId::SelectAll, "lng_nagram_menu_select_all" },
+	{ ActionId::Summarize, "lng_nagram_menu_summarize" },
 }});
 
 [[nodiscard]] bool IsUpstream(ActionId id);
