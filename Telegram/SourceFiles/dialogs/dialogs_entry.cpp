@@ -7,6 +7,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 #include "dialogs/dialogs_entry.h"
 #include "nagram/chats/sort.h"
+#include "nagram/chats/local_pins.h"
 
 #include "dialogs/dialogs_key.h"
 #include "dialogs/dialogs_indexed_list.h"
@@ -249,7 +250,9 @@ int Entry::lookupPinnedIndex(FilterId filterId) const {
 
 uint64 Entry::computeSortPosition(FilterId filterId) const {
 	const auto index = lookupPinnedIndex(filterId);
-	return index ? PinnedDialogPos(index) : _sortKeyByDate;
+	return index
+		? PinnedDialogPos(index)
+		: Nagram::Chats::LocalPinSortKey(*this, filterId, _sortKeyByDate);
 }
 
 bool Entry::hasUnreadUnmutedForSort() const {

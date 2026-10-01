@@ -7,6 +7,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 #include "dialogs/ui/dialogs_layout.h"
 #include "nagram/chats/layout.h"
+#include "nagram/chats/local_pins.h"
 #include "nagram/privacy/options.h"
 
 #include "base/options.h"
@@ -708,7 +709,7 @@ void PaintRow(
 		auto availableWidth = namewidth;
 		if (const auto used = PaintRightButton(p, context)) {
 			availableWidth -= used;
-		} else if (entry->isPinnedDialog(context.filter)
+		} else if (Nagram::Chats::ShowsPinnedIcon(entry, context.filter)
 			&& (context.filter || !entry->fixedOnTopIndex())) {
 			auto &icon = ThreeStateIcon(
 				st::dialogsPinnedIcon,
@@ -806,7 +807,7 @@ void PaintRow(
 		auto availableWidth = namewidth;
 		if (const auto used = PaintRightButton(p, context)) {
 			availableWidth -= used;
-		} else if (entry->isPinnedDialog(context.filter)
+		} else if (Nagram::Chats::ShowsPinnedIcon(entry, context.filter)
 			&& (context.filter || !entry->fixedOnTopIndex())) {
 			auto &icon = ThreeStateIcon(
 				st::dialogsPinnedIcon,
@@ -846,7 +847,7 @@ void PaintRow(
 		}
 
 		paintItemCallback(nameleft, namewidth);
-	} else if (entry->isPinnedDialog(context.filter)
+	} else if (Nagram::Chats::ShowsPinnedIcon(entry, context.filter)
 		&& (context.filter || !entry->fixedOnTopIndex())) {
 		auto &icon = ThreeStateIcon(
 			st::dialogsPinnedIcon,
@@ -1200,7 +1201,7 @@ void RowPainter::Paint(
 		return std::max(itemDate, draftDate);
 	}();
 	const auto displayPinnedIcon = badgesState.empty()
-		&& entry->isPinnedDialog(context.filter)
+		&& Nagram::Chats::ShowsPinnedIcon(entry, context.filter)
 		&& (context.filter || !entry->fixedOnTopIndex());
 
 	const auto from = history

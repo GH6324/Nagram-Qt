@@ -23,6 +23,8 @@ set(nagram_sources
     nagram/chats/startup_folder.cpp
     nagram/chats/sort.cpp
     nagram/chats/recent_chats.cpp
+    nagram/chats/local_pins.cpp
+    nagram/chats/local_pins_model.cpp
     nagram/chats/reading_position.cpp
     nagram/chats/tools.cpp
     nagram/chats/community.cpp
@@ -197,6 +199,7 @@ if (DESKTOP_APP_TEST_APPS)
         nagram/tests/test_links.cpp
         nagram/tests/test_privacy.cpp
         nagram/tests/test_p3_misc.cpp
+        nagram/tests/test_local_lists.cpp
         nagram/compose/spacing.cpp
         nagram/core/exchange.cpp
         nagram/interface/main_menu_model.cpp
@@ -205,6 +208,7 @@ if (DESKTOP_APP_TEST_APPS)
         nagram/filters/model.cpp
         nagram/links/model.cpp
         nagram/privacy/protection_model.cpp
+        nagram/chats/local_pins_model.cpp
     )
 
     target_include_directories(test_nagram PRIVATE

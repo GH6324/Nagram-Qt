@@ -76,6 +76,17 @@ Telegram/cmake/td_lang.cmake. Every key uses the lng_nagram_ prefix.
 "lng_nagram_recent_chats_clear" = "Clear";
 "lng_nagram_save_reading_position" = "Restore reading position";
 "lng_nagram_save_reading_position_note" = "When a chat has no unread messages, it opens where you stopped reading instead of at the bottom. Positions are kept on this device for each account; topics are not included. Turning this off clears them.";
+"lng_nagram_local_pins_group" = "Local pins";
+"lng_nagram_unlimited_pinned_chats" = "Keep pinning on this device when pins are full";
+"lng_nagram_unlimited_pinned_chats_about" = "Pins beyond Telegram's limit are saved only for this account on this device, are not synced to other devices and appear below the synced pins. Up to 100 chats. When turned off, local pins are no longer shown but stay saved.";
+"lng_nagram_local_pinned_chats" = "Chats pinned on this device";
+"lng_nagram_local_pinned_chats_about" = "Click a chat to unpin it on this device.";
+"lng_nagram_local_pinned_chats_clear_all" = "Unpin all";
+"lng_nagram_local_pinned_chats_clear" = "Unpin all chats pinned on this device?";
+"lng_nagram_local_pinned_missing" = "Not in the chat list";
+"lng_nagram_local_pin_done" = "Pinned on this device. It will not sync to other devices.";
+"lng_nagram_local_pin_limit" = "You can pin up to {limit} chats on this device.";
+"lng_nagram_local_unpin" = "Unpin from this device";
 "lng_nagram_chat_tools" = "Show chat tools in the top bar";
 "lng_nagram_chat_tools_start" = "Jump to beginning";
 "lng_nagram_compose" = "Compose and send";

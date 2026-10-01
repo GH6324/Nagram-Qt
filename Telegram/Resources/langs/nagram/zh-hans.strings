@@ -74,6 +74,17 @@
 "lng_nagram_chat_tools_start" = "跳到开头";
 "lng_nagram_save_reading_position" = "恢复阅读位置";
 "lng_nagram_save_reading_position_note" = "聊天没有未读消息时，从上次读到的位置打开，而不是跳到底部。位置按账号保存在本机，不包括话题；关闭后会清空。";
+"lng_nagram_local_pins_group" = "本地置顶";
+"lng_nagram_unlimited_pinned_chats" = "置顶已满时在本机继续置顶";
+"lng_nagram_unlimited_pinned_chats_about" = "超出 Telegram 上限的置顶只保存在本机当前账号，不会同步到其他设备，显示在同步置顶之后。最多 100 个。关闭后本机置顶不再显示，记录保留。";
+"lng_nagram_local_pinned_chats" = "本机置顶的对话";
+"lng_nagram_local_pinned_chats_about" = "点击对话即可取消本机置顶。";
+"lng_nagram_local_pinned_chats_clear_all" = "全部取消";
+"lng_nagram_local_pinned_chats_clear" = "取消所有本机置顶的对话？";
+"lng_nagram_local_pinned_missing" = "不在对话列表中";
+"lng_nagram_local_pin_done" = "已在本机置顶，不会同步到其他设备。";
+"lng_nagram_local_pin_limit" = "本机最多置顶 {limit} 个对话。";
+"lng_nagram_local_unpin" = "取消本地置顶";
 "lng_nagram_compose" = "输入与发送";
 "lng_nagram_compose_buttons" = "输入框按钮";
 "lng_nagram_hide_attach_button" = "隐藏附件按钮";

@@ -65,6 +65,16 @@
 | B18 | `history/view/history_view_top_bar_widget.cpp` | `updateControlsGeometry` 在搜索按钮前放置工具按钮组并计入右侧占用宽度 | 读取 |
 | 管理文件夹 | `data/data_chat_filters.cpp`、`ui/widgets/chat_filters_tabs_strip.cpp`、`window/window_filters_menu.cpp` | 文件夹匹配增加“仅我管理的”条件；文件夹菜单加入该选项 | 读取 |
 
+B25、B26（P3-09 本地置顶）：
+
+| 条目 | 上游位置 | 需要处理的上游逻辑 | 方式 |
+| --- | --- | --- | --- |
+| B25 | `dialogs/dialogs_entry.cpp` | `Entry::computeSortPosition` 在没有上游置顶序号时返回 `Nagram::Chats::LocalPinSortKey(*this, filterId, _sortKeyByDate)`；开关关闭、文件夹视图或不在本地列表时原样返回日期键 | 替换 |
+| B25 | `window/window_peer_menu.cpp` | `PinnedLimitReached(controller, entry)` 在 `FindWastedPin` 未命中后先调用 `TryLocalPin`；`TogglePinnedThread(controller, entry, onToggled)` 的提前返回条件加入 `LocalUnpin`；`Filler::addTogglePin` 在提前返回链末尾加入 `AddLocalUnpinAction` | 拦截 |
+| B25 | `dialogs/ui/dialogs_layout.cpp` | 四处置顶图标判断（`PaintRow` 三处、`RowPainter::Paint` 的 `displayPinnedIcon`）由 `entry->isPinnedDialog(context.filter)` 改为 `Nagram::Chats::ShowsPinnedIcon(entry, context.filter)`。上游在四个布局分支里各自判断，没有公共出口 | 替换 |
+
+不改 `Dialogs::Entry::isPinnedDialog`、`Dialogs::PinnedList`、`ApiWrap::savePinnedOrder`。与服务端的归并订阅上游已有的 `Data::Session::pinnedDialogsOrderUpdated()`，没有新挂钩。
+
 ### 2.3 消息
 
 | 编号 | 上游位置 | 需要处理的上游逻辑 | 方式 |

@@ -10,6 +10,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "nagram/privacy/alias.h"
 #include "nagram/privacy/admin_shortcuts.h"
 #include "nagram/chats/recent_chats.h"
+#include "nagram/chats/local_pins.h"
 
 #include "base/call_delayed.h"
 #include "menu/menu_check_item.h"
@@ -411,6 +412,8 @@ bool PinnedLimitReached(
 		owner->setChatPinned(wasted, FilterId(), false);
 		owner->setChatPinned(history, FilterId(), true);
 		history->session().api().savePinnedOrder(folder);
+	} else if (Nagram::Chats::TryLocalPin(controller, history)) {
+		return true;
 	} else if (folder) {
 		controller->show(Box(FolderPinsLimitBox, &history->session()));
 	} else {
@@ -436,7 +439,8 @@ void TogglePinnedThread(
 		not_null<Window::SessionController*> controller,
 		not_null<Dialogs::Entry*> entry,
 		Fn<void()> onToggled) {
-	if (!entry->folderKnown()) {
+	if (!entry->folderKnown()
+		|| Nagram::Chats::LocalUnpin(entry, onToggled)) {
 		return;
 	}
 	const auto owner = &entry->owner();
@@ -565,6 +569,11 @@ void Filler::addTogglePin() {
 		&& !community->collapsedInDialogs()) {
 		return;
 	} else if (InsideCollapsedCommunity(_request.key.history())) {
+		return;
+	} else if (Nagram::Chats::AddLocalUnpinAction(
+			_addAction,
+			entry,
+			filterId)) {
 		return;
 	}
 	const auto pinText = [=] {

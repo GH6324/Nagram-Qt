@@ -1,6 +1,8 @@
 #include "nagram/settings/chats.h"
 
 #include "nagram/chats/options.h"
+#include "nagram/chats/local_pins.h"
+#include "nagram/chats/local_pins_model.h"
 #include "nagram/chats/sort.h"
 #include "nagram/core/options.h"
 #include "nagram/settings/home.h"
@@ -344,6 +346,29 @@ const auto kMeta = BuildHelper({
 		u"nagram/chats/reading-position"_q,
 		{ u"scroll"_q, u"position"_q, u"reading"_q });
 	builder.addDividerText(tr::lng_nagram_save_reading_position_note());
+	builder.addSubsectionTitle({
+		.id = u"nagram/chats/local-pins"_q,
+		.title = tr::lng_nagram_local_pins_group(),
+		.keywords = { u"pin"_q, u"local"_q },
+	});
+	AddToggle(builder, Chats::kUnlimitedPinnedChats,
+		tr::lng_nagram_unlimited_pinned_chats(),
+		u"nagram/chats/unlimited-pinned-chats"_q,
+		{ u"pin"_q, u"unlimited"_q, u"limit"_q });
+	builder.addDividerText(tr::lng_nagram_unlimited_pinned_chats_about());
+	builder.addButton({
+		.id = u"nagram/chats/local-pinned-chats"_q,
+		.title = tr::lng_nagram_local_pinned_chats(),
+		.st = &st::settingsButtonNoIcon,
+		.label = Chats::LocalPinsCountValue(session)
+			| rpl::map([](int count) { return QString::number(count); }),
+		.onClick = [=] {
+			controller->show(Box(Chats::LocalPinsBox, session));
+		},
+		.keywords = { u"pin"_q, u"local"_q, u"unpin"_q },
+		.shown = Chats::LocalPinsCountValue(session)
+			| rpl::map([](int count) { return count > 0; }),
+	});
 });
 
 const SectionBuildMethod ChatsSection::kBuild = kMeta.build;
