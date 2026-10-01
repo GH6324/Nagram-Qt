@@ -611,3 +611,5 @@ Telegram/cmake/td_lang.cmake. Every key uses the lng_nagram_ prefix.
 "lng_nagram_voice_record_bitrate" = "Voice message bitrate";
 "lng_nagram_voice_record_bitrate_about" = "Applies to voice messages recorded from now on. A higher bitrate makes larger files.";
 "lng_nagram_voice_record_bitrate_value" = "{value} kbps";
+"lng_nagram_group_call_raw_audio" = "Turn off audio processing in group calls";
+"lng_nagram_group_call_raw_audio_about" = "Skips echo cancellation, noise suppression and automatic gain for your microphone. Applies the next time you join a call. Speakers may cause echo, so headphones are recommended.";

@@ -607,3 +607,5 @@
 "lng_nagram_voice_record_bitrate" = "语音消息码率";
 "lng_nagram_voice_record_bitrate_about" = "对之后录制的语音消息生效。码率越高，文件越大。";
 "lng_nagram_voice_record_bitrate_value" = "{value} kbps";
+"lng_nagram_group_call_raw_audio" = "关闭群组通话的音频处理";
+"lng_nagram_group_call_raw_audio_about" = "不对麦克风做回声消除、降噪和自动增益，下次加入通话时生效。外放时可能产生回声，建议使用耳机。";

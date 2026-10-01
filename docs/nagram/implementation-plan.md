@@ -1,3 +1,4 @@
+| ✅ S171 | `feat(media): turn off audio processing in group calls` | F20 | 设置 tgcalls 已有的 `disableOutgoingAudioProcessing`，创建通话控制器时读取。私聊通话不变。开启后的通话效果、通话中切换、与上游“噪声抑制”同时开启时的实际效果、屏幕共享与直播观看均未现场验证 |
 已实现的步骤（P3-07，2026-10-01）。每个步骤一个提交，macOS arm64 Debug 增量构建与 `test_nagram` 通过；没有启动应用，界面与实际效果未现场核验。
 
 | 步骤 | 提交 | 条目 | 备注 |

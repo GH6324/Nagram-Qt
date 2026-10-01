@@ -1,3 +1,4 @@
+| F20 | `calls/group/calls_group_call.cpp` | `GroupCall::tryCreateController` 的 `tgcalls::GroupInstanceDescriptor` 在 `.requestVideoBroadcastPart` 与 `.videoContentType` 之间加一行 `.disableOutgoingAudioProcessing = Nagram::Media::GroupCallRawAudio()`（位置须符合结构体声明顺序）；屏幕共享的描述符不改 | 读取 |
 # 上游处理点
 
 本文件列出 [设置页设计](settings-page.md) 中每个条目需要改动的上游逻辑，路径相对 `Telegram/SourceFiles/`。位置来自旧实现（`main` 分支）的实际调用点，已核对这些文件在当前上游 `dev` 中仍然存在；具体函数在实现该步骤时以当时的上游代码为准重新确认。
@@ -161,7 +162,7 @@ P3-07 外部媒体后端：
 | --- | --- | --- | --- |
 | F19 | `media/audio/media_audio_capture.cpp` | `Instance::start` 在主线程读取 `Nagram::Media::VoiceRecordBitrate(32000)` 并传给 `Instance::Inner::start`（新增 `int bitrate` 参数和 `_bitrate` 成员）；`Instance::Inner::initializeFFmpeg` 的 `bit_rate` 改用 `_bitrate`。约 6 行：注册表只能在主线程读取，不能在采集线程里调用 | 替换 |
 
-选项为“跟随 Telegram”时 `VoiceRecordBitrate(32000)` 原样返回 32000。圆形视频录制的码率不改。
+选项为“跟随 Telegram”时 `VoiceRecordBitrate(32000)` 原样返回 32000。圆形视频录制的码率不改。F20 关闭时返回 `false`，等于该字段的默认值；上游群通话设置里的“噪声抑制”走 tgcalls 的另一条路径，不受影响。
 
 ### 2.7 隐私与资料
 

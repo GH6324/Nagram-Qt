@@ -8,4 +8,8 @@ int VoiceRecordBitrate(int fallback) {
 	return VoiceRecordBitrate(ForDevice(), fallback);
 }
 
+bool GroupCallRawAudio() {
+	return ForDevice().Get(kGroupCallRawAudio);
+}
+
 } // namespace Nagram::Media

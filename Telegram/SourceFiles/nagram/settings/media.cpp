@@ -297,6 +297,11 @@ const auto kMeta = BuildHelper({
 		.keywords = { u"voice"_q, u"bitrate"_q, u"recording"_q },
 	});
 	builder.addDividerText(tr::lng_nagram_voice_record_bitrate_about());
+	AddToggle(builder, Media::kGroupCallRawAudio,
+		tr::lng_nagram_group_call_raw_audio(),
+		u"nagram/media/group-call-raw-audio"_q,
+		{ u"group call"_q, u"audio"_q, u"noise"_q, u"echo"_q });
+	builder.addDividerText(tr::lng_nagram_group_call_raw_audio_about());
 });
 
 const SectionBuildMethod MediaSection::kBuild = kMeta.build;

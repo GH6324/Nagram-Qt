@@ -607,3 +607,5 @@
 "lng_nagram_voice_record_bitrate" = "語音訊息位元率";
 "lng_nagram_voice_record_bitrate_about" = "對之後錄製的語音訊息生效。位元率越高，檔案越大。";
 "lng_nagram_voice_record_bitrate_value" = "{value} kbps";
+"lng_nagram_group_call_raw_audio" = "關閉群組通話的音訊處理";
+"lng_nagram_group_call_raw_audio_about" = "不對麥克風做回音消除、降噪和自動增益，下次加入通話時生效。外放時可能產生回音，建議使用耳機。";

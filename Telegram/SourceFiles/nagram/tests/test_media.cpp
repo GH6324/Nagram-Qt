@@ -119,9 +119,20 @@ void TestVoiceBitrate() {
 		"unsupported bitrate must never reach the encoder");
 }
 
+void TestGroupCallRawAudio() {
+	using namespace Nagram;
+	using namespace Nagram::Media;
+	auto registry = Registry();
+	RegisterBackendOptions(registry);
+	CheckDeviceOption(registry, kGroupCallRawAudio, Category::Media, true);
+	Require(!kGroupCallRawAudio.fallback,
+		"group call audio processing must stay on by default");
+}
+
 } // namespace
 
 void TestMedia() {
 	TestVoiceBitrate();
+	TestGroupCallRawAudio();
 	std::cout << "PASS: Nagram media backends" << std::endl;
 }

@@ -14,6 +14,10 @@ inline constexpr auto kVoiceRecordBitrate = Option<int>{
 	Category::Media, "lng_nagram_voice_record_bitrate", 0,
 	ValidVoiceBitrate };
 
+inline constexpr auto kGroupCallRawAudio = Option<bool>{
+	"nagram.groupCallRawAudio", Scope::Device, false,
+	Category::Media, "lng_nagram_group_call_raw_audio" };
+
 [[nodiscard]] constexpr int ResolveVoiceBitrate(int kbps, int fallback) {
 	return (kbps > 0 && ValidVoiceBitrate(kbps)) ? (kbps * 1000) : fallback;
 }
@@ -24,6 +28,7 @@ inline constexpr auto kVoiceRecordBitrate = Option<int>{
 
 inline void RegisterBackendOptions(Registry &registry) {
 	Expects(registry.Add(kVoiceRecordBitrate));
+	Expects(registry.Add(kGroupCallRawAudio));
 }
 
 } // namespace Nagram::Media
