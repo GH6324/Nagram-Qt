@@ -40,6 +40,18 @@ inline constexpr auto kProfileIdFormat = Option<int>{
 inline constexpr auto kShowProfileDc = Option<bool>{
 	"nagram.showProfileDc", Scope::Device, false,
 	Category::Privacy, "lng_nagram_show_profile_dc" };
+inline constexpr auto kShowRegistrationDate = Option<bool>{
+	"nagram.showRegistrationDate", Scope::Device, false,
+	Category::Privacy, "lng_nagram_show_registration_date" };
+
+[[nodiscard]] constexpr bool ShowsRegistration(
+		bool enabled,
+		bool user,
+		int month,
+		int year) {
+	return enabled && user && month >= 1 && month <= 12 && year > 0;
+}
+
 inline constexpr auto kHideProfileGifts = Option<bool>{
 	"nagram.hideProfileGifts", Scope::Device, false,
 	Category::Privacy, "lng_nagram_hide_profile_gifts" };
@@ -81,6 +93,7 @@ inline void RegisterOptions(Registry &registry) {
 	Expects(registry.Add(kForceCopy));
 	Expects(registry.Add(kIgnoreContentRestrictions));
 	Expects(registry.Add(kSkipSensitiveWarning));
+	Expects(registry.Add(kShowRegistrationDate));
 }
 
 } // namespace Nagram::Privacy

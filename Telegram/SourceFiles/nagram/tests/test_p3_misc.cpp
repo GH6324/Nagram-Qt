@@ -1,5 +1,6 @@
 #include "nagram/core/exchange.h"
 #include "nagram/links/options.h"
+#include "nagram/privacy/options.h"
 
 #include <QtCore/QJsonDocument>
 #include <QtCore/QJsonObject>
@@ -155,10 +156,34 @@ void TestWebAppSize() {
 		"web app size must not shrink below the upstream size");
 }
 
+void TestRegistrationDate() {
+	using namespace Nagram;
+	using namespace Nagram::Privacy;
+	auto registry = Registry();
+	RegisterOptions(registry);
+	CheckDeviceOption(registry, kShowRegistrationDate,
+		Category::Privacy, true);
+	Require(!kShowRegistrationDate.fallback,
+		"registration date must be hidden by default");
+	Require(!ShowsRegistration(false, true, 5, 2021),
+		"registration date shown while the option is off");
+	Require(ShowsRegistration(true, true, 1, 2013)
+		&& ShowsRegistration(true, true, 12, 2026),
+		"registration date sent by Telegram must be shown");
+	Require(!ShowsRegistration(true, false, 5, 2021),
+		"registration date shown for a group or a channel");
+	Require(!ShowsRegistration(true, true, 0, 0)
+		&& !ShowsRegistration(true, true, 0, 2021)
+		&& !ShowsRegistration(true, true, 13, 2021)
+		&& !ShowsRegistration(true, true, 5, 0),
+		"registration date shown without data from Telegram");
+}
+
 } // namespace
 
 void TestP3Misc() {
 	TestLinkBehavior();
 	TestWebAppSize();
+	TestRegistrationDate();
 	std::cout << "PASS: Nagram P3-09 options" << std::endl;
 }

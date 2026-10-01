@@ -227,6 +227,11 @@ const auto kMeta = BuildHelper({
 		tr::lng_nagram_show_profile_dc(),
 		u"nagram/privacy/show-profile-dc"_q,
 		{ u"profile"_q, u"DC"_q });
+	AddToggle(builder, Privacy::kShowRegistrationDate,
+		tr::lng_nagram_show_registration_date(),
+		u"nagram/privacy/show-registration-date"_q,
+		{ u"profile"_q, u"registration"_q, u"date"_q });
+	builder.addDividerText(tr::lng_nagram_show_registration_date_about());
 	AddToggle(builder, Privacy::kHideProfileGifts,
 		tr::lng_nagram_hide_profile_gifts(),
 		u"nagram/privacy/hide-profile-gifts"_q,

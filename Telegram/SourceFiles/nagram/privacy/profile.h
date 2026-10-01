@@ -12,5 +12,7 @@ namespace Nagram::Privacy {
 	not_null<PeerData*> peer);
 [[nodiscard]] rpl::producer<TextWithEntities> ProfileDcValue(
 	not_null<PeerData*> peer);
+[[nodiscard]] rpl::producer<TextWithEntities> ProfileRegistrationValue(
+	not_null<PeerData*> peer);
 
 } // namespace Nagram::Privacy
