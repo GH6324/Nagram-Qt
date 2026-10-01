@@ -18,6 +18,8 @@
 
 条件纳入 28；纳入/合并 420；排除 72；复用上游 10。这些数量只针对下列四张基础表，附加模型和无开关操作不计入。
 
+去向末尾带“暂不实现”的条目是维护者在 2026-10-01 逐项核对 P3 时决定搁置的功能：保留核对记录和原有去向分类，但不进入专项设计、注册表和设置页；基础表中共 40 项，范围见[暂不实现的 P3 细项](requirements.md#p3-deferred)。
+
 ## Nagram iOS 集中偏好
 
 核对声明：`Nagram/Settings/NagramSettings.swift`。
@@ -116,8 +118,8 @@
 | N006 | 复读前确认 | `repeatConfirm` | `Bool` / `false` | 纳入/合并 · [F05](requirements.md#f05) |
 | N007 | 禁用相机即时预览 | `DisableInstantCamera` | `Bool` / `false` | 排除 · X02：手机专属系统/硬件接口，桌面无对应配置 |
 | N008 | 以秒为单位显示时间戳 | `showSeconds` | `Bool` / `false` | 纳入/合并 · [F03](requirements.md#f03) |
-| N009 | NekoX 公共代理 | `enablePublicProxy` | `Bool` / `true` | 条件纳入 · [F15](requirements.md#f15) |
-| N010 | 自动更新代理 | `autoUpdateSubInfo` | `Bool` / `true` | 条件纳入 · [F15](requirements.md#f15) |
+| N009 | NekoX 公共代理 | `enablePublicProxy` | `Bool` / `true` | 条件纳入 · [F15](requirements.md#f15)；暂不实现 |
+| N010 | 自动更新代理 | `autoUpdateSubInfo` | `Bool` / `true` | 条件纳入 · [F15](requirements.md#f15)；暂不实现 |
 | N011 | 上次检查更新时间 | `lastUpdateCheckTime` | `Long` / `0L` | 排除 · X03：旧兼容、缓存状态或维护开关，不进入产品配置 |
 | N012 | 隐藏您的手机号码 | `HidePhone` | `Bool` / `true` | 纳入/合并 · [F10](requirements.md#f10) |
 | N013 | 忽略被屏蔽用户在群组内的消息 | `IgnoreBlocked` | `Bool` / `false` | 纳入/合并 · [F09](requirements.md#f09) |
@@ -157,7 +159,7 @@
 | N047 | 使用系统表情 | `EmojiUseDefault` | `Bool` / `false` | 纳入/合并 · [F06](requirements.md#f06) |
 | N048 | 视频留言默认使用后置摄像头 | `RearVideoMessages` | `Bool` / `false` | 排除 · X02：手机专属系统/硬件接口，桌面无对应配置 |
 | N049 | 隐藏“全部对话” | `HideAllTab` | `Bool` / `false` | 纳入/合并 · [F02](requirements.md#f02) |
-| N050 | 不要发送我的输入状态 | `DisableChatAction` | `Bool` / `false` | 纳入/合并 · [F11](requirements.md#f11)，P3-01；发送策略，不是本地显示 |
+| N050 | 不要发送我的输入状态 | `DisableChatAction` | `Bool` / `false` | 纳入/合并 · [F11](requirements.md#f11)，P3-01；发送策略，不是本地显示；暂不实现 |
 | N051 | 排序：未读优先 | `sort_by_unread` | `Bool` / `false` | 纳入/合并 · [F02](requirements.md#f02) |
 | N052 | 排序：未静音优先 | `sort_by_unmuted` | `Bool` / `true` | 纳入/合并 · [F02](requirements.md#f02) |
 | N053 | 排序：用户优先 | `sort_by_user` | `Bool` / `true` | 纳入/合并 · [F02](requirements.md#f02) |
@@ -194,7 +196,7 @@
 | N084 | 自定义 DoH | `customDoH` | `String` / `""` | 纳入/合并 · [F15](requirements.md#f15) |
 | N085 | 禁用标题栏阴影 | `DisableAppBarShadow` | `Bool` / `false` | 排除 · X04：手机布局/渲染实现，保持 Qt 原生交互 |
 | N086 | 对话列表中的媒体预览 | `MediaPreview` | `Bool` / `true` | 纳入/合并 · [F02](requirements.md#f02) |
-| N087 | 代理自动切换 | `ProxyAutoSwitch` | `Bool` / `false` | 纳入/合并 · [F15](requirements.md#f15) |
+| N087 | 代理自动切换 | `ProxyAutoSwitch` | `Bool` / `false` | 纳入/合并 · [F15](requirements.md#f15)；暂不实现 |
 | N088 | 使用伊朗历 | `UsePersiancalendar` | `Bool` / `false` | 纳入/合并 · [F14](requirements.md#f14) |
 | N089 | 以拉丁字母显示波斯日历 | `DisplayPersianCalendarByLatin` | `Bool` / `false` | 纳入/合并 · [F14](requirements.md#f14) |
 | N090 | OpenPGP 客户端 | `OpenPGPApp` | `String` / `""` | 排除 · X05：移动 SDK/外部应用绑定，不直接迁移 |
@@ -212,7 +214,7 @@
 | N102 | 最近贴纸数量上限 | `maxRecentStickerCount` | `Int` / `20` | 纳入/合并 · [F06](requirements.md#f06) |
 | N103 | 禁用滑动到下个未读频道 | `disableSwipeToNextChannel` | `Bool` / `true` | 纳入/合并 · [F02](requirements.md#f02) |
 | N104 | 禁用远程表情符号交互 | `disableRemoteEmojiInteractions` | `Bool` / `true` | 纳入/合并 · [F06](requirements.md#f06) |
-| N105 | 选择贴纸时输入状态为输入中 | `disableChoosingSticker` | `Bool` / `false` | 纳入/合并 · [F11](requirements.md#f11) |
+| N105 | 选择贴纸时输入状态为输入中 | `disableChoosingSticker` | `Bool` / `false` | 纳入/合并 · [F11](requirements.md#f11)；暂不实现 |
 | N106 | 隐藏群组贴纸 | `hideGroupSticker` | `Bool` / `false` | 纳入/合并 · [F06](requirements.md#f06) |
 | N107 | 禁用会员贴纸动画 | `disablePremiumStickerAnimation` | `Bool` / `false` | 纳入/合并 · [F06](requirements.md#f06) |
 | N108 | 隐藏赞助消息 | `hideSponsoredMessage` | `Bool` / `false` | 纳入/合并 · [F03](requirements.md#f03) |
@@ -230,10 +232,10 @@
 | N120 | 在通话中使用媒体流 | `UseMediaStreamInVoip` | `Bool` / `false` | 排除 · X02：手机专属系统/硬件接口，桌面无对应配置 |
 | N121 | 音频码率 | `customAudioBitrate` | `Int` / `32` | 条件纳入 · [F06](requirements.md#f06) |
 | N122 | 关闭群语音处理 | `disableGroupVoipAudioProcessing` | `Bool` / `false` | 条件纳入 · [F06](requirements.md#f06) |
-| N123 | 加速上传和下载 | `enhancedFileLoader` | `Bool` / `false` | 条件纳入 · [F15](requirements.md#f15) |
+| N123 | 加速上传和下载 | `enhancedFileLoader` | `Bool` / `false` | 条件纳入 · [F15](requirements.md#f15)；暂不实现 |
 | N124 | 使用 OSMDroid 地图 | `useOSMDroidMap` | `Bool` / `false` | 排除 · X05：移动 SDK/外部应用绑定，不直接迁移 |
 | N125 | 修复 Google 地图在中国的漂移问题 | `mapDriftingFixForGoogleMaps` | `Bool` / `true` | 排除 · X05：移动 SDK/外部应用绑定，不直接迁移 |
-| N126 | 本地大会员 | `localPremium` | `Bool` / `false` | 条件纳入 · [F10](requirements.md#f10) |
+| N126 | 本地大会员 | `localPremium` | `Bool` / `false` | 条件纳入 · [F10](requirements.md#f10)；暂不实现 |
 | N127 | 界面文本使用半角符号 | `LocaleToDBC` | `Bool` / `false` | 纳入/合并 · [F01](requirements.md#f01) |
 
 ## Nagram Android 增强偏好
@@ -266,7 +268,7 @@
 | A022 | 消息反应 | `Reactions` | `Bool` / `true` | 纳入/合并 · [F03](requirements.md#f03) |
 | A023 | 显示服务消息时间 | `ShowServicesTime` | `Bool` / `true` | 纳入/合并 · [F03](requirements.md#f03) |
 | A024 | 自定义标题 | `CustomTitle` | `String` / `当前语言默认文案` | 纳入/合并 · [F01](requirements.md#f01) |
-| A025 | 锁定码解锁使用系统界面 | `UseSystemUnlock` | `Bool` / `true` | 条件纳入 · [F10](requirements.md#f10) |
+| A025 | 锁定码解锁使用系统界面 | `UseSystemUnlock` | `Bool` / `true` | 条件纳入 · [F10](requirements.md#f10)；暂不实现 |
 | A026 | 代码语法高亮 | `CodeSyntaxHighlight` | `Bool` / `true` | 复用上游 · [F04](requirements.md#f04) |
 | A027 | 显示转发消息日期 | `DateOfForwardedMsg` | `Bool` / `false` | 纳入/合并 · [F03](requirements.md#f03) |
 | A028 | 显示消息 ID | `ShowMessageID` | `Bool` / `false` | 纳入/合并 · [F03](requirements.md#f03) |
@@ -289,7 +291,7 @@
 | A045 | 自定义快捷回复词 | `CustomGreat` | `String` / `当前语言默认文案` | 纳入/合并 · [F05](requirements.md#f05) |
 | A046 | 自定义长按快捷回复词 | `CustomPoor` | `String` / `当前语言默认文案` | 纳入/合并 · [F05](requirements.md#f05) |
 | A047 | 自定义已编辑消息提示词 | `CustomEditedMessage` | `String` / `""` | 纳入/合并 · [F03](requirements.md#f03) |
-| A048 | 启用 VPN 时禁用代理 | `DisableProxyWhenVpnEnabled` | `Bool` / `false` | 条件纳入 · [F15](requirements.md#f15) |
+| A048 | 启用 VPN 时禁用代理 | `DisableProxyWhenVpnEnabled` | `Bool` / `false` | 条件纳入 · [F15](requirements.md#f15)；暂不实现 |
 | A049 | 伪装高性能设备 | `FakeHighPerformanceDevice` | `Bool` / `false` | 排除 · X04：手机布局/渲染实现，保持 Qt 原生交互 |
 | A050 | 解除 emoji 渲染上限 | `DisableEmojiDrawLimit` | `Bool` / `false` | 排除 · X04：手机布局/渲染实现，保持 Qt 原生交互 |
 | A051 | 图标装饰 | `IconDecoration` | `Int` / `0` | 纳入/合并 · [F01](requirements.md#f01) |
@@ -309,14 +311,14 @@
 | A065 | 删除默认项：封禁用户 | `DeleteBanUsers` | `Bool（集合子项）` / `false（位标志）` | 纳入/合并 · [F14](requirements.md#f14) |
 | A066 | 删除默认项：举报垃圾消息 | `DeleteReportSpam` | `Bool（集合子项）` / `false（位标志）` | 纳入/合并 · [F14](requirements.md#f14) |
 | A067 | 删除默认项：删除全部 | `DeleteAll` | `Bool（集合子项）` / `false（位标志）` | 纳入/合并 · [F14](requirements.md#f14) |
-| A068 | 也在共同群操作 | `DoActionsInCommonGroups` | `Bool（集合子项）` / `false（位标志）` | 纳入/合并 · [F14](requirements.md#f14) |
+| A068 | 也在共同群操作 | `DoActionsInCommonGroups` | `Bool（集合子项）` / `false（位标志）` | 纳入/合并 · [F14](requirements.md#f14)；暂不实现 |
 | A069 | 删除默认项：移除用户反应 | `DeleteAllReactionsFromUsers` | `Bool（集合子项）` / `false（位标志）` | 纳入/合并 · [F14](requirements.md#f14) |
 | A070 | 禁用修改手机号码的建议 | `DisableSuggestionView` | `Bool` / `false` | 纳入/合并 · [F04](requirements.md#f04) |
 | A071 | 禁用动态功能 | `DisableStories` | `Bool` / `false` | 纳入/合并 · [F03](requirements.md#f03) |
-| A072 | 偷偷看动态 | `DisableSendReadStories` | `Bool` / `false` | 纳入/合并 · [F11](requirements.md#f11) |
+| A072 | 偷偷看动态 | `DisableSendReadStories` | `Bool` / `false` | 纳入/合并 · [F11](requirements.md#f11)；暂不实现 |
 | A073 | 隐藏文件夹中的\"全部取消静音\" | `HideFilterMuteAll` | `Bool` / `false` | 纳入/合并 · [F02](requirements.md#f02) |
-| A074 | 本地名称颜色 | `UseLocalQuoteColor` | `Bool` / `false` | 纳入/合并 · [F01](requirements.md#f01) |
-| A075 | 本地引用颜色配置 | `useLocalQuoteColorData` | `String` / `""` | 纳入/合并 · [F01](requirements.md#f01) |
+| A074 | 本地名称颜色 | `UseLocalQuoteColor` | `Bool` / `false` | 纳入/合并 · [F01](requirements.md#f01)；暂不实现 |
+| A075 | 本地引用颜色配置 | `useLocalQuoteColorData` | `String` / `""` | 纳入/合并 · [F01](requirements.md#f01)；暂不实现 |
 | A076 | 显示用户最近在线状态 | `ShowRecentOnlineStatus` | `Bool` / `false` | 纳入/合并 · [F14](requirements.md#f14) |
 | A077 | 显示方形头像 | `ShowSquareAvatar` | `Bool` / `false` | 纳入/合并 · [F01](requirements.md#f01) |
 | A078 | 禁用私聊的自定义背景 | `DisableCustomWallpaperUser` | `Bool` / `false` | 纳入/合并 · [F01](requirements.md#f01) |
@@ -390,7 +392,7 @@
 | A146 | 播放器解码器 | `PlayerDecoder` | `Int` / `0` | 条件纳入 · [F06](requirements.md#f06) |
 | A147 | 对话列表中的用户头像预览 | `ShowUserIconsInChatsList` | `Bool` / `false` | 纳入/合并 · [F02](requirements.md#f02) |
 | A148 | 从最近使用中移除已收藏的贴纸 | `RemoveFavouriteStickersInRecentStickers` | `Bool` / `true` | 纳入/合并 · [F06](requirements.md#f06) |
-| A149 | 无需投票显示投票结果 | `ShowVoteCountBeforeVote` | `Bool` / `false` | 条件纳入 · [F14](requirements.md#f14) |
+| A149 | 无需投票显示投票结果 | `ShowVoteCountBeforeVote` | `Bool` / `false` | 条件纳入 · [F14](requirements.md#f14)；暂不实现 |
 | A150 | 隐藏相机即时预览 | `HideInstantCamera` | `Bool` / `false` | 排除 · X02：手机专属系统/硬件接口，桌面无对应配置 |
 | A151 | 使用系统 AI 服务 | `UseSystemAiService` | `Bool` / `true` | 条件纳入 · [F07](requirements.md#f07) |
 | A152 | 页面切换弹簧动画 | `NavigationAnimationSpring` | `Bool` / `true` | 排除 · X04：手机布局/渲染实现，保持 Qt 原生交互 |
@@ -454,21 +456,21 @@
 
 | ID | 功能 | 核对名 | 原始类型 / 默认 | 桌面去向 |
 | --- | --- | --- | --- | --- |
-| D001 | 隐私模式：发送消息已读回执 | `sendReadMessages` | `bool` / `true` | 纳入/合并 · [F11](requirements.md#f11) |
-| D002 | 隐私模式：发送动态已读回执 | `sendReadStories` | `bool` / `true` | 纳入/合并 · [F11](requirements.md#f11) |
-| D003 | 隐私模式：发送在线状态 | `sendOnlinePackets` | `bool` / `true` | 纳入/合并 · [F11](requirements.md#f11) |
-| D004 | 隐私模式：发送上传/输入活动状态 | `sendUploadProgress` | `bool` / `true` | 纳入/合并 · [F11](requirements.md#f11) |
-| D005 | 隐私模式：在线后补发离线状态 | `sendOfflinePacketAfterOnline` | `bool` / `false` | 纳入/合并 · [F11](requirements.md#f11) |
-| D006 | 隐私模式：操作后标为已读 | `markReadAfterAction` | `bool` / `true` | 纳入/合并 · [F11](requirements.md#f11) |
-| D007 | 隐私模式：隐私模式下使用定时发送 | `useScheduledMessages` | `bool` / `false` | 纳入/合并 · [F11](requirements.md#f11) |
-| D008 | 隐私模式：静音发送策略 | `sendWithoutSound` | `SendWithoutSoundOption` / `Never` | 纳入/合并 · [F11](requirements.md#f11) |
-| D009 | 隐私模式：查看动态前提示隐私模式 | `suggestGhostModeBeforeViewingStory` | `bool` / `true` | 纳入/合并 · [F11](requirements.md#f11) |
-| D010 | 隐私模式：隐私模式当前状态 | `ghostModeActive` | `bool` / `false` | 纳入/合并 · [F11](requirements.md#f11) |
-| D011 | 隐私模式：锁定消息回执子项 | `sendReadMessagesLocked` | `bool` / `false` | 纳入/合并 · [F11](requirements.md#f11) |
-| D012 | 隐私模式：锁定动态回执子项 | `sendReadStoriesLocked` | `bool` / `false` | 纳入/合并 · [F11](requirements.md#f11) |
-| D013 | 隐私模式：锁定在线状态子项 | `sendOnlinePacketsLocked` | `bool` / `false` | 纳入/合并 · [F11](requirements.md#f11) |
-| D014 | 隐私模式：锁定活动状态子项 | `sendUploadProgressLocked` | `bool` / `false` | 纳入/合并 · [F11](requirements.md#f11) |
-| D015 | 隐私模式：锁定补发离线子项 | `sendOfflinePacketAfterOnlineLocked` | `bool` / `false` | 纳入/合并 · [F11](requirements.md#f11) |
+| D001 | 隐私模式：发送消息已读回执 | `sendReadMessages` | `bool` / `true` | 纳入/合并 · [F11](requirements.md#f11)；暂不实现 |
+| D002 | 隐私模式：发送动态已读回执 | `sendReadStories` | `bool` / `true` | 纳入/合并 · [F11](requirements.md#f11)；暂不实现 |
+| D003 | 隐私模式：发送在线状态 | `sendOnlinePackets` | `bool` / `true` | 纳入/合并 · [F11](requirements.md#f11)；暂不实现 |
+| D004 | 隐私模式：发送上传/输入活动状态 | `sendUploadProgress` | `bool` / `true` | 纳入/合并 · [F11](requirements.md#f11)；暂不实现 |
+| D005 | 隐私模式：在线后补发离线状态 | `sendOfflinePacketAfterOnline` | `bool` / `false` | 纳入/合并 · [F11](requirements.md#f11)；暂不实现 |
+| D006 | 隐私模式：操作后标为已读 | `markReadAfterAction` | `bool` / `true` | 纳入/合并 · [F11](requirements.md#f11)；暂不实现 |
+| D007 | 隐私模式：隐私模式下使用定时发送 | `useScheduledMessages` | `bool` / `false` | 纳入/合并 · [F11](requirements.md#f11)；暂不实现 |
+| D008 | 隐私模式：静音发送策略 | `sendWithoutSound` | `SendWithoutSoundOption` / `Never` | 纳入/合并 · [F11](requirements.md#f11)；暂不实现 |
+| D009 | 隐私模式：查看动态前提示隐私模式 | `suggestGhostModeBeforeViewingStory` | `bool` / `true` | 纳入/合并 · [F11](requirements.md#f11)；暂不实现 |
+| D010 | 隐私模式：隐私模式当前状态 | `ghostModeActive` | `bool` / `false` | 纳入/合并 · [F11](requirements.md#f11)；暂不实现 |
+| D011 | 隐私模式：锁定消息回执子项 | `sendReadMessagesLocked` | `bool` / `false` | 纳入/合并 · [F11](requirements.md#f11)；暂不实现 |
+| D012 | 隐私模式：锁定动态回执子项 | `sendReadStoriesLocked` | `bool` / `false` | 纳入/合并 · [F11](requirements.md#f11)；暂不实现 |
+| D013 | 隐私模式：锁定在线状态子项 | `sendOnlinePacketsLocked` | `bool` / `false` | 纳入/合并 · [F11](requirements.md#f11)；暂不实现 |
+| D014 | 隐私模式：锁定活动状态子项 | `sendUploadProgressLocked` | `bool` / `false` | 纳入/合并 · [F11](requirements.md#f11)；暂不实现 |
+| D015 | 隐私模式：锁定补发离线子项 | `sendOfflinePacketAfterOnlineLocked` | `bool` / `false` | 纳入/合并 · [F11](requirements.md#f11)；暂不实现 |
 | D016 | 消息截图：截图显示背景 | `showBackground` | `bool` / `true` | 纳入/合并 · [F13](requirements.md#f13) |
 | D017 | 消息截图：截图显示日期 | `showDate` | `bool` / `false` | 纳入/合并 · [F13](requirements.md#f13) |
 | D018 | 消息截图：显示反应 | `showReactions` | `bool` / `false` | 纳入/合并 · [F13](requirements.md#f13) |
@@ -482,13 +484,13 @@
 | D026 | 消息截图：截图云主题文档 ID | `cloudThemeDocumentId` | `uint64` / `0` | 纳入/合并 · [F13](requirements.md#f13) |
 | D027 | 消息截图：截图云主题标题 | `cloudThemeTitle` | `QString` / `构造时确定/空值` | 纳入/合并 · [F13](requirements.md#f13) |
 | D028 | 消息截图：截图云主题所属账号 | `cloudThemeAccountId` | `uint64` / `0` | 纳入/合并 · [F13](requirements.md#f13) |
-| D029 | 全局：保存已接收的删除消息 | `saveDeletedMessages` | `bool` / `true` | 纳入/合并 · [F12](requirements.md#f12) |
-| D030 | 全局：保存消息编辑历史 | `saveMessagesHistory` | `bool` / `true` | 纳入/合并 · [F12](requirements.md#f12) |
-| D031 | 全局：也保存机器人的历史 | `saveForBots` | `bool` / `false` | 纳入/合并 · [F12](requirements.md#f12) |
+| D029 | 全局：保存已接收的删除消息 | `saveDeletedMessages` | `bool` / `true` | 纳入/合并 · [F12](requirements.md#f12)；暂不实现 |
+| D030 | 全局：保存消息编辑历史 | `saveMessagesHistory` | `bool` / `true` | 纳入/合并 · [F12](requirements.md#f12)；暂不实现 |
+| D031 | 全局：也保存机器人的历史 | `saveForBots` | `bool` / `false` | 纳入/合并 · [F12](requirements.md#f12)；暂不实现 |
 | D032 | 全局：启用消息过滤 | `filtersEnabled` | `bool` / `false` | 纳入/合并 · [F09](requirements.md#f09) |
 | D033 | 全局：在聊天内启用过滤 | `filtersEnabledInChats` | `bool` / `false` | 纳入/合并 · [F09](requirements.md#f09) |
 | D034 | 全局：隐藏已屏蔽用户消息 | `hideFromBlocked` | `bool` / `false` | 纳入/合并 · [F09](requirements.md#f09) |
-| D035 | 全局：删除消息半透明显示 | `semiTransparentDeletedMessages` | `bool` / `false` | 纳入/合并 · [F12](requirements.md#f12) |
+| D035 | 全局：删除消息半透明显示 | `semiTransparentDeletedMessages` | `bool` / `false` | 纳入/合并 · [F12](requirements.md#f12)；暂不实现 |
 | D036 | 全局：隐藏赞助内容 | `disableAds` | `bool` / `true` | 纳入/合并 · [F03](requirements.md#f03) |
 | D037 | 全局：隐藏动态 | `disableStories` | `bool` / `false` | 纳入/合并 · [F03](requirements.md#f03) |
 | D038 | 全局：禁用对方自定义背景 | `disableCustomBackgrounds` | `bool` / `false` | 纳入/合并 · [F01](requirements.md#f01) |
@@ -506,7 +508,7 @@
 | D050 | 全局：开关控件样式 | `materialSwitches` | `bool` / `true` | 纳入/合并 · [F01](requirements.md#f01) |
 | D051 | 全局：隐藏气泡尾部 | `removeMessageTail` | `bool` / `false` | 纳入/合并 · [F03](requirements.md#f03) |
 | D052 | 全局：取消通知延迟 | `disableNotificationsDelay` | `bool` / `false` | 纳入/合并 · [F18](requirements.md#f18) |
-| D053 | 全局：本地高级外观能力 | `localPremium` | `bool` / `false` | 条件纳入 · [F10](requirements.md#f10) |
+| D053 | 全局：本地高级外观能力 | `localPremium` | `bool` / `false` | 条件纳入 · [F10](requirements.md#f10)；暂不实现 |
 | D054 | 全局：频道反应可见性 | `showChannelReactions` | `bool` / `true` | 纳入/合并 · [F03](requirements.md#f03) |
 | D055 | 全局：群组反应可见性 | `showGroupReactions` | `bool` / `true` | 纳入/合并 · [F03](requirements.md#f03) |
 | D056 | 全局：私聊反应可见性 | `showPrivateChatReactions` | `bool` / `true` | 纳入/合并 · [F03](requirements.md#f03) |
@@ -514,7 +516,7 @@
 | D058 | 全局：简化引用和回复 | `simpleQuotesAndReplies` | `bool` / `false` | 纳入/合并 · [F03](requirements.md#f03) |
 | D059 | 全局：隐藏快速分享 | `hideFastShare` | `bool` / `false` | 纳入/合并 · [F03](requirements.md#f03) |
 | D060 | 全局：底部状态使用图标 | `replaceBottomInfoWithIcons` | `bool` / `true` | 纳入/合并 · [F03](requirements.md#f03) |
-| D061 | 全局：删除消息标记 | `deletedMark` | `QString` / `🧹` | 纳入/合并 · [F12](requirements.md#f12) |
+| D061 | 全局：删除消息标记 | `deletedMark` | `QString` / `🧹` | 纳入/合并 · [F12](requirements.md#f12)；暂不实现 |
 | D062 | 全局：编辑消息标记 | `editedMark` | `QString` / `构造时确定/空值` | 纳入/合并 · [F03](requirements.md#f03) |
 | D063 | 全局：扩展最近贴纸容量 | `unlimitedRecentStickers` | `bool` / `false` | 纳入/合并 · [F06](requirements.md#f06) |
 | D064 | 全局：最近贴纸数量 | `recentStickersCount` | `int` / `100` | 纳入/合并 · [F06](requirements.md#f06) |
@@ -541,12 +543,12 @@
 | D085 | 全局：主菜单联系人 | `showContactsInDrawer` | `bool` / `true` | 纳入/合并 · [F02](requirements.md#f02) |
 | D086 | 全局：主菜单通话 | `showCallsInDrawer` | `bool` / `true` | 纳入/合并 · [F02](requirements.md#f02) |
 | D087 | 全局：主菜单收藏夹 | `showSavedMessagesInDrawer` | `bool` / `true` | 纳入/合并 · [F02](requirements.md#f02) |
-| D088 | 全局：主菜单仅本地全部已读 | `showLReadToggleInDrawer` | `bool` / `false` | 纳入/合并 · [F11](requirements.md#f11) |
-| D089 | 全局：主菜单向服务端同步全部已读 | `showSReadToggleInDrawer` | `bool` / `true` | 纳入/合并 · [F11](requirements.md#f11) |
+| D088 | 全局：主菜单仅本地全部已读 | `showLReadToggleInDrawer` | `bool` / `false` | 纳入/合并 · [F11](requirements.md#f11)；暂不实现 |
+| D089 | 全局：主菜单向服务端同步全部已读 | `showSReadToggleInDrawer` | `bool` / `true` | 纳入/合并 · [F11](requirements.md#f11)；暂不实现 |
 | D090 | 全局：主菜单深色模式 | `showNightModeToggleInDrawer` | `bool` / `true` | 纳入/合并 · [F02](requirements.md#f02) |
-| D091 | 全局：主菜单隐私模式 | `showGhostToggleInDrawer` | `bool` / `true` | 纳入/合并 · [F11](requirements.md#f11) |
+| D091 | 全局：主菜单隐私模式 | `showGhostToggleInDrawer` | `bool` / `true` | 纳入/合并 · [F11](requirements.md#f11)；暂不实现 |
 | D092 | 全局：主菜单演示隐私模式 | `showStreamerToggleInDrawer` | `bool` / `false` | 纳入/合并 · [F11](requirements.md#f11) |
-| D093 | 全局：托盘隐私模式 | `showGhostToggleInTray` | `bool` / `true` | 纳入/合并 · [F11](requirements.md#f11) |
+| D093 | 全局：托盘隐私模式 | `showGhostToggleInTray` | `bool` / `true` | 纳入/合并 · [F11](requirements.md#f11)；暂不实现 |
 | D094 | 全局：托盘演示隐私模式 | `showStreamerToggleInTray` | `bool` / `false` | 纳入/合并 · [F11](requirements.md#f11) |
 | D095 | 全局：隐藏高级会员状态 | `hidePremiumStatuses` | `bool` / `false` | 纳入/合并 · [F03](requirements.md#f03) |
 | D096 | 全局：等宽字体 | `monoFont` | `QString` / `构造时确定/空值` | 排除 · 上游 `lib_ui` 无设置接口，决定放弃 A01 |
@@ -574,7 +576,7 @@
 | D118 | 全局：头像圆角 | `avatarCorners` | `int` / `23` | 纳入/合并 · [F01](requirements.md#f01) |
 | D119 | 全局：统一圆角 | `singleCornerRadius` | `bool` / `false` | 纳入/合并 · [F01](requirements.md#f01) |
 | D120 | 全局：演示隐私模式 | `streamerMode` | `bool` / `false` | 纳入/合并 · [F10](requirements.md#f10) |
-| D121 | 全局：跨账号共用隐私模式 | `useGlobalGhostMode` | `bool` / `true` | 纳入/合并 · [F11](requirements.md#f11) |
+| D121 | 全局：跨账号共用隐私模式 | `useGlobalGhostMode` | `bool` / `true` | 纳入/合并 · [F11](requirements.md#f11)；暂不实现 |
 
 ## 集中声明之外的模型与配置
 
@@ -594,23 +596,23 @@
 | S10 | iOS 预览规则：domain、regex、rules(regex/replace) | 元数据规则 | F16 规则来源/版本及更新失败可见 |
 | S11 | iOS inline bot：username、rules，本地添加/编辑/删除/启停及远程规则覆盖 | 显式总开关 | F16 不自动发送；规则与预览替换分离 |
 | S12 | Android 自动翻译 `autoTranslate_dialog_topic` | 缺失继承全局；有显式 false | F07 再补账号维度，保证不串号 |
-| S13 | Android `customForumTabs_dialog` | false | F02 转成桌面话题导航偏好，条件纳入 |
+| S13 | Android `customForumTabs_dialog` | false | F02 转成桌面话题导航偏好，条件纳入；暂不实现 |
 | S14 | Android `sharetarget_dialog`、最近会话 | 默认关闭/最近状态 | F02 分享候选可见性，不搬系统分享服务 |
-| S15 | Android `sendReadMessagePackets`、`sendOnlinePackets`、`sendUploadProgress`、`sendReadStoryPackets` | true | F11 与桌面回执模型合并 |
-| S16 | Android `sendOfflineAfterOnline`、`markReadAfterSend`、`showGhostToggleInDrawer` | false / true / false | F11 区分策略和菜单入口 |
+| S15 | Android `sendReadMessagePackets`、`sendOnlinePackets`、`sendUploadProgress`、`sendReadStoryPackets` | true | F11 与桌面回执模型合并；暂不实现 |
+| S16 | Android `sendOfflineAfterOnline`、`markReadAfterSend`、`showGhostToggleInDrawer` | false / true / false | F11 区分策略和菜单入口；暂不实现 |
 | S17 | Android `channelAliasPrefix_<id>` | 未覆盖 | F14 按账号+会话保存别名 |
 | S18 | Android `autoUpdateReleaseChannel` | 源端 2 | F17 条件纳入独立发行通道；不复制源端整数 |
 | S19 | Android `custom_api/custom_app_id/custom_app_hash`、官方/测试 DC | 开发/身份配置 | 排除普通设置；保留构建与开发配置，凭据不入文档 |
 | S20 | Android 设置云存储：`auto_sync`、备份/恢复/手动同步、时间状态 `updated_at` | false；时间为内部状态 | F17 按 allowlist 导入/导出；时间不当产品配置 |
-| S21 | Android 账号锁/隐藏、设置锁/隐藏、系统解锁、`allowPanic` | 隐藏 false；源端应急允许 true | F10 条件纳入；桌面默认关闭，应急操作单独设计 |
+| S21 | Android 账号锁/隐藏、设置锁/隐藏、系统解锁、`allowPanic` | 隐藏 false；源端应急允许 true | F10 条件纳入；桌面默认关闭，应急操作单独设计；暂不实现 |
 | S22 | Android `passcodeHash/passcodeSalt/settingsHash` | 凭据派生存储 | 内部数据，排除普通配置与导出 |
 | S23 | Android RegexFiltersData 的规则编辑、导入/导出、单聊天覆盖与排除 | 与总开关分离 | F09 合并统一规则模型 |
 | S24 | Android inline bot 本地规则、启用集合、远程禁用集合、URL 预览修正规则 | 与 provider 元数据分离 | F16 本地覆盖优先，不覆盖用户规则 |
 | S25 | 桌面本地隐藏作者集合 `shadowBanIds` | 空集合 | F09 本地作者过滤，补账号维度 |
-| S26 | 桌面按账号隐私配置集合 `ghostAccounts` | 全局共享或按账号解析 | F11 全局模板+账号覆盖；账号索引是内部数据 |
+| S26 | 桌面按账号隐私配置集合 `ghostAccounts` | 全局共享或按账号解析 | F11 全局模板+账号覆盖；账号索引是内部数据；暂不实现 |
 | S27 | 桌面 RegexFilter：id/text/enabled/reversed/caseInsensitive/dialogId | 编辑器新规则 enabled=true、caseInsensitive=true、reversed=false | F09 同一规则 schema，Qt 默认不自动启用导入规则 |
 | S28 | 桌面全局过滤排除：dialogId/filterId；对话显示过滤内容覆盖 | 显式覆盖 | F09 补账号+话题；保留恢复继承 |
-| S29 | 桌面消息历史：删除消息、编辑消息、删除对话、消息/内容已读状态 | 持久化实体 | F12/F11 独立数据存储，绝不混入配置导出 |
+| S29 | 桌面消息历史：删除消息、编辑消息、删除对话、消息/内容已读状态 | 持久化实体 | F12/F11 独立数据存储，绝不混入配置导出；暂不实现 |
 | S30 | 桌面截图云主题复合引用 | 账号/主题/文档/访问引用/标题 | F13 引用数据，不是每个 ID 一个 UI 输入框 |
 | S31 | 隐私/截图/过滤配置的 load/save/reset/validate | 配置生命周期 | F17 复用 Qt 存储约定，不复制另一套 JSON 配置单例 |
 | S32 | iOS 设置深链、行定位、搜索、测试 Demo Mode | 导航/开发设施 | F17 保留稳定搜索 ID；Demo fixture 不纳入产品开关 |
@@ -713,7 +715,7 @@ F14；保持上游默认顺序与权限检查，以下是候选入口而非默�
 | M47 `selectAll` | 全选 | F05 纳入统一菜单，按权限/消息类型展示 |
 | M48 `delete` | 删除 | F05 纳入统一菜单，按权限/消息类型展示 |
 
-菜单扩展还覆盖复制图片、合并消息、反向回复、快捷评价、设置提醒、消息详情、媒体信息、删除下载文件、编辑历史、隐藏消息、添加过滤、消息截图、管理操作、修改权限、区间选择、浏览量和反应面板。它们分别对应基础表的 F05/F06/F09/F12/F13/F14 项，不重复计为另一个全局开关。
+菜单扩展还覆盖复制图片、合并消息、反向回复、快捷评价、设置提醒、消息详情、媒体信息、删除下载文件、编辑历史、隐藏消息、添加过滤、消息截图、管理操作、修改权限、区间选择、浏览量和反应面板。它们分别对应基础表的 F05/F06/F09/F12/F13/F14 项，不重复计为另一个全局开关。其中编辑历史随 F12 暂不实现。
 
 ## 无独立开关的增强能力与处置
 
@@ -725,8 +727,8 @@ F14；保持上游默认顺序与权限检查，以下是候选入口而非默�
 | 群统计、消息统计、邀请/群升级、无成员建群、全部解除屏蔽、删除群内消息 | F14；优先现有能力，保留权限和确认 |
 | 消息链接改进、个人简介链接、长链接操作、QR 链接解析/分享 | F16/F14；复用现有 URL/QR 能力 |
 | 登录 QR、扫码确认、官方/测试服务器选择 | Qt 已有登录与开发能力复用；手机扫码器不迁移 |
-| 代理订阅、导入导出、备注、测延迟、排序、清理、自动切换、非当前账号提示优化 | F15；具体验证后接入 |
-| 旧代理协议 VMess/SS/SSR/Trojan 与多订阅格式 | F15 条件目标；旧 README 标记未维护，不能直接视为已支持 |
+| 代理订阅、导入导出、备注、测延迟、排序、清理、自动切换、非当前账号提示优化 | F15；具体验证后接入；订阅及其导入导出/备注/测延迟/排序和自动切换暂不实现 |
+| 旧代理协议 VMess/SS/SSR/Trojan 与多订阅格式 | F15 条件目标；旧 README 标记未维护，不能直接视为已支持；暂不实现 |
 | 贴纸集目录备份/恢复/分享、单贴纸收藏 | F06；不备份登录凭据 |
 | Instant View/选中文字翻译、简繁转换、英文 emoji 搜索关键词 | F07/F06；已有查找能力优先复用 |
 | 可滚动聊天预览、保存阅读位置、避免草稿被清理 | F02；区分导航改进和源端 bug 修复 |
