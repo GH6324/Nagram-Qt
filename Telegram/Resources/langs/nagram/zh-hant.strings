@@ -609,6 +609,13 @@
 "lng_nagram_custom_doh_invalid" = "請輸入不帶查詢參數的 https 位址。";
 "lng_nagram_custom_doh_failed" = "無法存取自訂 DoH 位址：{error}。不會改用內建服務。";
 "lng_nagram_custom_doh_bad_response" = "自訂 DoH 位址沒有傳回 JSON 格式的 DNS 結果。不會改用內建服務。";
+"lng_nagram_network_transfer" = "檔案傳輸";
+"lng_nagram_download_speed_boost" = "下載加速";
+"lng_nagram_download_speed_boost_balanced" = "均衡";
+"lng_nagram_download_speed_boost_fast" = "快速";
+"lng_nagram_download_speed_boost_about" = "重新啟動後生效。增加同時下載的連線數；速度仍受 Telegram 伺服器限制，也作用於影片邊下邊播。";
+"lng_nagram_upload_speed_boost" = "上傳加速";
+"lng_nagram_upload_speed_boost_about" = "重新啟動後生效。1 MB 及以上的檔案使用更大的分片；速度仍受 Telegram 伺服器限制。";
 "lng_nagram_recording_calls" = "錄製與通話";
 "lng_nagram_voice_record_bitrate" = "語音訊息位元率";
 "lng_nagram_voice_record_bitrate_about" = "對之後錄製的語音訊息生效。位元率越高，檔案越大。";

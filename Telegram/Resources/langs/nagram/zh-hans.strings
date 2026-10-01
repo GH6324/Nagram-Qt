@@ -609,6 +609,13 @@
 "lng_nagram_custom_doh_invalid" = "请输入不带查询参数的 https 地址。";
 "lng_nagram_custom_doh_failed" = "无法访问自定义 DoH 地址：{error}。不会改用内置服务。";
 "lng_nagram_custom_doh_bad_response" = "自定义 DoH 地址没有返回 JSON 格式的 DNS 结果。不会改用内置服务。";
+"lng_nagram_network_transfer" = "文件传输";
+"lng_nagram_download_speed_boost" = "下载加速";
+"lng_nagram_download_speed_boost_balanced" = "均衡";
+"lng_nagram_download_speed_boost_fast" = "快速";
+"lng_nagram_download_speed_boost_about" = "重启后生效。增加同时下载的连接数；速度仍受 Telegram 服务端限制，也作用于视频边下边播。";
+"lng_nagram_upload_speed_boost" = "上传加速";
+"lng_nagram_upload_speed_boost_about" = "重启后生效。1 MB 及以上的文件使用更大的分片；速度仍受 Telegram 服务端限制。";
 "lng_nagram_recording_calls" = "录制与通话";
 "lng_nagram_voice_record_bitrate" = "语音消息码率";
 "lng_nagram_voice_record_bitrate_about" = "对之后录制的语音消息生效。码率越高，文件越大。";

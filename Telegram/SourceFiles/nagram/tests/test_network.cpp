@@ -35,14 +35,15 @@ template <typename Type>
 void CheckDeviceOption(
 		const Nagram::Registry &registry,
 		const Nagram::Option<Type> &option,
-		const Type &changed) {
+		const Type &changed,
+		bool restart = false) {
 	using namespace Nagram;
 	const auto info = registry.Find(option.key);
 	Require(info != nullptr, "network option is not registered");
 	Require(info->scope == Scope::Device
 		&& info->category == Category::Network
 		&& registry.HasFlag(option.key, Flag::Exportable)
-		&& !registry.HasFlag(option.key, Flag::RequiresRestart),
+		&& registry.HasFlag(option.key, Flag::RequiresRestart) == restart,
 		"network option must be an exportable device option");
 
 	auto prefs = MemoryPrefs();
@@ -258,6 +259,110 @@ void TestDohEndpoint() {
 		"non-JSON DNS answer accepted");
 }
 
+void TestTransferOptions() {
+	using namespace Nagram;
+	using namespace Nagram::Network;
+	auto registry = Registry();
+	RegisterOptions(registry);
+	CheckDeviceOption(registry, kDownloadSpeedBoost, u"fast"_q, true);
+	CheckDeviceOption(registry, kUploadSpeedBoost, true, true);
+	Require(kDownloadSpeedBoost.fallback == u"none"_q
+		&& !kUploadSpeedBoost.fallback,
+		"transfer options must follow Telegram by default");
+	for (const auto &value : { u"none"_q, u"balanced"_q, u"fast"_q }) {
+		Require(ValidDownloadBoost(value), "download level rejected");
+	}
+	for (const auto &value : {
+			QString(),
+			u"None"_q,
+			u"fast "_q,
+			u"extreme"_q,
+			u"2"_q }) {
+		Require(!ValidDownloadBoost(value), "bad download level accepted");
+	}
+
+	auto prefs = MemoryPrefs();
+	auto options = Options(prefs);
+	Require(!options.Set(kDownloadSpeedBoost, u"extreme"_q)
+		&& prefs.values.empty(), "bad download level stored");
+	prefs.values[std::string(kDownloadSpeedBoost.key)] = "sextreme";
+	Require(options.Get(kDownloadSpeedBoost) == u"none"_q
+		&& options.invalidKeys().contains(kDownloadSpeedBoost.key),
+		"stored bad download level must be read as none");
+}
+
+void TestDownloadParams() {
+	using namespace Nagram::Network;
+	const auto part = kDownloadPart;
+	const auto upstream = DownloadParams{ 1, 8, 4 * part };
+	const auto odd = DownloadParams{ 3, 5, 7 * part };
+	for (const auto &value : {
+			u"none"_q,
+			QString(),
+			u"extreme"_q,
+			u"FAST"_q }) {
+		Require(ResolveDownloadParams(value, upstream) == upstream
+			&& ResolveDownloadParams(value, odd) == odd
+			&& ResolveDownloadParams(value, {}) == DownloadParams(),
+			"none and unknown levels must return the upstream values");
+	}
+	Require(ResolveDownloadParams(u"balanced"_q, upstream)
+		== DownloadParams{ 2, 8, 8 * part }, "balanced download level");
+	Require(ResolveDownloadParams(u"fast"_q, upstream)
+		== DownloadParams{ 4, 12, 16 * part }, "fast download level");
+	for (const auto &value : { u"balanced"_q, u"fast"_q }) {
+		const auto params = ResolveDownloadParams(value, upstream);
+		Require(params == ResolveDownloadParams(value, {})
+			&& params == ClampDownloadParams(params),
+			"boosted levels must not depend on the upstream values");
+		Require(params.startSessions >= 1
+			&& params.startSessions <= params.maxSessions
+			&& params.maxSessions <= kMaxDownloadSessions
+			&& params.startWindow >= kMinDownloadWindow
+			&& params.startWindow <= kMaxDownloadWindow
+			&& !(params.startWindow % part),
+			"download level out of the hard limits");
+	}
+	Require(kMaxDownloadSessions == 16
+		&& kMinDownloadWindow == 4 * part
+		&& kMaxDownloadWindow == 16 * part, "download hard limits");
+	Require(ClampDownloadParams({ 0, 0, 0 })
+		== DownloadParams{ 1, 1, 4 * part }, "clamp from below");
+	Require(ClampDownloadParams({ 40, 99, 64 * part })
+		== DownloadParams{ 16, 16, 16 * part }, "clamp from above");
+	Require(ClampDownloadParams({ 9, 6, 8 * part })
+		== DownloadParams{ 6, 6, 8 * part },
+		"start sessions must not exceed the session limit");
+	Require(ClampDownloadParams({ -3, -1, -part })
+		== DownloadParams{ 1, 1, 4 * part }, "clamp negative values");
+}
+
+void TestUploadPartSize() {
+	using namespace Nagram::Network;
+	const auto mb = qint64(1024) * 1024;
+	for (const auto size : {
+			qint64(0),
+			qint64(1),
+			mb - 1,
+			mb,
+			mb + 1,
+			32 * mb,
+			4000 * mb }) {
+		Require(!UploadPartSize(false, size),
+			"upload part size must stay with Telegram when turned off");
+	}
+	Require(!UploadPartSize(true, 0)
+		&& !UploadPartSize(true, 1)
+		&& !UploadPartSize(true, mb - 1),
+		"files under 1 MB must keep the Telegram part size");
+	for (const auto size : { mb, mb + 1, 32 * mb, 33 * mb, 4000 * mb }) {
+		const auto part = UploadPartSize(true, size);
+		Require(part == 512 * 1024
+			&& !(part % 1024)
+			&& !(524288 % part), "boosted upload part size");
+	}
+}
+
 } // namespace
 
 void TestNetwork() {
@@ -266,5 +371,8 @@ void TestNetwork() {
 	TestOrderIps();
 	TestDohAddress();
 	TestDohEndpoint();
+	TestTransferOptions();
+	TestDownloadParams();
+	TestUploadPartSize();
 	std::cout << "PASS: Nagram network options" << std::endl;
 }

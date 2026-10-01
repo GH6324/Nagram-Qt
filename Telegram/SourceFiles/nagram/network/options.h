@@ -2,6 +2,7 @@
 
 #include "nagram/core/options.h"
 #include "nagram/network/model.h"
+#include "base/basic_types.h"
 
 namespace Nagram::Network {
 
@@ -21,12 +22,24 @@ inline const auto kCustomDoh = Option<QString>{
 	"nagram.customDoh", Scope::Device, QString(),
 	Category::Network, "lng_nagram_custom_doh",
 	static_cast<unsigned>(Flag::LocalOnly), ValidCustomDoh };
+inline constexpr auto kTransferFlags = static_cast<unsigned>(Flag::LocalOnly)
+	| static_cast<unsigned>(Flag::RequiresRestart);
+inline const auto kDownloadSpeedBoost = Option<QString>{
+	"nagram.downloadSpeedBoost", Scope::Device, u"none"_q,
+	Category::Network, "lng_nagram_download_speed_boost",
+	kTransferFlags, ValidDownloadBoost };
+inline constexpr auto kUploadSpeedBoost = Option<bool>{
+	"nagram.uploadSpeedBoost", Scope::Device, false,
+	Category::Network, "lng_nagram_upload_speed_boost",
+	kTransferFlags };
 
 inline void RegisterOptions(Registry &registry) {
 	Expects(registry.Add(kIpStrategy));
 	Expects(registry.Add(kDisableBackupAddresses));
 	Expects(registry.Add(kUseSystemDns));
 	Expects(registry.Add(kCustomDoh));
+	Expects(registry.Add(kDownloadSpeedBoost));
+	Expects(registry.Add(kUploadSpeedBoost));
 }
 
 } // namespace Nagram::Network

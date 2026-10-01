@@ -616,9 +616,11 @@ void TestLocalOnlyList() {
 		QString::fromLatin1("nagram.customDoh"),
 		QString::fromLatin1("nagram.demoMode"),
 		QString::fromLatin1("nagram.disableBackupAddresses"),
+		QString::fromLatin1("nagram.downloadSpeedBoost"),
 		QString::fromLatin1("nagram.ipStrategy"),
 		QString::fromLatin1("nagram.services"),
 		QString::fromLatin1("nagram.showRpcErrors"),
+		QString::fromLatin1("nagram.uploadSpeedBoost"),
 		QString::fromLatin1("nagram.useSystemDns"),
 		QString::fromLatin1("nagram.webAppHeightScale"),
 		QString::fromLatin1("nagram.webAppWidthScale"),
@@ -638,6 +640,10 @@ void TestLocalOnlyList() {
 	Require(device.Set(Network::kIpStrategy, 1)
 		&& device.Set(Network::kUseSystemDns, true)
 		&& device.Set(Network::kDisableBackupAddresses, true)
+		&& device.Set(
+			Network::kDownloadSpeedBoost,
+			QString::fromLatin1("fast"))
+		&& device.Set(Network::kUploadSpeedBoost, true)
 		&& device.Set(Privacy::kDemoMode, true)
 		&& device.Set(kShowRpcErrors, true)
 		&& device.Set(Links::kWebAppWidthScale, 150)
@@ -652,7 +658,7 @@ void TestLocalOnlyList() {
 		"local-only settings reached the backup");
 	const auto file = Exchange::Export(device, registry);
 	Require(Object(file.data).value(
-			QString::fromLatin1("options")).toObject().size() == 7,
+			QString::fromLatin1("options")).toObject().size() == 9,
 		"local-only settings must stay in the local file export");
 }
 

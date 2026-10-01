@@ -5,6 +5,8 @@
 #include <QtCore/QJsonDocument>
 #include <QtCore/QJsonObject>
 
+#include <algorithm>
+
 namespace Nagram::Network {
 namespace {
 
@@ -112,6 +114,39 @@ bool IsDnsJson(const QByteArray &bytes) {
 		&& document.isObject()
 		&& (document.object().contains(u"Status"_q)
 			|| document.object().contains(u"Answer"_q));
+}
+
+bool ValidDownloadBoost(const QString &value) {
+	return value == u"none"_q
+		|| value == u"balanced"_q
+		|| value == u"fast"_q;
+}
+
+DownloadParams ClampDownloadParams(DownloadParams params) {
+	const auto max = std::clamp(params.maxSessions, 1, kMaxDownloadSessions);
+	return {
+		.startSessions = std::clamp(params.startSessions, 1, max),
+		.maxSessions = max,
+		.startWindow = std::clamp(
+			params.startWindow,
+			kMinDownloadWindow,
+			kMaxDownloadWindow),
+	};
+}
+
+DownloadParams ResolveDownloadParams(
+		const QString &boost,
+		DownloadParams upstream) {
+	if (boost == u"balanced"_q) {
+		return ClampDownloadParams({ 2, 8, 8 * kDownloadPart });
+	} else if (boost == u"fast"_q) {
+		return ClampDownloadParams({ 4, 12, 16 * kDownloadPart });
+	}
+	return upstream;
+}
+
+int UploadPartSize(bool boost, qint64 size) {
+	return (boost && size >= kBoostedUploadFrom) ? kBoostedUploadPart : 0;
 }
 
 } // namespace Nagram::Network

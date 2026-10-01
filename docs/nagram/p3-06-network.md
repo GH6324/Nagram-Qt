@@ -103,7 +103,7 @@ Nagram 侧代码放在新目录 `nagram/network/`：`model.h/.cpp` 是纯逻辑�
 
 会话线程也要读的值（IP 策略、系统 DNS）由 `runtime.cpp` 在主线程订阅选项后写入 `std::atomic`，会话线程只读原子值，不直接访问 `Core::Settings`。
 
-### 3.1 I047 下载加速：可实现，档位数值须经基准确认
+### 3.1 I047 下载加速：可实现
 
 挂钩全部在 `storage/download_manager_mtproto.cpp`，方式为替换：
 
@@ -116,7 +116,7 @@ Nagram 侧代码放在新目录 `nagram/network/`：`model.h/.cpp` 是纯逻辑�
 
 `sessionTimedOut` 与 `removeSession` 里作为回收下限的 `kStartSessionsCount` 不改，网络变差时仍可退到 1 个会话。`kMaxWaitedInSession` 不改。
 
-档位候选值（`none` 即上游值）：
+档位取值（`none` 即上游值）：
 
 | 参数 | `none` | `balanced` | `fast` | 硬上限与依据 |
 | --- | --- | --- | --- | --- |
@@ -126,27 +126,26 @@ Nagram 侧代码放在新目录 `nagram/network/`：`model.h/.cpp` 是纯逻辑�
 | 窗口上限 | 16 片 | 16 片 | 16 片 | 不调 |
 | 分片大小 | 128 KB | 128 KB | 128 KB | 不可调，见 1.2 |
 
-`balanced` 只缩短爬升过程，稳态与上游相同；`fast` 另把会话上限提到 12。`model.cpp` 对所有档位值做钳制（会话数 1–16，窗口 4–16 片），非法的档位字符串按 `none` 处理并写日志。
+`balanced` 只缩短爬升过程，稳态与上游相同；`fast` 另把会话上限提到 12。`model.cpp` 对 `balanced`、`fast` 的取值做钳制（会话数 1–16，起步会话数不超过会话上限，窗口 4–16 片）；`none` 原样返回上游常量。非法的档位字符串在写入和导入时被拒绝；已存储的非法值读取时按 `none` 处理、记入注册表的无效键并写一条日志。
 
-基准要求（需求规定数值在 Qt 基准后确定）：
+取值依据（维护者决定不做基准，参照参考客户端直接定值；下列数值由维护者在本机源码核对，只记录数值）：
 
-1. 样本：约 10 MB、200 MB、1.5 GB 三个文件，放在测试账号的收藏夹；另测一个长视频的流媒体起播与拖动。
-2. 线路：直连、SOCKS5、MTProto 代理各一组；每组每档至少三次，清缓存后下载。
-3. 记录：总耗时、调试日志中 `Download (dc,index) ... adding` / `removing` / `session timed-out` 的次数、`FLOOD_WAIT` 与 `FLOOD_PREMIUM_WAIT` 的次数。
-4. 判定：某档的超时回收次数或限速次数明显多于 `none`，或耗时没有改善，就下调该档候选值；`fast` 的会话上限在 9–16 之间取满足条件的最大值，都不满足则保持 8。
-5. 结果表和最终取值写回本节，再提交。
+- Nekogram Android 的 `FileLoadOperation.updateParams`：默认 128 KB 分片、4 个并发请求；中档 512 KB、8 个；最高档 1 MB、12 个。
+- Nagram iOS 的 `NagramSettings.downloadPartSize` / `maxPendingDownloadParts`：中档 512 KB、8 个并发分片，最高档 1 MB、12 个；不超过 1 MB 的小文件不放大分片。
+- 桌面端的分片固定为 128 KB（见 1.2），参考客户端放大分片的做法不可用，改用并发对应：`balanced` 把起步会话数和起步窗口各加倍，会话上限保持上游的 8；`fast` 起步 4 个会话、起步窗口 16 片，会话上限取参考客户端最高档的 12。硬上限仍是 16 个会话。
+- 没有实测数据。各档对限速（`FLOOD_WAIT`、`FLOOD_PREMIUM_WAIT`）与超时回收次数的影响未经验证，第 7.2 节的手动检查待做。
 
 与上游一致的保证：条目标记“重启后生效”，`runtime.cpp` 在首次读取时把档位固化为进程内只读快照。值为 `none` 时三个取值函数原样返回传入的上游常量。运行中切换档位不影响已建立的会话与窗口，避免传输中途改参数。
 
-### 3.2 I046 上传加速：可实现，取值须经基准确认
+### 3.2 I046 上传加速：可实现
 
-目录中的类型是布尔值，保持一个开关。候选做法只有一项：1 MB 及以上的文件直接使用 512 KB 分片（协议上限，也是官方文档建议值），不再按 64 / 128 / 256 KB 逐档选择。小于 1 MB 的文件、照片和缩略图的切片（`sendSlicedPart`）不变。
+目录中的类型是布尔值，保持一个开关。做法只有一项：1 MB 及以上的文件直接使用 512 KB 分片（协议上限，也是官方文档建议值），不再按 64 / 128 / 256 KB 逐档选择。小于 1 MB 的文件、照片和缩略图的切片（`sendSlicedPart`）不变。
 
 挂钩在 `storage/file_upload.cpp` 的 `Uploader::Entry::setDocSize`：赋值 `docSize` 之后加一个短块，`Nagram::Network::UploadPartSize(size)` 返回非零时调用上游 `setPartSize` 并返回。512 KB 得到的分片数是所有档中最少的，分片数上限（`kDocumentMaxPartsCountDefault`）的判断结果与上游最后一档相同。
 
-以下参数保持上游值，基准显示有必要时再单独提出：`kMaxSessionsCount`（8，硬上限 16）、`kMaxUploadPerSession`（1 MB）、`kUploadRequestInterval`（250 毫秒）、`kAcceptAsFastIfTotalAtLeast`（512 KB，同时参与加会话判定，改动会影响退让逻辑）。
+以下参数保持上游值：`kMaxSessionsCount`（8，硬上限 16）、`kMaxUploadPerSession`（1 MB）、`kUploadRequestInterval`（250 毫秒）、`kAcceptAsFastIfTotalAtLeast`（512 KB，同时参与加会话判定，改动会影响退让逻辑）。
 
-基准要求：同 3.1 的样本与线路，上传到收藏夹；记录总耗时、`Uploader: Added dc index` 与 `Slow request, removing dc index` 的次数、限速次数。开启后没有改善或回收次数增多，则本项不交付，条目不进入注册表。
+取值依据（维护者决定不做基准，参照参考客户端直接定值；数值由维护者在本机源码核对）：Nekogram Android 的 `FileUploadOperation` 上传最小分片默认 128 KB，加速时 512 KB。512 KB 同时是协议上限和官方文档的建议值（见 2.2）。没有实测数据，开启后的耗时与慢请求回收次数未经验证。
 
 与上游一致的保证：同样标记“重启后生效”并取快照；关闭时 `UploadPartSize` 返回 0，`setDocSize` 走上游原分支。分片大小在单个文件内不变（`Entry` 创建时确定），不会触发 `FILE_PART_SIZE_CHANGED`。
 
@@ -277,7 +276,7 @@ Nagram 侧代码放在新目录 `nagram/network/`：`model.h/.cpp` 是纯逻辑�
 | 编号 | 标题 | 形式 | 作用域 | 说明 |
 | --- | --- | --- | --- | --- |
 | K05 | 下载加速 | 选项：跟随 Telegram / 均衡 / 快速 | D | 重启后生效。增加同时下载的连接数；速度仍受 Telegram 服务端限制，也作用于视频边下边播。 |
-| K06 | 上传加速 | 开关 | D | 重启后生效。大于 1 MB 的文件使用更大的分片；速度仍受 Telegram 服务端限制。 |
+| K06 | 上传加速 | 开关 | D | 重启后生效。1 MB 及以上的文件使用更大的分片；速度仍受 Telegram 服务端限制。 |
 
 K05、K06 修改后弹出上游重启确认框（`Nagram::ShowRestartPrompt`）。每个条目按现有做法注册搜索关键词（英文标题词）。
 
@@ -310,7 +309,7 @@ K05、K06 修改后弹出上游重启确认框（`Nagram::ShowRestartPrompt`）�
 | `lng_nagram_download_speed_boost_fast` | Fast | 快速 |
 | `lng_nagram_download_speed_boost_about` | Applies after restart. Uses more simultaneous connections; speed is still limited by Telegram servers. Also affects video streaming. | 见 K05 说明 |
 | `lng_nagram_upload_speed_boost` | Upload acceleration | 上传加速 |
-| `lng_nagram_upload_speed_boost_about` | Applies after restart. Files larger than 1 MB use bigger parts; speed is still limited by Telegram servers. | 见 K06 说明 |
+| `lng_nagram_upload_speed_boost_about` | Applies after restart. Files of 1 MB and larger use bigger parts; speed is still limited by Telegram servers. | 见 K06 说明 |
 
 “跟随 Telegram”“默认”“重启后生效”复用已有的 `lng_nagram_preview_follow`、`lng_nagram_restart_required` 等键。繁体译文在实现时与简体同步给出，`test_nagram` 的三语一致性检查必须通过。
 
@@ -348,11 +347,11 @@ K05、K06 修改后弹出上游重启确认框（`Nagram::ShowRestartPrompt`）�
 | --- | --- | --- | --- | --- |
 | S160 | `feat(network): connection options` | K01、K02（A191、A002） | `mtproto/session.cpp`、`mtproto/session_private.cpp`、`mtproto/mtp_instance.cpp`、`mtproto/config_loader.cpp`、`boxes/connection_box.cpp`、`core/proxy_rotation_manager.cpp` | V1；`test_nagram`（策略映射、`OrderIps`、注册表）；手动：五种策略下的连接、双账号重连、K02 开启后的断网重连 |
 | S161 | `feat(network): domain resolution` | K03、K04（N083、N084） | `mtproto/connection_abstract.cpp`、`mtproto/details/mtproto_domain_resolver.cpp`、`mtproto/special_config_request.cpp` | V1；`test_nagram`（地址校验、端点拼接）；手动：域名 SOCKS5 与 MTProto 代理、不可达端点、在途切换 |
-| S162 | `feat(network): transfer acceleration` | K05、K06（I047、I046） | `storage/download_manager_mtproto.cpp`、`storage/file_upload.cpp` | 先完成 3.1、3.2 的基准并把结果与最终取值写回本文件；V1；`test_nagram`（档位表、分片选择）；手动：三档下载、上传、流媒体、限速线路回退、重启后生效 |
+| S162 | `feat(network): transfer acceleration` | K05、K06（I047、I046） | `storage/download_manager_mtproto.cpp`、`storage/file_upload.cpp` | V1；`test_nagram`（档位表、钳制、分片选择）；手动：三档下载、上传、流媒体、限速线路回退、重启后生效 |
 
 提交正文示例（S160）：`K01, K02; mtproto/session.cpp, mtproto/session_private.cpp, mtproto/mtp_instance.cpp, mtproto/config_loader.cpp, boxes/connection_box.cpp, core/proxy_rotation_manager.cpp; test_nagram + manual checks for each IP strategy, two accounts, reconnect with backup addresses disabled`。
 
-S162 中若基准否定了上传加速，该提交只含 K05，K06 不进入注册表与设置页，并在本文件 3.2 记录结论。包内最后一个提交之后执行 V2（rebase 到最新上游、完整构建、三平台 CI、隔离数据目录冒烟），并在 `design.md` 更新状态与上游改动统计。
+包内最后一个提交之后执行 V2（rebase 到最新上游、完整构建、三平台 CI、隔离数据目录冒烟），并在 `design.md` 更新状态与上游改动统计。
 
 上游改动预计 11 个文件，均为已有判断中的条件、取值替换或 10 行以内的短块；不改上游头文件，不新增 `friend`。
 
@@ -367,7 +366,7 @@ S162 中若基准否定了上传加速，该提交只含 K05，K06 不进入注�
 
 ## 10. 实施记录（2026-10-01）
 
-第 9 节的取值：第 3 项，自定义 DoH 失败不回退内置端点，但失败必须对用户可见；第 4 项，只支持 JSON 接口；第 5 项，A002 不连带停止 HTTP 时间同步；第 6 项，新增“网络”分栏。第 1、2 项（下载会话上限、基准的执行）未定，S162 保持未实施，I046、I047 的条目、文案和挂钩都没有进入代码。
+第 9 节的取值：第 3 项，自定义 DoH 失败不回退内置端点，但失败必须对用户可见；第 4 项，只支持 JSON 接口；第 5 项，A002 不连带停止 HTTP 时间同步；第 6 项，新增“网络”分栏。第 1 项，`fast` 档的下载会话上限取 12；第 2 项，不做基准，取值参照参考客户端直接定，依据见 3.1、3.2。
 
 S160（K01、K02）与 S161（K03、K04）已按第 8 节实施。与本设计不同之处：
 
@@ -378,4 +377,12 @@ S160（K01、K02）与 S161（K03、K04）已按第 8 节实施。与本设计�
 - **订阅的建立**：`runtime.cpp` 在主线程第一次取值时（`Session::refreshOptions` 早于任何连接）读取选项并订阅变化，不需要额外的上游启动挂钩。
 - **策略 4 的优先级**：`PreferIPv6` 返回 `true`；此时 IPv4 已被跳过，对结果没有影响。
 
-繁体文案已随两个提交补齐。上游改动 9 个文件，没有改上游头文件，没有新增 `friend`。网络行为没有在运行中的应用里核验，第 7.2 节的手动检查全部待做；V2 未做。
+S162（K05、K06）已按第 8 节实施，取值与 3.1、3.2 的表相同。与本设计不同之处：
+
+- **取值函数的单位**：`DownloadStartWindow` 收发的是字节数（上游 `kStartWaitedInSession` 的单位），档位表里的片数在 `model.cpp` 乘以 128 KB；`runtime.cpp` 用 `static_assert` 保证这个 128 KB 与上游 `kDownloadPartSize` 相同。
+- **`removeSession` 的占位值**：两处合并成一个局部变量，会话数因子取 `DownloadMaxSessions`。
+- **会话上限的比较**：`dc.sessions.size()` 转成 `int` 后与取值函数比较（`>=`），避免有符号与无符号比较的警告。
+- **云端备份**：两个条目与本包其他网络选项一样标记“只留本机”，进入本地配置文件导出，不进入收藏夹里的云端备份。
+- **K06 的说明**：分界写成“1 MB 及以上”，与实际判断（`size >= 1 MB`）一致。
+
+繁体文案已随各提交补齐。上游改动 11 个文件，没有改上游头文件，没有新增 `friend`。网络行为没有在运行中的应用里核验，第 7.2 节的手动检查（含三档下载、上传、流媒体、限速线路回退、重启后生效）全部待做；V2 未做。

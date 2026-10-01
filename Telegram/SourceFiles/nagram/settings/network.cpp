@@ -1,6 +1,7 @@
 #include "nagram/settings/network.h"
 
 #include "nagram/settings/home.h"
+#include "nagram/settings/restart.h"
 #include "nagram/network/options.h"
 #include "nagram/network/runtime.h"
 #include "lang/lang_keys.h"
@@ -47,6 +48,7 @@ void AddToggle(
 		rpl::producer<QString> title,
 		QString id,
 		QStringList keywords) {
+	const auto controller = builder.controller();
 	const auto button = builder.addButton({
 		.id = std::move(id),
 		.title = std::move(title),
@@ -56,8 +58,11 @@ void AddToggle(
 	});
 	if (button) {
 		button->toggledChanges(
-		) | rpl::on_next([option](bool value) {
+		) | rpl::on_next([option, controller](bool value) {
 			Expects(ForDevice().Set(option, value));
+			if (option.flags & static_cast<unsigned>(Flag::RequiresRestart)) {
+				ShowRestartPrompt(controller);
+			}
 		}, button->lifetime());
 	}
 }
@@ -89,6 +94,43 @@ void IpStrategyBox(not_null<Ui::GenericBox*> box) {
 	}
 	group->setChangedCallback([=](int value) {
 		Expects(ForDevice().Set(Network::kIpStrategy, value));
+		box->closeBox();
+	});
+}
+
+const auto kDownloadBoosts = std::array{
+	u"none"_q,
+	u"balanced"_q,
+	u"fast"_q,
+};
+
+QString DownloadBoostLabel(const QString &value) {
+	return (value == kDownloadBoosts[1])
+		? tr::lng_nagram_download_speed_boost_balanced(tr::now)
+		: (value == kDownloadBoosts[2])
+		? tr::lng_nagram_download_speed_boost_fast(tr::now)
+		: tr::lng_nagram_preview_follow(tr::now);
+}
+
+void DownloadBoostBox(
+		not_null<Ui::GenericBox*> box,
+		not_null<Window::SessionController*> controller) {
+	box->setTitle(tr::lng_nagram_download_speed_boost());
+	const auto current = int(ranges::find(
+		kDownloadBoosts,
+		ForDevice().Get(Network::kDownloadSpeedBoost)
+	) - begin(kDownloadBoosts));
+	const auto group = std::make_shared<Ui::RadiobuttonGroup>(current);
+	for (auto index = 0; index != int(kDownloadBoosts.size()); ++index) {
+		box->addRow(object_ptr<Ui::Radiobutton>(
+			box, group, index, DownloadBoostLabel(kDownloadBoosts[index]),
+			st::settingsSendType), st::settingsSendTypePadding);
+	}
+	group->setChangedCallback([=](int index) {
+		Expects(ForDevice().Set(
+			Network::kDownloadSpeedBoost,
+			kDownloadBoosts[index]));
+		ShowRestartPrompt(controller);
 		box->closeBox();
 	});
 }
@@ -177,6 +219,28 @@ const auto kMeta = BuildHelper({
 	) | rpl::map([](const QString &about, const QString &failure) {
 		return failure.isEmpty() ? about : (about + u"\n\n"_q + failure);
 	}));
+	builder.addSubsectionTitle({
+		.id = u"nagram/network/transfer"_q,
+		.title = tr::lng_nagram_network_transfer(),
+		.keywords = { u"transfer"_q, u"download"_q, u"upload"_q },
+	});
+	builder.addButton({
+		.id = u"nagram/network/download-speed-boost"_q,
+		.title = tr::lng_nagram_download_speed_boost(),
+		.st = &st::settingsButtonNoIcon,
+		.label = ForDevice().Value(Network::kDownloadSpeedBoost)
+			| rpl::map(DownloadBoostLabel),
+		.onClick = [=] {
+			controller->show(Box(DownloadBoostBox, controller));
+		},
+		.keywords = { u"download"_q, u"acceleration"_q, u"speed"_q },
+	});
+	builder.addDividerText(tr::lng_nagram_download_speed_boost_about());
+	AddToggle(builder, Network::kUploadSpeedBoost,
+		tr::lng_nagram_upload_speed_boost(),
+		u"nagram/network/upload-speed-boost"_q,
+		{ u"upload"_q, u"acceleration"_q, u"speed"_q });
+	builder.addDividerText(tr::lng_nagram_upload_speed_boost_about());
 });
 
 const SectionBuildMethod NetworkSection::kBuild = kMeta.build;

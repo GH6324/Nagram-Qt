@@ -18,6 +18,10 @@ void CheckDohReply(
 	gsl::not_null<QNetworkReply*> reply,
 	const QByteArray &body);
 [[nodiscard]] rpl::producer<QString> CustomDohFailureValue();
+[[nodiscard]] int DownloadStartSessions(int upstream);
+[[nodiscard]] int DownloadMaxSessions(int upstream);
+[[nodiscard]] int DownloadStartWindow(int upstream);
+[[nodiscard]] int UploadPartSize(qint64 size);
 
 // Thread safe.
 [[nodiscard]] bool PreferIPv6(bool upstream);

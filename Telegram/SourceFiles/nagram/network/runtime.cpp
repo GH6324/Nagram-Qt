@@ -6,6 +6,7 @@
 #include "main/main_account.h"
 #include "main/main_domain.h"
 #include "mtproto/mtp_instance.h"
+#include "storage/download_manager_mtproto.h"
 #include "window/window_controller.h"
 
 #include <QtNetwork/QNetworkReply>
@@ -17,6 +18,21 @@ namespace {
 
 std::atomic<int> Strategy = 0;
 std::atomic<bool> SystemDns = false;
+
+static_assert(kDownloadPart == Storage::kDownloadPartSize);
+
+[[nodiscard]] const QString &DownloadBoost() {
+	static const auto result = [] {
+		auto &options = ForDevice();
+		auto value = options.Get(kDownloadSpeedBoost);
+		if (options.invalidKeys().contains(kDownloadSpeedBoost.key)) {
+			LOG(("Nagram Network: Bad download acceleration value, "
+				"using Telegram defaults."));
+		}
+		return value;
+	}();
+	return result;
+}
 
 [[nodiscard]] rpl::variable<QString> &DohFailure() {
 	static auto result = rpl::variable<QString>();
@@ -120,6 +136,29 @@ void CheckDohReply(
 rpl::producer<QString> CustomDohFailureValue() {
 	EnsureStarted();
 	return DohFailure().value();
+}
+
+int DownloadStartSessions(int upstream) {
+	return ResolveDownloadParams(
+		DownloadBoost(),
+		{ .startSessions = upstream }).startSessions;
+}
+
+int DownloadMaxSessions(int upstream) {
+	return ResolveDownloadParams(
+		DownloadBoost(),
+		{ .maxSessions = upstream }).maxSessions;
+}
+
+int DownloadStartWindow(int upstream) {
+	return ResolveDownloadParams(
+		DownloadBoost(),
+		{ .startWindow = upstream }).startWindow;
+}
+
+int UploadPartSize(qint64 size) {
+	static const auto boost = ForDevice().Get(kUploadSpeedBoost);
+	return UploadPartSize(boost, size);
 }
 
 bool PreferIPv6(bool upstream) {
