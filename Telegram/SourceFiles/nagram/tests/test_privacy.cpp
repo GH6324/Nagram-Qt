@@ -1,5 +1,6 @@
 #include "nagram/core/exchange.h"
 #include "nagram/privacy/options.h"
+#include "nagram/privacy/protection.h"
 
 #include <QtCore/QJsonDocument>
 #include <QtCore/QJsonObject>
@@ -76,6 +77,43 @@ void CheckSwitch(
 		"invalid protection value must fall back and stay stored");
 }
 
+void CheckCopyRules() {
+	using namespace Nagram::Privacy;
+	for (auto mask = 0; mask != 32; ++mask) {
+		const auto force = (mask & 1) != 0;
+		const auto peerAllows = (mask & 2) != 0;
+		const auto itemForbids = (mask & 4) != 0;
+		const auto expiring = (mask & 8) != 0;
+		const auto paid = (mask & 16) != 0;
+		const auto copyRestricted = !CopyAllowed(force, peerAllows)
+			|| CopyForbidden(force, itemForbids);
+		const auto savingForbidden = CopyForbidden(force, itemForbids)
+			|| expiring
+			|| paid;
+		const auto mediaRestricted = copyRestricted || savingForbidden;
+		const auto downloadControls = !savingForbidden
+			&& CopyAllowed(force, peerAllows);
+		if (force) {
+			Require(!copyRestricted, "forced copy still restricts text");
+			Require(mediaRestricted == (expiring || paid),
+				"forced copy must keep expiring and paid media protected");
+			Require(downloadControls == (!expiring && !paid),
+				"forced copy download controls");
+		} else {
+			const auto upstreamCopy = !peerAllows || itemForbids;
+			const auto upstreamSaving = itemForbids || expiring || paid;
+			Require(CopyAllowed(force, peerAllows) == peerAllows
+				&& CopyForbidden(force, itemForbids) == itemForbids,
+				"copy rules differ from upstream when switched off");
+			Require(copyRestricted == upstreamCopy
+				&& savingForbidden == upstreamSaving
+				&& mediaRestricted == (upstreamCopy || upstreamSaving)
+				&& downloadControls == (!upstreamSaving && peerAllows),
+				"restrictions differ from upstream when switched off");
+		}
+	}
+}
+
 } // namespace
 
 void TestPrivacy() {
@@ -83,6 +121,8 @@ void TestPrivacy() {
 	auto registry = Registry();
 	Privacy::RegisterOptions(registry);
 	CheckSwitch(registry, Privacy::kDoNotSharePhone, false);
+	CheckSwitch(registry, Privacy::kForceCopy, true);
+	CheckCopyRules();
 
 	auto prefs = MemoryPrefs();
 	auto options = Options(prefs);

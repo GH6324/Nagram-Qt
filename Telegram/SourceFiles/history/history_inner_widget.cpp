@@ -11,6 +11,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "nagram/messages/reactions.h"
 #include "nagram/menu/actions.h"
 #include "nagram/menu/selection.h"
+#include "nagram/privacy/protection.h"
 
 #include "api/api_polls.h"
 #include "chat_helpers/stickers_emoji_pack.h"
@@ -597,7 +598,7 @@ Main::Session &HistoryInner::session() const {
 void HistoryInner::setupSharingDisallowed() {
 	Expects(_peer != nullptr);
 
-	_sharingDisallowed = Data::AllowsForwardingValue(
+	_sharingDisallowed = Nagram::Privacy::AllowsCopyValue(
 		_peer
 	) | rpl::map(!rpl::mappers::_1);
 
@@ -3978,7 +3979,8 @@ void HistoryInner::showContextMenu(QContextMenuEvent *e, bool showFromTouch) {
 }
 
 bool HistoryInner::hasCopyRestriction(HistoryItem *item) const {
-	return !_peer->allowsForwarding() || (item && item->forbidsForward());
+	return !Nagram::Privacy::AllowsCopy(_peer)
+		|| (item && Nagram::Privacy::ForbidsCopy(item));
 }
 
 bool HistoryInner::hasCopyMediaRestriction(
@@ -4011,7 +4013,9 @@ bool HistoryInner::showCopyMediaRestriction(not_null<HistoryItem*> item) {
 }
 
 bool HistoryInner::hasCopyRestrictionForSelected() const {
-	if (hasCopyRestriction()) {
+	if (Nagram::Privacy::ForceCopy()) {
+		return false;
+	} else if (hasCopyRestriction()) {
 		return true;
 	}
 	for (const auto &item : _selected) {

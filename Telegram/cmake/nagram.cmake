@@ -67,6 +67,7 @@ set(nagram_sources
     nagram/privacy/display.cpp
     nagram/privacy/alias_model.cpp
     nagram/privacy/protection.cpp
+    nagram/privacy/protection_model.cpp
     nagram/settings/home.cpp
     nagram/settings/rules.cpp
     nagram/settings/chats.cpp
@@ -201,6 +202,7 @@ if (DESKTOP_APP_TEST_APPS)
         nagram/services/model.cpp
         nagram/filters/model.cpp
         nagram/links/model.cpp
+        nagram/privacy/protection_model.cpp
     )
 
     target_include_directories(test_nagram PRIVATE

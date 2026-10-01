@@ -11,6 +11,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "nagram/chats/recent_chats.h"
 #include "nagram/chats/reading_position.h"
 #include "nagram/chats/folders.h"
+#include "nagram/privacy/protection.h"
 
 #include "apiwrap.h"
 #include "api/api_cloud_password.h"
@@ -150,7 +151,7 @@ base::options::toggle OptionExternalMediaViewer({
 [[nodiscard]] bool HasSavingRestriction(HistoryItem *item) {
 	return item
 		&& (item->forbidsSaving()
-			|| !item->history()->peer->allowsForwarding());
+			|| !Nagram::Privacy::AllowsCopy(item->history()->peer));
 }
 
 class MainWindowShow final : public ChatHelpers::Show {
@@ -1941,7 +1942,7 @@ void SessionController::setupScreenshotProtection() {
 	) | rpl::map([](Dialogs::Key key) {
 		const auto peer = key.peer();
 		return peer
-			? (Data::AllowsForwardingValue(peer)
+			? (Nagram::Privacy::AllowsCopyValue(peer)
 				| rpl::map(!rpl::mappers::_1))
 			: (rpl::single(false) | rpl::type_erased);
 	}) | rpl::flatten_latest(), lifetime());

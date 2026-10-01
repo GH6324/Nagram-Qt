@@ -9,6 +9,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "nagram/messages/online.h"
 #include "nagram/messages/content.h"
 #include "nagram/messages/reactions.h"
+#include "nagram/privacy/protection.h"
 
 #include "history/view/history_view_about_view.h"
 #include "base/unixtime.h"
@@ -2190,7 +2191,9 @@ bool ListWidget::showCopyMediaRestriction(not_null<HistoryItem*> item) {
 }
 
 bool ListWidget::hasCopyRestrictionForSelected() const {
-	if (hasCopyRestriction()) {
+	if (Nagram::Privacy::ForceCopy()) {
+		return false;
+	} else if (hasCopyRestriction()) {
 		return true;
 	}
 	if (_selected.empty()) {
@@ -6774,7 +6777,8 @@ void ConfirmSendNowSelectedItems(not_null<ListWidget*> widget) {
 CopyRestrictionType CopyRestrictionTypeFor(
 		not_null<PeerData*> peer,
 		HistoryItem *item) {
-	return (peer->allowsForwarding() && (!item || !item->forbidsForward()))
+	return (Nagram::Privacy::AllowsCopy(peer)
+		&& (!item || !Nagram::Privacy::ForbidsCopy(item)))
 		? CopyRestrictionType::None
 		: peer->isUser()
 		? CopyRestrictionType::User

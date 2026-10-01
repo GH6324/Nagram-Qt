@@ -187,6 +187,11 @@ const auto kMeta = BuildHelper({
 		u"nagram/privacy/do-not-share-phone"_q,
 		{ u"share"_q, u"phone"_q, u"contact"_q });
 	builder.addDividerText(tr::lng_nagram_do_not_share_phone_about());
+	AddToggle(builder, Privacy::kForceCopy,
+		tr::lng_nagram_force_copy(),
+		u"nagram/privacy/force-copy"_q,
+		{ u"copy"_q, u"save"_q, u"protected"_q, u"forward"_q });
+	builder.addDividerText(tr::lng_nagram_force_copy_about());
 	const auto controller = builder.controller();
 	builder.addButton({
 		.id = u"nagram/privacy/profile-id-format"_q,

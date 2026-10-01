@@ -7,6 +7,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 #include "media/view/media_view_overlay_widget.h"
 #include "nagram/media/options.h"
+#include "nagram/privacy/protection.h"
 
 #include "apiwrap.h"
 #include "api/api_attached_stickers.h"
@@ -1455,7 +1456,7 @@ bool OverlayWidget::hasCopyMediaRestriction(bool skipPremiumCheck) const {
 			? !story->canDownloadIfPremium()
 			: !story->canDownloadChecked();
 	}
-	return (_history && !_history->peer->allowsForwarding())
+	return (_history && !Nagram::Privacy::AllowsCopy(_history->peer))
 		|| (_message && _message->forbidsSaving());
 }
 
@@ -6086,7 +6087,7 @@ bool OverlayWidget::contentNeedsScreenshotProtection() const {
 	if (const auto story = _stories ? _stories->story() : nullptr) {
 		return story->forbidsForward();
 	}
-	return (_history && !_history->peer->allowsForwarding())
+	return (_history && !Nagram::Privacy::AllowsCopy(_history->peer))
 		|| (_message && _message->forbidsSaving());
 }
 

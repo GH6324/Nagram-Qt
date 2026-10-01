@@ -13,6 +13,7 @@
 #include "main/session/session_show.h"
 #include "nagram/core/options.h"
 #include "nagram/display/view_refresher.h"
+#include "nagram/privacy/protection.h"
 #include "nagram/services/model.h"
 #include "nagram/services/request.h"
 #include "ui/layers/generic_box.h"
@@ -273,7 +274,8 @@ void ShowCustomTranscription(
 				lt_url, rpl::single(ServiceEndpoint(*service).toDisplayString())),
 			st::boxLabel));
 		const auto label = box->addRow(object_ptr<Ui::FlatLabel>(box, st::boxLabel));
-		label->setSelectable(current->allowsForward());
+		label->setSelectable(current->allowsForward()
+			|| Privacy::ForceCopy());
 		state->result = show->session().api().transcribes().entry(current).result;
 		label->setText(state->result);
 		box->addRow(object_ptr<Ui::FlatLabel>(
@@ -355,7 +357,8 @@ void ShowCustomTranscription(
 			const auto item = show->session().data().message(id);
 			const auto media = item ? item->media() : nullptr;
 			const auto document = media ? media->document() : nullptr;
-			if (item && item->allowsForward() && document
+			if (item && (item->allowsForward() || Privacy::ForceCopy())
+				&& document
 				&& document->id == documentId && !media->ttlSeconds()
 				&& !state->result.isEmpty()
 				&& show->session().api().transcribes().entry(item).result

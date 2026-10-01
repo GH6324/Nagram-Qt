@@ -6,6 +6,7 @@ For license and copyright information please follow this link:
 https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 #include "history/history_item.h"
+#include "nagram/privacy/protection.h"
 
 #include "api/api_premium.h"
 #include "api/api_sensitive_content.h"
@@ -3310,7 +3311,7 @@ bool HistoryItem::forbidsForward() const {
 }
 
 bool HistoryItem::forbidsSaving() const {
-	if (forbidsForward()) {
+	if (Nagram::Privacy::ForbidsCopy(this)) {
 		return true;
 	} else if (_media && _media->ttlSeconds()) {
 		return true;
@@ -3322,7 +3323,7 @@ bool HistoryItem::forbidsSaving() const {
 
 bool HistoryItem::allowsMediaDownloadControls() const {
 	return !forbidsSaving()
-		&& _history->peer->allowsForwarding()
+		&& Nagram::Privacy::AllowsCopy(_history->peer)
 		&& (!_media || _media->allowsForward());
 }
 

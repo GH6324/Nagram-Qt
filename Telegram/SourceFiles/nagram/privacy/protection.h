@@ -1,7 +1,23 @@
 #pragma once
 
+#include <gsl/pointers>
+#include <rpl/producer.h>
+
+class HistoryItem;
+class PeerData;
+
 namespace Nagram::Privacy {
 
+[[nodiscard]] bool CopyAllowed(bool force, bool allowsForwarding);
+[[nodiscard]] bool CopyForbidden(bool force, bool forbidsForward);
+
 [[nodiscard]] bool DoNotSharePhoneByDefault();
+
+[[nodiscard]] bool ForceCopy();
+[[nodiscard]] rpl::producer<bool> ForceCopyChanges();
+[[nodiscard]] bool AllowsCopy(gsl::not_null<const PeerData*> peer);
+[[nodiscard]] bool ForbidsCopy(gsl::not_null<const HistoryItem*> item);
+[[nodiscard]] rpl::producer<bool> AllowsCopyValue(
+	gsl::not_null<PeerData*> peer);
 
 } // namespace Nagram::Privacy

@@ -8,6 +8,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "history/view/history_view_context_menu.h"
 #include "nagram/menu/actions.h"
 #include "nagram/menu/selection.h"
+#include "nagram/privacy/protection.h"
 
 #include "api/api_attached_stickers.h"
 #include "api/api_editing.h"
@@ -2386,7 +2387,7 @@ void AddPollActions(
 					item->history()->peer,
 					MsgId(),
 					std::move(text),
-					item->forbidsForward()));
+					Nagram::Privacy::ForbidsCopy(item)));
 			}, &st::menuIconTranslate);
 		}
 	}
@@ -2989,7 +2990,8 @@ void AddSelectRestrictionAction(
 		not_null<HistoryItem*> item,
 		bool addIcon) {
 	const auto peer = item->history()->peer;
-	if ((peer->allowsForwarding() && !item->forbidsForward())
+	if ((Nagram::Privacy::AllowsCopy(peer)
+			&& !Nagram::Privacy::ForbidsCopy(item))
 		|| item->isSponsored()) {
 		return;
 	}
