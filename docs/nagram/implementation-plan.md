@@ -182,7 +182,19 @@
 
 ### P3
 
-P3 功能不在本计划内。每项先在 `docs/nagram/` 下单独写设计并确认，再按本文件的规则拆分步骤。
+P3 功能不在本计划内。每项先在 `docs/nagram/` 下单独写设计并确认，再按本文件的规则拆分步骤。搁置的细项见[需求](requirements.md#p3-deferred)，不写设计。
+
+各包的专项设计与预留编号如下；步骤和条目的细节以专项设计为准，实现后并入本文件、[设置页设计](settings-page.md)和[上游处理点](upstream-hooks.md)。
+
+| 包 | 专项设计 | 步骤 | 设置页条目 |
+| --- | --- | --- | --- |
+| P3-03 | [内容保护与敏感内容](p3-03-content-protection.md) | S120–S123 | G13–G16 |
+| P3-04 | [自动翻译继承与 LLM](p3-04-translation-llm.md) | S140–S145 | H06–H10、E36–E37 |
+| P3-05 | [规则继承与 inline bot](p3-05-rules-inline-bot.md) | S150–S153 | I04–I08 |
+| P3-06 | [网络](p3-06-network.md) | S160–S162 | K01–K06 |
+| P3-07 | [外部媒体后端](p3-07-media-backends.md) | S170–S175 | F19–F25、I09–I10 |
+| P3-08 | [云同步与独立服务](p3-08-sync-services.md) | S180–S182 | J08–J11 |
+| P3-09 与 F16 未归包项 | [低频高级项](p3-09-advanced-misc.md) | S190–S195 | B25–B26、F26–F27、G17、I11–I15 |
 
 ## 5. 每个功能提交的检查清单
 
