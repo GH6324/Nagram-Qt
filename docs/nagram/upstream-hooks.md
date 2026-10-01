@@ -1,3 +1,4 @@
+| F22–F25 | `main/main_session.cpp` | `Main::Session` 构造函数在 `Nagram::ViewRefresher::Attach(this)` 之后加一行 `Nagram::Media::StickerExport::Attach(this)`。贴纸集数据、补全请求、文件下载和目录选择都用上游已有的公开接口（`Data::Stickers::sets()` / `setsOrder()` / `updated()`、`ApiWrap::scheduleStickerSetRequest()` / `requestStickerSets()` / `updateStickers()`、`DocumentData::save()`、`Data::Session::documentLoadProgress()`、`FileDialog::GetFolder()`） | 读取 |
 | F21 | `data/data_document.cpp` | `DocumentData::refreshPossibleCoverThumbnail` 的 `{ AudioAlbumThumbLocation{ id } }` 改为 `Nagram::Media::CoverLocation(this, { AudioAlbumThumbLocation{ id } })`；地址为空或存储值非法时原样返回传入的位置，否则返回 `PlainUrlLocation`，由上游 `webFileLoader` 下载（沿用其重定向限制、缓存和体积上限） | 替换 |
 | F20 | `calls/group/calls_group_call.cpp` | `GroupCall::tryCreateController` 的 `tgcalls::GroupInstanceDescriptor` 在 `.requestVideoBroadcastPart` 与 `.videoContentType` 之间加一行 `.disableOutgoingAudioProcessing = Nagram::Media::GroupCallRawAudio()`（位置须符合结构体声明顺序）；屏幕共享的描述符不改 | 读取 |
 # 上游处理点
@@ -163,7 +164,7 @@ P3-07 外部媒体后端：
 | --- | --- | --- | --- |
 | F19 | `media/audio/media_audio_capture.cpp` | `Instance::start` 在主线程读取 `Nagram::Media::VoiceRecordBitrate(32000)` 并传给 `Instance::Inner::start`（新增 `int bitrate` 参数和 `_bitrate` 成员）；`Instance::Inner::initializeFFmpeg` 的 `bit_rate` 改用 `_bitrate`。约 6 行：注册表只能在主线程读取，不能在采集线程里调用 | 替换 |
 
-选项为“跟随 Telegram”时 `VoiceRecordBitrate(32000)` 原样返回 32000。圆形视频录制的码率不改。F20 关闭时返回 `false`，等于该字段的默认值；上游群通话设置里的“噪声抑制”走 tgcalls 的另一条路径，不受影响。
+选项为“跟随 Telegram”时 `VoiceRecordBitrate(32000)` 原样返回 32000。圆形视频录制的码率不改。F20 关闭时返回 `false`，等于该字段的默认值；上游群通话设置里的“噪声抑制”走 tgcalls 的另一条路径，不受影响。导出目录为空时 `StickerExport` 不订阅 `updated()`，不发起下载，不写文件。
 
 ### 2.7 隐私与资料
 

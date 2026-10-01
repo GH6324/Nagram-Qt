@@ -5,8 +5,11 @@
 #include "nagram/media/local_faved.h"
 #include "nagram/media/local_faved_model.h"
 #include "nagram/media/sticker_catalog.h"
+#include "nagram/media/sticker_export.h"
 #include "nagram/settings/home.h"
 #include "nagram/settings/restart.h"
+#include "core/application.h"
+#include "core/file_utilities.h"
 #include "lang/lang_keys.h"
 #include "settings/settings_builder.h"
 #include "settings/settings_common_session.h"
@@ -16,8 +19,12 @@
 #include "ui/widgets/buttons.h"
 #include "ui/widgets/checkbox.h"
 #include "ui/widgets/fields/input_field.h"
+#include "ui/widgets/labels.h"
 #include "ui/wrap/vertical_layout.h"
+#include "window/window_controller.h"
 #include "window/window_session_controller.h"
+
+#include <QtCore/QDir>
 #include "styles/style_layers.h"
 #include "styles/style_menu_icons.h"
 #include "styles/style_settings.h"
@@ -175,6 +182,94 @@ void MusicCoverBox(not_null<Ui::GenericBox*> box) {
 	box->addButton(tr::lng_cancel(), [=] { box->closeBox(); });
 }
 
+void ChooseExportFolder() {
+	FileDialog::GetFolder(
+		Core::App().getFileDialogParent(),
+		tr::lng_nagram_sticker_export_path_choose(tr::now),
+		ForDevice().Get(Media::kStickerExportPath),
+		[](QString &&result) {
+			const auto path = QDir(result).absolutePath();
+			if (result.isEmpty()) {
+				return;
+			} else if (!ForDevice().Set(Media::kStickerExportPath, path)) {
+				if (const auto window = Core::App().activeWindow()) {
+					window->showToast(
+						tr::lng_nagram_sticker_export_error_path(tr::now));
+				}
+			}
+		});
+}
+
+void ExportFolderBox(not_null<Ui::GenericBox*> box) {
+	box->setTitle(tr::lng_nagram_sticker_export_path());
+	box->addRow(object_ptr<Ui::FlatLabel>(
+		box,
+		QDir::toNativeSeparators(ForDevice().Get(Media::kStickerExportPath)),
+		st::boxLabel));
+	box->addButton(tr::lng_nagram_sticker_export_path_choose(), [=] {
+		box->closeBox();
+		ChooseExportFolder();
+	});
+	box->addButton(tr::lng_cancel(), [=] { box->closeBox(); });
+	box->addLeftButton(tr::lng_nagram_sticker_export_path_clear(), [=] {
+		Expects(ForDevice().Set(Media::kStickerExportPath, QString()));
+		box->closeBox();
+	});
+}
+
+QString ExportNamingLabel(int value) {
+	using Naming = Media::ExportDirNaming;
+	switch (static_cast<Naming>(value)) {
+	case Naming::ShortName:
+		return tr::lng_nagram_sticker_export_dir_short_name(tr::now);
+	case Naming::Title:
+		return tr::lng_nagram_sticker_export_dir_title(tr::now);
+	case Naming::Id: return tr::lng_nagram_sticker_export_dir_id(tr::now);
+	}
+	Unexpected("Invalid Nagram sticker export naming.");
+}
+
+void ExportNamingBox(not_null<Ui::GenericBox*> box) {
+	box->setTitle(tr::lng_nagram_sticker_export_dir_naming());
+	const auto group = std::make_shared<Ui::RadiobuttonGroup>(
+		ForDevice().Get(Media::kStickerExportDirNaming));
+	for (auto value = 0; value != Media::kExportDirNamingCount; ++value) {
+		box->addRow(object_ptr<Ui::Radiobutton>(
+			box, group, value, ExportNamingLabel(value),
+			st::settingsSendType), st::settingsSendTypePadding);
+	}
+	group->setChangedCallback([=](int value) {
+		Expects(ForDevice().Set(Media::kStickerExportDirNaming, value));
+		box->closeBox();
+	});
+}
+
+QString ExportStatusLabel(const Media::ExportStatus &status) {
+	using Error = Media::ExportError;
+	return status.running
+		? tr::lng_nagram_sticker_export_progress(
+			tr::now,
+			lt_index,
+			QString::number(status.done),
+			lt_amount,
+			QString::number(status.total))
+		: (status.error == Error::Path)
+		? tr::lng_nagram_sticker_export_error_path(tr::now)
+		: (status.error == Error::Write)
+		? tr::lng_nagram_sticker_export_error_write(tr::now)
+		: status.failed
+		? tr::lng_nagram_sticker_export_error_download(
+			tr::now,
+			lt_amount,
+			QString::number(status.failed))
+		: status.finished
+		? tr::lng_nagram_sticker_export_done(
+			tr::now,
+			lt_amount,
+			QString::number(status.done))
+		: QString();
+}
+
 const auto kMeta = BuildHelper({
 	.id = MediaSection::Id(),
 	.parentId = HomeId(),
@@ -306,6 +401,76 @@ const auto kMeta = BuildHelper({
 		.onClick = [=] { ShowStickerCatalog(controller); },
 		.keywords = { u"sticker"_q, u"catalog"_q },
 	});
+	const auto exporter = Media::StickerExport::Find(session);
+	auto exportPathSet = ForDevice().Value(
+		Media::kStickerExportPath
+	) | rpl::map([](const QString &path) { return !path.isEmpty(); });
+	builder.addSubsectionTitle({
+		.id = u"nagram/media/sticker-export"_q,
+		.title = tr::lng_nagram_sticker_export(),
+		.keywords = { u"sticker"_q, u"export"_q, u"folder"_q },
+	});
+	builder.addButton({
+		.id = u"nagram/media/sticker-export-path"_q,
+		.title = tr::lng_nagram_sticker_export_path(),
+		.st = &st::settingsButtonNoIcon,
+		.label = ForDevice().Value(Media::kStickerExportPath)
+			| rpl::map([](const QString &path) {
+				return path.isEmpty()
+					? tr::lng_nagram_sticker_export_path_unset(tr::now)
+					: QDir(path).dirName();
+			}),
+		.onClick = [=] {
+			if (ForDevice().Get(Media::kStickerExportPath).isEmpty()) {
+				ChooseExportFolder();
+			} else {
+				controller->show(Box(ExportFolderBox));
+			}
+		},
+		.keywords = { u"sticker"_q, u"export"_q, u"folder"_q },
+	});
+	builder.addDividerText(tr::lng_nagram_sticker_export_path_about());
+	const auto autoSync = builder.addButton({
+		.id = u"nagram/media/sticker-export-auto-sync"_q,
+		.title = tr::lng_nagram_sticker_export_auto_sync(),
+		.st = &st::settingsButtonNoIcon,
+		.toggled = ForDevice().Value(Media::kStickerExportAutoSync),
+		.keywords = { u"sticker"_q, u"export"_q, u"sync"_q },
+		.shown = rpl::duplicate(exportPathSet),
+	});
+	if (autoSync) {
+		autoSync->toggledChanges(
+		) | rpl::on_next([](bool value) {
+			Expects(ForDevice().Set(Media::kStickerExportAutoSync, value));
+		}, autoSync->lifetime());
+	}
+	builder.addButton({
+		.id = u"nagram/media/sticker-export-naming"_q,
+		.title = tr::lng_nagram_sticker_export_dir_naming(),
+		.st = &st::settingsButtonNoIcon,
+		.label = ForDevice().Value(Media::kStickerExportDirNaming)
+			| rpl::map(ExportNamingLabel),
+		.onClick = [=] { controller->show(Box(ExportNamingBox)); },
+		.keywords = { u"sticker"_q, u"export"_q, u"folder name"_q },
+		.shown = rpl::duplicate(exportPathSet),
+	});
+	builder.addButton({
+		.id = u"nagram/media/sticker-export-sync"_q,
+		.title = tr::lng_nagram_sticker_export_sync_now(),
+		.st = &st::settingsButtonNoIcon,
+		.label = (exporter
+			? exporter->statusValue()
+			: rpl::single(Media::ExportStatus())
+		) | rpl::map(ExportStatusLabel),
+		.onClick = [=] {
+			if (const auto current = Media::StickerExport::Find(session)) {
+				current->syncNow();
+			}
+		},
+		.keywords = { u"sticker"_q, u"export"_q, u"sync"_q },
+		.shown = std::move(exportPathSet),
+	});
+	builder.addDividerText(tr::lng_nagram_sticker_export_sync_now_about());
 	builder.addSubsectionTitle({
 		.id = u"nagram/media/recording-calls"_q,
 		.title = tr::lng_nagram_recording_calls(),

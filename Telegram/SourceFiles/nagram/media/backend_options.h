@@ -2,6 +2,7 @@
 
 #include "nagram/core/options.h"
 #include "nagram/media/url_template.h"
+#include "nagram/media/sticker_export_model.h"
 
 namespace Nagram::Media {
 
@@ -23,6 +24,18 @@ inline const auto kMusicCoverUrl = Option<QString>{
 	"nagram.musicCoverUrl", Scope::Device, QString(),
 	Category::Media, "lng_nagram_music_cover_url",
 	static_cast<unsigned>(Flag::Hidden), ValidCoverUrl };
+
+inline const auto kStickerExportPath = Option<QString>{
+	"nagram.stickerExportPath", Scope::Device, QString(),
+	Category::Media, "lng_nagram_sticker_export_path",
+	static_cast<unsigned>(Flag::Hidden), ValidExportPath };
+inline constexpr auto kStickerExportAutoSync = Option<bool>{
+	"nagram.stickerExportAutoSync", Scope::Device, false,
+	Category::Media, "lng_nagram_sticker_export_auto_sync" };
+inline constexpr auto kStickerExportDirNaming = Option<int>{
+	"nagram.stickerExportDirNaming", Scope::Device, 0,
+	Category::Media, "lng_nagram_sticker_export_dir_naming", 0,
+	ValidExportDirNaming };
 
 [[nodiscard]] constexpr int ResolveVoiceBitrate(int kbps, int fallback) {
 	return (kbps > 0 && ValidVoiceBitrate(kbps)) ? (kbps * 1000) : fallback;
@@ -46,6 +59,9 @@ inline void RegisterBackendOptions(Registry &registry) {
 	Expects(registry.Add(kVoiceRecordBitrate));
 	Expects(registry.Add(kGroupCallRawAudio));
 	Expects(registry.Add(kMusicCoverUrl));
+	Expects(registry.Add(kStickerExportPath));
+	Expects(registry.Add(kStickerExportAutoSync));
+	Expects(registry.Add(kStickerExportDirNaming));
 }
 
 } // namespace Nagram::Media

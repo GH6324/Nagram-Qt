@@ -2,6 +2,8 @@
 #include "nagram/media/backend_options.h"
 #include "base/basic_types.h"
 
+#include <QtCore/QDir>
+
 #include <iostream>
 #include <map>
 #include <stdexcept>
@@ -272,6 +274,364 @@ void TestCoverOption() {
 		"stored invalid cover address must fall back and be reported");
 }
 
+void TestExportOptions() {
+	using namespace Nagram;
+	using namespace Nagram::Media;
+	auto registry = Registry();
+	RegisterBackendOptions(registry);
+	CheckDeviceOption(registry, kStickerExportAutoSync, Category::Media, true);
+	CheckDeviceOption(registry, kStickerExportDirNaming, Category::Media, 2);
+	Require(!kStickerExportAutoSync.fallback
+		&& kStickerExportDirNaming.fallback == 0
+		&& kStickerExportPath.fallback.isEmpty(),
+		"sticker export must be off by default");
+	Require(kStickerExportDirNaming.validate(0)
+		&& kStickerExportDirNaming.validate(1)
+		&& kStickerExportDirNaming.validate(2)
+		&& !kStickerExportDirNaming.validate(3)
+		&& !kStickerExportDirNaming.validate(-1),
+		"export folder naming range");
+	Require(registry.HasFlag(kStickerExportPath.key, Flag::Hidden)
+		&& !registry.HasFlag(kStickerExportPath.key, Flag::Exportable)
+		&& registry.Find(kStickerExportPath.key)->scope == Scope::Device,
+		"export folder must be a hidden device option");
+
+	const auto path = QDir(QDir::tempPath()).absoluteFilePath(u"stickers"_q);
+	auto prefs = MemoryPrefs();
+	auto options = Options(prefs);
+	Require(ValidExportPath(QString()) && ValidExportPath(path),
+		"export folder rejected");
+	Require(!ValidExportPath(u"relative/folder"_q)
+		&& !ValidExportPath(u"stickers"_q)
+		&& !ValidExportPath(path + QString(kMaxExportPathLength, u'a'))
+		&& !ValidExportPath(path + u"\nnext"_q),
+		"invalid export folder accepted");
+	Require(!options.Set(kStickerExportPath, u"relative/folder"_q)
+		&& prefs.values.empty(), "relative export folder stored");
+	Require(options.Set(kStickerExportPath, path)
+		&& options.Get(kStickerExportPath) == path, "export folder write");
+	Require(!Exchange::Export(options, registry).data.contains("stickers"),
+		"export folder must not be exported");
+}
+
+void TestExportDirNames() {
+	using namespace Nagram::Media;
+	Require(SanitizeExportDirName(u"Cats/and\\dogs"_q) == u"Catsanddogs"_q
+		&& SanitizeExportDirName(u"a<b>c:d\"e|f?g*h"_q) == u"abcdefgh"_q
+		&& SanitizeExportDirName(u"tab\there\nnow"_q) == u"tabherenow"_q
+		&& SanitizeExportDirName(u"  name. . "_q) == u"name"_q
+		&& SanitizeExportDirName(u".."_q).isEmpty()
+		&& SanitizeExportDirName(u"///"_q).isEmpty()
+		&& SanitizeExportDirName(QString::fromUtf8("猫咪 贴纸"))
+			== QString::fromUtf8("猫咪 贴纸"),
+		"folder name cleanup");
+	const auto longTitle = QString(200, u'a');
+	Require(SanitizeExportDirName(longTitle).size() == kMaxExportDirLength,
+		"folder name length limit");
+	const auto emoji = QString(kMaxExportDirLength - 1, u'a')
+		+ QString::fromUtf8("😀");
+	const auto cut = SanitizeExportDirName(emoji);
+	Require(cut.size() == kMaxExportDirLength - 1
+		&& !cut.back().isHighSurrogate(),
+		"folder name must not end with half of a character");
+
+	Require(SafeExportDirName(u"cats"_q)
+		&& SafeExportDirName(u"_42"_q)
+		&& SafeExportDirName(u"CON_42"_q)
+		&& !SafeExportDirName(QString())
+		&& !SafeExportDirName(u".."_q)
+		&& !SafeExportDirName(u"."_q)
+		&& !SafeExportDirName(u"a/b"_q)
+		&& !SafeExportDirName(u"../cats"_q)
+		&& !SafeExportDirName(u"/cats"_q)
+		&& !SafeExportDirName(u"C:\\cats"_q)
+		&& !SafeExportDirName(u"cats."_q)
+		&& !SafeExportDirName(u"cats "_q)
+		&& !SafeExportDirName(u"NUL"_q)
+		&& !SafeExportDirName(u"com1.txt"_q),
+		"safe folder name");
+
+	const auto sets = std::vector<ExportSetInfo>{
+		{ .id = 11, .shortName = u"cats"_q, .title = u"Funny / Cats"_q },
+		{ .id = 12, .shortName = u"CON"_q, .title = u"NUL.txt"_q },
+		{ .id = 13, .shortName = QString(), .title = u"..."_q },
+		{ .id = 14, .shortName = u"Dogs"_q, .title = u"Same"_q },
+		{ .id = 15, .shortName = u"dogs"_q, .title = u"Same"_q },
+	};
+	Require(ExportDirNames(sets, 0) == std::vector<QString>{
+		u"cats"_q, u"CON_12"_q, u"_13"_q, u"Dogs_14"_q, u"dogs_15"_q },
+		"folder names from short names");
+	Require(ExportDirNames(sets, 1) == std::vector<QString>{
+		u"Funny  Cats"_q,
+		u"NUL_txt_12"_q,
+		u"_13"_q,
+		u"Same_14"_q,
+		u"Same_15"_q }, "folder names from titles");
+	Require(ExportDirNames(sets, 2) == std::vector<QString>{
+		u"11"_q, u"12"_q, u"13"_q, u"14"_q, u"15"_q },
+		"folder names from ids");
+	auto reversed = sets;
+	std::reverse(reversed.begin(), reversed.end());
+	auto names = ExportDirNames(reversed, 1);
+	std::reverse(names.begin(), names.end());
+	Require(names == ExportDirNames(sets, 1),
+		"folder names must not depend on the order of sets");
+	for (const auto &name : ExportDirNames(sets, 1)) {
+		Require(SafeExportDirName(name), "generated folder name is unsafe");
+	}
+	const auto chained = std::vector<ExportSetInfo>{
+		{ .id = 5, .shortName = u"x"_q },
+		{ .id = 6, .shortName = u"X"_q },
+		{ .id = 7, .shortName = u"x_5"_q },
+	};
+	const auto unique = ExportDirNames(chained, 0);
+	Require(unique[0].toCaseFolded() != unique[1].toCaseFolded()
+		&& unique[0].toCaseFolded() != unique[2].toCaseFolded()
+		&& unique[1].toCaseFolded() != unique[2].toCaseFolded(),
+		"folder names must stay unique after adding ids");
+
+	Require(ExportFileName(42, u"webp"_q) == u"42.webp"_q
+		&& SafeExportFileName(u"42.webp"_q)
+		&& SafeExportFileName(u"18446744073709551615.tgs"_q)
+		&& SafeExportFileName(u"7.webm"_q)
+		&& !SafeExportFileName(u"42.exe"_q)
+		&& !SafeExportFileName(u"../42.webp"_q)
+		&& !SafeExportFileName(u"042.webp"_q)
+		&& !SafeExportFileName(u"42.webp.tgs"_q)
+		&& !SafeExportFileName(u"set.json"_q)
+		&& !SafeExportFileName(u".webp"_q),
+		"sticker file names");
+}
+
+void TestExportManifests() {
+	using namespace Nagram::Media;
+	const auto manifest = ExportManifest{ {
+		{ 18446744073709551615ULL, u"cats"_q, 123456789012345678ULL, 30 },
+		{ 2, QString::fromUtf8("猫咪"), 0, 0 },
+	} };
+	const auto bytes = SerializeExportManifest(manifest);
+	Require(ParseExportManifest(bytes) == manifest, "root manifest round trip");
+	Require(ParseExportManifest(R"({"version":1,"sets":[]})")
+		== ExportManifest(), "empty root manifest");
+	const auto copy = bytes;
+	for (const auto &broken : {
+			QByteArray(),
+			QByteArray("not json"),
+			QByteArray("[]"),
+			QByteArray(R"({"version":2,"sets":[]})"),
+			QByteArray(R"({"version":"1","sets":[]})"),
+			QByteArray(R"({"version":1})"),
+			QByteArray(R"({"version":1,"sets":{}})"),
+			QByteArray(R"({"version":1,"sets":[],"extra":true})"),
+			QByteArray(R"({"version":1,"sets":[{"id":"1","dir":"a","hash":"0"}]})"),
+			QByteArray(R"({"version":1,"sets":[{"id":1,"dir":"a","hash":"0","count":1}]})"),
+			QByteArray(R"({"version":1,"sets":[{"id":"1","dir":"a","hash":"0","count":"1"}]})"),
+			QByteArray(R"({"version":1,"sets":[{"id":"1","dir":"a","hash":"0","count":1.5}]})"),
+			QByteArray(R"({"version":1,"sets":[{"id":"1","dir":"a","hash":"0","count":-1}]})"),
+			QByteArray(R"({"version":1,"sets":[{"id":"1","dir":"a","hash":"0","count":1,"x":1}]})"),
+			QByteArray(R"({"version":1,"sets":[{"id":"0","dir":"a","hash":"0","count":1}]})"),
+			QByteArray(R"({"version":1,"sets":[{"id":"1","dir":"..","hash":"0","count":1}]})"),
+			QByteArray(R"({"version":1,"sets":[{"id":"1","dir":"../a","hash":"0","count":1}]})"),
+			QByteArray(R"({"version":1,"sets":[{"id":"1","dir":"/abs","hash":"0","count":1}]})"),
+			QByteArray(R"({"version":1,"sets":[{"id":"1","dir":"a\\b","hash":"0","count":1}]})"),
+			QByteArray(R"({"version":1,"sets":[{"id":"1","dir":"","hash":"0","count":1}]})"),
+			QByteArray(R"({"version":1,"sets":[{"id":"1","dir":"a","hash":"0","count":1},{"id":"1","dir":"b","hash":"0","count":1}]})"),
+			QByteArray(R"({"version":1,"sets":[{"id":"1","dir":"a","hash":"0","count":1},{"id":"2","dir":"A","hash":"0","count":1}]})") }) {
+		Require(!ParseExportManifest(broken), "broken root manifest accepted");
+	}
+	Require(bytes == copy, "parsing must not change the manifest bytes");
+
+	const auto set = ExportSetManifest{
+		.id = 42,
+		.shortName = u"cats"_q,
+		.title = QString::fromUtf8("Cats \"quoted\" 猫"),
+		.stickers = {
+			{ 3, u"3.webp"_q, QString::fromUtf8("😀") },
+			{ 1, u"1.tgs"_q, QString() },
+			{ 2, u"2.webm"_q, QString::fromUtf8("🐱") },
+		},
+	};
+	Require(ParseExportSetManifest(SerializeExportSetManifest(set)) == set,
+		"set manifest round trip keeps the sticker order");
+	for (const auto &broken : {
+			QByteArray(),
+			QByteArray(R"({"version":1,"id":"1","shortName":"a","title":"b"})"),
+			QByteArray(R"({"version":3,"id":"1","shortName":"a","title":"b","stickers":[]})"),
+			QByteArray(R"({"version":1,"id":1,"shortName":"a","title":"b","stickers":[]})"),
+			QByteArray(R"({"version":1,"id":"1","shortName":7,"title":"b","stickers":[]})"),
+			QByteArray(R"({"version":1,"id":"1","shortName":"a","title":"b","stickers":[],"x":0})"),
+			QByteArray(R"({"version":1,"id":"1","shortName":"a","title":"b","stickers":[{"id":"1","file":"1.webp"}]})"),
+			QByteArray(R"({"version":1,"id":"1","shortName":"a","title":"b","stickers":[{"id":"1","file":"../1.webp","emoji":""}]})"),
+			QByteArray(R"({"version":1,"id":"1","shortName":"a","title":"b","stickers":[{"id":"1","file":"/etc/passwd","emoji":""}]})"),
+			QByteArray(R"({"version":1,"id":"1","shortName":"a","title":"b","stickers":[{"id":"1","file":"2.webp","emoji":""}]})"),
+			QByteArray(R"({"version":1,"id":"1","shortName":"a","title":"b","stickers":[{"id":"1","file":"1.exe","emoji":""}]})"),
+			QByteArray(R"({"version":1,"id":"1","shortName":"a","title":"b","stickers":[{"id":"1","file":"1.webp","emoji":""},{"id":"1","file":"1.webp","emoji":""}]})") }) {
+		Require(!ParseExportSetManifest(broken),
+			"broken set manifest accepted");
+	}
+}
+
+void TestExportPlan() {
+	using namespace Nagram::Media;
+	const auto current = std::vector<ExportSetInfo>{
+		{ 1, 100, 10, u"cats"_q, u"Cats"_q },
+		{ 2, 200, 20, u"dogs"_q, u"Dogs"_q },
+		{ 3, 300, 30, u"birds"_q, u"Birds"_q },
+	};
+	const auto same = ExportManifest{ {
+		{ 1, u"cats"_q, 100, 10 },
+		{ 2, u"dogs"_q, 200, 20 },
+		{ 3, u"birds"_q, 300, 30 },
+	} };
+	Require(PlanExport(same, current, 0).empty(),
+		"unchanged sets must give an empty plan");
+
+	const auto fresh = PlanExport(ExportManifest(), current, 0);
+	Require(fresh.removed.empty()
+		&& fresh.sets == std::vector<ExportPlanSet>{
+			{ 1, u"cats"_q, QString(), true },
+			{ 2, u"dogs"_q, QString(), true },
+			{ 3, u"birds"_q, QString(), true } },
+		"first export writes every set");
+
+	const auto changed = ExportManifest{ {
+		{ 1, u"cats"_q, 101, 10 },
+		{ 2, u"dogs"_q, 200, 19 },
+		{ 3, u"birds"_q, 300, 30 },
+		{ 4, u"fish"_q, 400, 40 },
+	} };
+	const auto update = PlanExport(changed, current, 0);
+	Require(update.sets == std::vector<ExportPlanSet>{
+			{ 1, u"cats"_q, QString(), true },
+			{ 2, u"dogs"_q, QString(), true } }
+		&& update.removed == std::vector<quint64>{ 4 },
+		"changed hash or count rewrites a set, a removed set is dropped");
+
+	const auto renamed = PlanExport(same, current, 1);
+	Require(renamed.removed.empty()
+		&& renamed.sets == std::vector<ExportPlanSet>{
+			{ 1, u"Cats"_q, u"cats"_q, false },
+			{ 2, u"Dogs"_q, u"dogs"_q, false },
+			{ 3, u"Birds"_q, u"birds"_q, false } },
+		"a new naming renames folders without rewriting them");
+	Require(PlanExport(same, current, 9).empty(),
+		"unknown naming must fall back to short names");
+
+	const auto corrupt = PlanExport(std::nullopt, current, 0);
+	Require(corrupt.removed.empty()
+		&& corrupt.sets.size() == 3
+		&& corrupt.sets[0].write
+		&& corrupt.sets[0].renameFrom.isEmpty(),
+		"a broken manifest exports everything and removes nothing");
+
+	const auto before = ExportSetManifest{
+		.id = 1,
+		.stickers = {
+			{ 1, u"1.webp"_q, QString() },
+			{ 2, u"2.webp"_q, QString() },
+			{ 3, u"3.tgs"_q, QString() },
+		},
+	};
+	const auto after = ExportSetManifest{
+		.id = 1,
+		.stickers = {
+			{ 3, u"3.tgs"_q, QString() },
+			{ 1, u"1.webp"_q, QString() },
+			{ 4, u"4.webm"_q, QString() },
+		},
+	};
+	Require(StaleExportFiles(before, after) == QStringList{ u"2.webp"_q },
+		"only stickers of the previous manifest are removed");
+	auto other = before;
+	other.id = 9;
+	Require(StaleExportFiles(std::nullopt, after).isEmpty()
+		&& StaleExportFiles(other, after).isEmpty(),
+		"nothing is removed without a matching previous manifest");
+
+	auto manifest = same;
+	UpsertExportSet(manifest, { 2, u"dogs_2"_q, 201, 21 });
+	UpsertExportSet(manifest, { 5, u"fish"_q, 500, 5 });
+	RemoveExportSets(manifest, { 1, 99 });
+	Require(manifest == ExportManifest{ {
+		{ 2, u"dogs_2"_q, 201, 21 },
+		{ 3, u"birds"_q, 300, 30 },
+		{ 5, u"fish"_q, 500, 5 } } }, "manifest update");
+}
+
+void TestExportRun() {
+	using namespace Nagram::Media;
+	auto run = ExportRun();
+	Require(!run.status().running && !run.autoSyncPaused(), "idle run");
+
+	const auto first = run.begin(false);
+	Require(run.plan(first, { 1, 2, 3 })
+		&& run.status().running
+		&& run.status().total == 3, "run start");
+	Require(run.setDone(first, 1) && run.status().done == 1, "set done");
+	Require(!run.setDone(first, 1)
+		&& !run.setFailed(first, 1)
+		&& run.status().done == 1,
+		"a set finished twice must be counted once");
+	Require(!run.setDone(first, 9), "unknown set counted");
+
+	const auto second = run.begin(false);
+	Require(second != first
+		&& !run.accepts(first)
+		&& !run.setDone(first, 2)
+		&& !run.setFailed(first, 3)
+		&& !run.fail(first, ExportError::Write)
+		&& run.status().done == 0
+		&& !run.autoSyncPaused(),
+		"callbacks of an older round must be rejected");
+	Require(run.plan(second, { 1, 2 }), "second run plan");
+
+	run.invalidate();
+	Require(!run.accepts(second)
+		&& !run.setDone(second, 1)
+		&& !run.status().running
+		&& !run.status().finished,
+		"a changed folder must invalidate the running round");
+
+	const auto third = run.begin(false);
+	Require(run.plan(third, { 1, 2 })
+		&& run.setFailed(third, 1)
+		&& run.setDone(third, 2)
+		&& !run.status().running
+		&& run.status().finished
+		&& run.status().failed == 1
+		&& run.status().error == ExportError::None
+		&& !run.autoSyncPaused(),
+		"a failed download ends the round without pausing");
+
+	const auto fourth = run.begin(false);
+	Require(run.plan(fourth, { 1, 2 })
+		&& run.setDone(fourth, 1)
+		&& run.fail(fourth, ExportError::Write)
+		&& !run.status().running
+		&& run.status().error == ExportError::Write
+		&& run.autoSyncPaused()
+		&& !run.setDone(fourth, 2),
+		"a write failure stops the round and pauses automatic sync");
+
+	const auto fifth = run.begin(false);
+	Require(run.plan(fifth, {})
+		&& run.status().finished
+		&& run.autoSyncPaused(),
+		"an automatic round must not lift the pause");
+	const auto sixth = run.begin(true);
+	Require(run.fail(sixth, ExportError::Path)
+		&& run.status().error == ExportError::Path
+		&& run.autoSyncPaused(),
+		"a failed manual round keeps the pause");
+	const auto seventh = run.begin(true);
+	Require(run.plan(seventh, { 1 })
+		&& run.autoSyncPaused()
+		&& run.setDone(seventh, 1)
+		&& run.status().finished
+		&& !run.autoSyncPaused(),
+		"a successful manual round resumes automatic sync");
+}
+
 } // namespace
 
 void TestMedia() {
@@ -280,5 +640,10 @@ void TestMedia() {
 	TestCoverAddress();
 	TestCoverExpansion();
 	TestCoverOption();
+	TestExportOptions();
+	TestExportDirNames();
+	TestExportManifests();
+	TestExportPlan();
+	TestExportRun();
 	std::cout << "PASS: Nagram media backends" << std::endl;
 }
