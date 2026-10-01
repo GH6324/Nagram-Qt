@@ -97,6 +97,8 @@ set(nagram_sources
     nagram/settings/messages.cpp
     nagram/settings/services.cpp
     nagram/services/credentials.cpp
+    nagram/services/context.cpp
+    nagram/services/context_model.cpp
     nagram/services/model.cpp
     nagram/services/presets.cpp
     nagram/services/store.cpp
@@ -225,6 +227,7 @@ if (DESKTOP_APP_TEST_APPS)
         nagram/core/regex.cpp
         nagram/interface/main_menu_model.cpp
         nagram/menu/model.cpp
+        nagram/services/context_model.cpp
         nagram/services/model.cpp
         nagram/services/presets.cpp
         nagram/filters/model.cpp

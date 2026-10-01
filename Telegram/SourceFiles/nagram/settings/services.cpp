@@ -4,6 +4,7 @@
 #include "core/application.h"
 #include "core/file_utilities.h"
 #include "lang/lang_keys.h"
+#include "nagram/services/context_model.h"
 #include "nagram/services/credentials.h"
 #include "nagram/services/presets.h"
 #include "nagram/services/request.h"
@@ -631,6 +632,26 @@ const auto kMeta = BuildHelper({
 		.onClick = [=] { controller->show(Box(TranscriptionSourceBox)); },
 		.keywords = { u"transcription"_q, u"voice"_q },
 	});
+	const auto contextButton = builder.addButton({
+		.id = u"nagram/services/translation-context"_q,
+		.title = tr::lng_nagram_service_use_context(),
+		.st = &st::settingsButtonNoIcon,
+		.toggled = ForDevice().Value(kTranslationContext),
+		.keywords = { u"context"_q, u"LLM"_q, u"translation"_q },
+	});
+	if (contextButton) {
+		contextButton->toggledChanges(
+		) | rpl::on_next([](bool value) {
+			Expects(ForDevice().Set(kTranslationContext, value));
+		}, contextButton->lifetime());
+	}
+	builder.addDividerText(tr::lng_nagram_service_use_context_about(
+		lt_amount,
+		rpl::single(QString::number(kContextMessages)),
+		lt_each,
+		rpl::single(QString::number(kContextEach)),
+		lt_total,
+		rpl::single(QString::number(kContextTotal))));
 	const auto aiStatus = SystemAiAvailability();
 	const auto aiButton = builder.addButton({
 		.id = u"nagram/services/system-ai"_q,

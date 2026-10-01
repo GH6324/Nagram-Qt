@@ -676,3 +676,5 @@
 "lng_nagram_service_preset_translation" = "{name} — 翻譯";
 "lng_nagram_service_preset_transcription" = "{name} — 轉寫";
 "lng_nagram_service_add_custom" = "自訂 OpenAI 相容翻譯";
+"lng_nagram_service_use_context" = "翻譯訊息時附帶近期訊息";
+"lng_nagram_service_use_context_about" = "用 OpenAI 相容或 Anthropic 服務翻譯整則訊息時，同時傳送同一對話或話題中此前已載入的最多 {amount} 則訊息作為參考：每則最多 {each} 個字元，合計最多 {total} 個字元，不含傳送者姓名、ID 和時間。選取的文字、草稿、整頁翻譯、其他服務，以及禁止複製的對話和訊息不附帶。";

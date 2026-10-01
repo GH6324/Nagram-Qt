@@ -193,6 +193,7 @@ P3-07 外部媒体后端：
 | H01 | `boxes/translate_box.cpp` | 翻译请求交给所选服务；失败时显示错误，不改用其他服务 | 替换 |
 | H02 | `api/api_transcribes.cpp`、`history/view/history_view_transcribe_button.cpp`、`history/view/media/history_view_document.cpp` | `Api::Transcribes` 的 `isRated`／`rate`／`entry` 各一行交给 `Nagram::TranscriptionOverride`；外部转写缓存按会话保存在 `nagram/services/transcription.cpp`，头文件不新增成员 | 替换 |
 | H03（含 P3-04 的预设、Anthropic 协议、配置 v2） | 无上游改动 | — | — |
+| H03（上下文，P3-04） | `boxes/translate_box.cpp` | `TranslateBox()` 内 `State` 的构造改为接收 `peer`、`msgId`、`hasCopyRestriction`，工厂由 `Nagram::CreateInteractiveTranslateProvider` 换成 `Nagram::CreateMessageTranslateProvider`；开关关闭或取不到上下文时后者原样转给前者 | 替换 |
 | H04 | `boxes/compose_ai_box.cpp`、`ui/controls/compose_ai_button_factory.cpp` | 草稿 AI 入口改由系统模型处理 | 拦截 |
 | 草稿翻译 | `chat_helpers/message_field.cpp` | 输入框菜单加入“翻译草稿” | 读取 |
 

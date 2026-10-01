@@ -243,6 +243,7 @@ P3 功能不在本计划内。每项先在 `docs/nagram/` 下单独写设计并�
 | 步骤 | 提交 | 条目 | 备注 |
 | --- | --- | --- | --- |
 | ✅ S140 | `feat(ai): LLM provider presets, Anthropic protocol and services config v2` | H03 扩展 | `nagram.services` 升到 v2（顶层 `summary`、实例 `summaryPrompt`），v1 读入时在内存中补默认值，下次保存写出 v2；v2 没有实例级 `useContext`（上下文是本机级开关，见 S141）。预设只保留能从 Nagram Android／iOS 源码核对到的地址，出处见专项设计 2.5；Groq、SiliconFlow 的转写预设核对不到，未加入。厂商名不设文案键。预设框、Anthropic 实例的“测试翻译”与“读取模型列表”、v1 配置升级后的界面均未现场验证，也没有用真实密钥联调 |
+| ✅ S141 | `feat(ai): recent messages as context for LLM translation` | H03（上下文） | 本机级开关 `nagram.translationContext`（设计为实例级 `useContext`，按要求改为本机级）。只用于整条消息的手动翻译；目标或入选消息禁止转发时不带上下文，不受 G13 影响。桩服务收到的请求体、话题视图中取不到相邻消息时退回无上下文、选中文字与禁止复制的对话不带上下文均未现场验证 |
 
 | 包 | 专项设计 | 步骤 | 设置页条目 |
 | --- | --- | --- | --- |

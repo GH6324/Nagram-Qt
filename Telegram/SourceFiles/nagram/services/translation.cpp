@@ -4,6 +4,10 @@
 #include "lang/translate_mtproto_provider.h"
 #include "lang/translate_provider.h"
 #include "lang/lang_keys.h"
+#include "data/data_peer.h"
+#include "data/data_session.h"
+#include "history/history_item.h"
+#include "nagram/services/context.h"
 #include "nagram/services/request.h"
 #include "base/flat_map.h"
 #include "base/flat_set.h"
@@ -40,10 +44,12 @@ public:
 	ExternalTranslateProvider(
 		std::optional<ServiceDefinition> service,
 		Fn<void(QString)> error,
-		QString unavailable = QString())
+		QString unavailable = QString(),
+		QStringList context = QStringList())
 	: _service(std::move(service))
 	, _error(std::move(error))
-	, _unavailable(std::move(unavailable)) {
+	, _unavailable(std::move(unavailable))
+	, _context(std::move(context)) {
 	}
 
 	bool supportsMessageId() const override {
@@ -96,7 +102,7 @@ private:
 		for (auto i = 0; i != amount; ++i) {
 			texts.push_back(_plan.texts[offset + i]);
 		}
-		auto call = BuildTranslationCall(*_service, texts, _to);
+		auto call = BuildTranslationCall(*_service, texts, _to, _context);
 		_request.json(*_service, call.body, call.query, [=](ServiceResult response) {
 			if (response.error != ServiceError::None) {
 				fail(response.error, response.status, std::move(_done));
@@ -118,6 +124,7 @@ private:
 	std::optional<ServiceDefinition> _service;
 	Fn<void(QString)> _error;
 	QString _unavailable;
+	QStringList _context;
 	Fn<void(Ui::TranslateProviderResult)> _done;
 	ServiceRequest _request;
 	TranslationPlan _plan;
@@ -298,6 +305,35 @@ std::unique_ptr<Ui::TranslateProvider> CreateInteractiveTranslateProvider(
 			FindService(*settings, id), std::move(error));
 	}
 	return std::make_unique<ExternalTranslateProvider>(std::nullopt, std::move(error));
+}
+
+std::unique_ptr<Ui::TranslateProvider> CreateMessageTranslateProvider(
+		not_null<PeerData*> peer,
+		MsgId msgId,
+		bool hasCopyRestriction,
+		Fn<void(QString)> error) {
+	const auto settings = ForDevice().Get(kTranslationContext)
+		? Services()
+		: std::nullopt;
+	const auto service = (settings && !hasCopyRestriction)
+		? FindService(*settings, settings->value(u"translation"_q).toString())
+		: std::nullopt;
+	const auto item = (service && LlmProtocol(service->protocol))
+		? peer->owner().message(peer->id, msgId)
+		: nullptr;
+	auto context = (item && item->isRegular())
+		? CollectTranslationContext(item)
+		: QStringList();
+	if (context.isEmpty()) {
+		return CreateInteractiveTranslateProvider(
+			&peer->session(),
+			std::move(error));
+	}
+	return std::make_unique<ExternalTranslateProvider>(
+		service,
+		std::move(error),
+		QString(),
+		std::move(context));
 }
 
 } // namespace Nagram

@@ -425,15 +425,23 @@ void TranslateBox(
 		TextWithEntities text,
 		bool hasCopyRestriction) {
 	struct State {
-		State(not_null<Main::Session*> session, not_null<GenericBox*> box)
-		: provider(Nagram::CreateInteractiveTranslateProvider(session,
+		State(
+			not_null<PeerData*> peer,
+			MsgId msgId,
+			bool restricted,
+			not_null<GenericBox*> box)
+		: provider(Nagram::CreateMessageTranslateProvider(peer, msgId, restricted,
 			crl::guard(box, [=](QString error) { box->showToast(error); }))) {
 		}
 
 		std::unique_ptr<TranslateProvider> provider;
 		rpl::variable<LanguageId> to;
 	};
-	const auto state = box->lifetime().make_state<State>(&peer->session(), box);
+	const auto state = box->lifetime().make_state<State>(
+		peer,
+		msgId,
+		hasCopyRestriction,
+		box);
 	if (IsServerMsgId(msgId) && state->provider->supportsMessageId()) {
 		if (const auto item = peer->owner().message(peer->id, msgId)) {
 			if (const auto page = item->richPage()) {

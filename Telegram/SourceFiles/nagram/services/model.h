@@ -23,9 +23,14 @@ inline constexpr auto kPreferSystemAi = Option<bool>{
 	Category::Services, "lng_nagram_system_ai",
 	static_cast<unsigned>(Flag::RefreshComposeButtons) };
 
+inline constexpr auto kTranslationContext = Option<bool>{
+	"nagram.translationContext", Scope::Device, false,
+	Category::Services, "lng_nagram_service_use_context" };
+
 inline void RegisterServiceOptions(Registry &registry) {
 	Expects(registry.Add(kServicesConfig));
 	Expects(registry.Add(kPreferSystemAi));
+	Expects(registry.Add(kTranslationContext));
 }
 
 enum class ServiceKind {
@@ -80,7 +85,8 @@ struct TranslationCall {
 [[nodiscard]] TranslationCall BuildTranslationCall(
 	const ServiceDefinition &service,
 	const QStringList &texts,
-	const QString &to);
+	const QString &to,
+	const QStringList &context = {});
 [[nodiscard]] std::optional<QStringList> ParseTranslationResult(
 	const ServiceDefinition &service,
 	const QByteArray &body,

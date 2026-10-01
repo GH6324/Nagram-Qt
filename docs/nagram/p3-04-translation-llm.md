@@ -181,6 +181,8 @@ enum class Mode { Inherit, On, Off };
 
 **关闭时与上游一致**：`useContext` 默认 `false`；新工厂在无上下文时与现有 `CreateInteractiveTranslateProvider` 行为相同，H01 为“跟随 Telegram”时仍返回 `Ui::CreateTranslateProvider(session)`。
 
+**实施说明（S141）**：按维护者的要求，上下文是本机级开关 `nagram.translationContext`（`bool`，默认 `false`，可导出），不是实例级 `useContext`；`nagram.services` 没有这个字段。开关打开、H01 选的是 `openai` 或 `anthropic` 实例、翻译的是整条已发送的消息、`hasCopyRestriction` 为假时才取上下文；取到的上下文为空时走原有的 `CreateInteractiveTranslateProvider`。目标消息或任何一条入选消息 `forbidsForward()` 时整体不带上下文（不受 G13 影响）。只扫描目标之前最近 64 条已加载的消息。上下文以 JSON 字符串数组放在 `<context>…</context>` 中，位于待翻译数组之前；消息超过 50 段分多次请求时每次都带同一份上下文。设置页的说明文字用 `{amount}`、`{each}`、`{total}` 三个占位符（Nagram 文案不支持复数键，不用 `{count}`）。
+
 ### 2.4 消息总结（A166）
 
 **上游现状**：上游已有 Telegram 服务端摘要。`HistoryView::Message::ensureSummarizeButton()` 在消息带 `CanBeSummarized` 标志时显示按钮，`TranscribeButton::link()` 调用 `Api::Transcribes::toggleSummary()`，后者经 `Api::Transcribes::summarize()` 请求 `MTPmessages_SummarizeText`，结果以 `SummaryHeader` 显示在气泡内；非 Premium 可能收到 `SUMMARY_FLOOD_PREMIUM`。Android 的 `SummarizeTextButton` 是整数枚举，桌面不照搬取值。

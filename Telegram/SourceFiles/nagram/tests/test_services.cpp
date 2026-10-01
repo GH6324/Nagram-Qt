@@ -1,3 +1,4 @@
+#include "nagram/services/context_model.h"
 #include "nagram/services/model.h"
 #include "nagram/services/presets.h"
 #include "base/basic_types.h"
@@ -222,6 +223,106 @@ void TestPresets() {
 	std::cout << "PASS: Nagram service presets" << std::endl;
 }
 
+void TestContext(const Nagram::ServiceDefinition &service) {
+	using namespace Nagram;
+	const auto plain = [](const QString &text, qint64 topic = 0) {
+		return ContextCandidate{ .text = text, .topic = topic };
+	};
+	Require(SelectContext({}, 0, false).isEmpty(), "empty history");
+	auto before = std::vector<ContextCandidate>();
+	for (auto i = 0; i != 10; ++i) {
+		before.push_back(plain(u"m%1"_q.arg(i)));
+	}
+	Require(SelectContext(before, 0, false) == (QStringList{
+			u"m4"_q, u"m5"_q, u"m6"_q, u"m7"_q, u"m8"_q, u"m9"_q }),
+		"last six messages in order");
+	Require(SelectContext(before, 0, true).isEmpty(),
+		"context for a restricted message");
+
+	before = {
+		plain(u"keep"_q),
+		ContextCandidate{ .text = u"service"_q, .regular = false },
+		ContextCandidate{ .text = u"filtered"_q, .hidden = true },
+		plain(u"other topic"_q, 7),
+		plain(u"   "_q),
+		plain(u"  last  "_q),
+	};
+	Require(SelectContext(before, 0, false)
+			== (QStringList{ u"keep"_q, u"last"_q }),
+		"service, hidden, empty and other topic messages skipped");
+	Require(SelectContext(before, 7, false) == QStringList{ u"other topic"_q },
+		"topic selection");
+	before.push_back(ContextCandidate{ .text = u"secret"_q, .restricted = true });
+	Require(SelectContext(before, 0, false).isEmpty(),
+		"restricted message used as context");
+	before.back().hidden = true;
+	Require(SelectContext(before, 0, false).size() == 2,
+		"skipped restricted message blocks the context");
+
+	const auto longText = QString(kContextEach + 40, QChar('a'));
+	Require(TruncateContext(longText, kContextEach).size() == kContextEach,
+		"single message limit");
+	const auto pair = QString::fromUtf8("\xF0\x9F\x98\x80");
+	const auto surrogates = QString(kContextEach - 1, QChar('a')) + pair;
+	const auto cut = TruncateContext(surrogates, kContextEach);
+	Require(cut.size() == kContextEach - 1 && !cut.back().isHighSurrogate(),
+		"surrogate pair split");
+	Require(TruncateContext(u"short"_q, kContextEach) == u"short"_q,
+		"short text changed");
+
+	before.clear();
+	for (auto i = 0; i != 6; ++i) {
+		before.push_back(plain(QString(kContextEach, QChar('a' + i))));
+	}
+	const auto limited = SelectContext(before, 0, false);
+	auto total = 0;
+	for (const auto &text : limited) {
+		total += text.size();
+	}
+	Require(limited.size() == kContextTotal / kContextEach
+		&& total <= kContextTotal
+		&& limited.back().front() == QChar('f')
+		&& limited.front().front() == QChar('c'),
+		"total limit drops the earliest messages");
+
+	const auto context = QStringList{ u"first \"quoted\""_q, u"second"_q };
+	const auto content = [&](const ServiceDefinition &value,
+			const QStringList &list) {
+		return BuildTranslationCall(value, { u"Hi"_q }, u"zh"_q, list)
+			.body.object().value(u"messages"_q).toArray().last()
+			.toObject().value(u"content"_q).toString();
+	};
+	const auto with = content(service, context);
+	const auto block = u"<context>[\"first \\\"quoted\\\"\",\"second\"]</context>"_q;
+	Require(with.contains(block)
+		&& with.indexOf(block) < with.indexOf(u"Translate each string"_q)
+		&& with.endsWith(u"[\"Hi\"]"_q)
+		&& with.contains(u"do not translate"_q),
+		"context precedes the strings to translate");
+	Require(!content(service, {}).contains(u"<context>"_q)
+		&& content(service, {}) == BuildTranslationCall(
+			service, { u"Hi"_q }, u"zh"_q).body.object().value(
+				u"messages"_q).toArray().last().toObject().value(
+					u"content"_q).toString(),
+		"request changed without context");
+	auto anthropic = service;
+	anthropic.protocol = u"anthropic"_q;
+	Require(content(anthropic, context).contains(block),
+		"Anthropic request without context");
+	auto deepl = service;
+	deepl.protocol = u"deepl"_q;
+	deepl.model = QString();
+	Require(BuildTranslationCall(deepl, { u"Hi"_q }, u"zh"_q, context).body
+			== BuildTranslationCall(deepl, { u"Hi"_q }, u"zh"_q).body,
+		"context sent to a non-LLM service");
+	Require(!ParseTranslationResult(
+			service,
+			OpenAiReply(R"(["first","second","Hi"])", "stop"),
+			1),
+		"translated context accepted");
+	std::cout << "PASS: Nagram translation context" << std::endl;
+}
+
 } // namespace
 
 void TestServices() {
@@ -343,4 +444,5 @@ void TestServices() {
 	TestServicesV2(service);
 	TestLlmProtocols(service);
 	TestPresets();
+	TestContext(service);
 }

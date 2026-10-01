@@ -7,6 +7,8 @@ namespace Main {
 class Session;
 } // namespace Main
 
+class PeerData;
+
 namespace Nagram {
 
 struct ServiceDefinition;
@@ -32,6 +34,11 @@ struct TranslationPlan {
 	Fn<void(QString)> error);
 [[nodiscard]] std::unique_ptr<Ui::TranslateProvider> CreateInteractiveTranslateProvider(
 	not_null<Main::Session*> session,
+	Fn<void(QString)> error);
+[[nodiscard]] std::unique_ptr<Ui::TranslateProvider> CreateMessageTranslateProvider(
+	not_null<PeerData*> peer,
+	MsgId msgId,
+	bool hasCopyRestriction,
 	Fn<void(QString)> error);
 
 } // namespace Nagram

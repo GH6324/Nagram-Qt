@@ -680,3 +680,5 @@ Telegram/cmake/td_lang.cmake. Every key uses the lng_nagram_ prefix.
 "lng_nagram_service_preset_translation" = "{name} — translation";
 "lng_nagram_service_preset_transcription" = "{name} — transcription";
 "lng_nagram_service_add_custom" = "Custom OpenAI-compatible translation";
+"lng_nagram_service_use_context" = "Include recent messages when translating a message";
+"lng_nagram_service_use_context_about" = "When you translate a whole message with an OpenAI-compatible or Anthropic service, up to {amount} earlier messages already loaded in the same chat or topic are sent along for reference: at most {each} characters each and {total} in total, without sender names, IDs or times. Not used for selected text, drafts, whole-chat translation, other services, or chats and messages that restrict copying.";
