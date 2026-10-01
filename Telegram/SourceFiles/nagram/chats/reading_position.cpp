@@ -52,6 +52,9 @@ void Save(History *history) {
 	const auto session = &history->session();
 	const auto peerId = history->peer->id;
 	const auto view = history->scrollTopItem;
+	if (!view) {
+		return;
+	}
 	const auto msgId = view ? view->data()->id : MsgId();
 	auto positions = Read(session);
 	positions.erase(ranges::remove(

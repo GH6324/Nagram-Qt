@@ -261,7 +261,10 @@ TranslationCall BuildTranslationCall(
 		}
 		result.body = QJsonDocument(items);
 		result.query.addQueryItem(u"api-version"_q, u"3.0"_q);
-		result.query.addQueryItem(u"to"_q, to);
+		// Microsoft has no bare "zh" target.
+		result.query.addQueryItem(
+			u"to"_q,
+			(to == u"zh"_q) ? u"zh-Hans"_q : to);
 		result.query.addQueryItem(u"textType"_q, u"plain"_q);
 	} else if (service.protocol == u"yandex"_q) {
 		auto body = QJsonObject{

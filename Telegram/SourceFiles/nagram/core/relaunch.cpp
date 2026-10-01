@@ -7,9 +7,11 @@
 
 namespace Nagram {
 
-bool RelaunchWithoutUpdater(const QStringList &arguments) {
-	auto bundle = QDir(QCoreApplication::applicationDirPath());
-	if (!bundle.cdUp() || !bundle.cdUp()) {
+bool RelaunchWithoutUpdater(
+		const QString &bundlePath,
+		const QStringList &arguments) {
+	const auto bundle = QDir(bundlePath);
+	if (!bundle.dirName().endsWith(u".app"_q) || !bundle.exists()) {
 		return false;
 	} else if (QFile::exists(bundle.filePath(u"Contents/Frameworks/Updater"_q))) {
 		return false;

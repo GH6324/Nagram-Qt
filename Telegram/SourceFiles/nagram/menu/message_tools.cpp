@@ -129,9 +129,12 @@ void SaveToSaved(
 	auto action = Api::SendAction(session.data().history(session.user()));
 	action.clearDraft = false;
 	action.generateLocal = false;
-	session.api().forwardMessages(std::move(resolved), action, [=] {
-		controller->showToast(tr::lng_nagram_menu_saved_done(tr::now));
-	});
+	session.api().forwardMessages(
+		std::move(resolved),
+		action,
+		crl::guard(controller, [=] {
+			controller->showToast(tr::lng_nagram_menu_saved_done(tr::now));
+		}));
 }
 
 int EndPosition(not_null<Ui::PopupMenu*> menu) {

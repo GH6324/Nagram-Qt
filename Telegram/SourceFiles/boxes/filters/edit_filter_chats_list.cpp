@@ -531,9 +531,6 @@ object_ptr<Ui::RpWidget> EditFilterChatsListController::prepareTypesList() {
 		const auto raw = row.get();
 		_typesDelegate->peerListAppendRow(std::move(row));
 		_typesDelegate->peerListRefreshRows();
-		_nagramRecent = Nagram::Chats::RecentFolderEnabled(
-			&session(),
-			_nagramFolderId);
 		if (_nagramRecent) {
 			content->changeCheckState(raw, true, anim::type::instant);
 		}

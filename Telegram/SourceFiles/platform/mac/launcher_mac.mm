@@ -52,10 +52,13 @@ bool Launcher::launchUpdater(UpdaterLaunch action) {
 		if (cRestartingToSettings()) arguments << u"-tosettings"_q;
 		if (Logs::DebugEnabled()) arguments << u"-debug"_q;
 		if (cStartInTray()) arguments << u"-startintray"_q;
+		if (cLaunchMode() == LaunchModeAutoStart) arguments << u"-autostart"_q;
 		if (cDataFile() != u"data"_q) {
 			arguments << u"-key"_q << cDataFile();
 		}
-		if (Nagram::RelaunchWithoutUpdater(arguments)) {
+		if (Nagram::RelaunchWithoutUpdater(
+				cExeDir() + cExeName(),
+				arguments)) {
 			return true;
 		}
 	}

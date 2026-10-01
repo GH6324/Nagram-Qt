@@ -161,7 +161,9 @@ void EditExceptions(
 		showLimitReached);
 	const auto rawController = controller.get();
 	if (include) {
-		rawController->nagramSetFolder(rules.id());
+		rawController->nagramSetFolder(
+			rules.id(),
+			Nagram::Chats::RecentFolderEnabled(session, rules.id()));
 	}
 	auto initBox = [=](not_null<PeerListBox*> box) {
 		box->setCloseByOutsideClick(false);

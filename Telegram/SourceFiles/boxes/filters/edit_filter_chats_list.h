@@ -58,8 +58,9 @@ public:
 		return _selected;
 	}
 
-	void nagramSetFolder(FilterId id) {
+	void nagramSetFolder(FilterId id, bool recent) {
 		_nagramFolderId = id;
+		_nagramRecent = recent;
 	}
 	[[nodiscard]] bool nagramRecentChosen() const {
 		return _nagramRecent;

@@ -1,5 +1,6 @@
 #include "nagram/chats/recent_chats.h"
 
+#include "base/weak_ptr.h"
 #include "boxes/peer_list_box.h"
 #include "data/data_peer.h"
 #include "data/data_chat_filters.h"
@@ -32,6 +33,39 @@ std::vector<FilterId> ReadRecentFolders(not_null<Main::Session*> session) {
 	return result;
 }
 
+// ChatFilter::contains runs per chat per folder, so it must not parse settings.
+struct FolderCache {
+	base::weak_ptr<Main::Session> session;
+	base::flat_set<PeerId> peers;
+	base::flat_set<FilterId> folders;
+};
+std::vector<FolderCache> Caches;
+
+void ResetCache(not_null<Main::Session*> session) {
+	Caches.erase(ranges::remove_if(Caches, [&](const FolderCache &cache) {
+		return !cache.session || cache.session.get() == session;
+	}), Caches.end());
+}
+
+const FolderCache &Cache(not_null<Main::Session*> session) {
+	const auto i = ranges::find_if(Caches, [&](const FolderCache &cache) {
+		return cache.session.get() == session;
+	});
+	if (i != Caches.end()) {
+		return *i;
+	}
+	ResetCache(session);
+	auto &cache = Caches.emplace_back();
+	cache.session = base::make_weak(session);
+	for (const auto id : ReadRecent(session)) {
+		cache.peers.emplace(id);
+	}
+	for (const auto id : ReadRecentFolders(session)) {
+		cache.folders.emplace(id);
+	}
+	return cache;
+}
+
 void RefreshFolders(
 		not_null<Main::Session*> session,
 		const std::vector<PeerId> &ids) {
@@ -52,10 +86,22 @@ void WriteRecent(
 		parts.push_back(QString::number(id.value));
 	}
 	Expects(ForAccount(session).Set(kRecentChatsList, parts.join(u',')));
-	if (!ReadRecentFolders(session).empty()) {
-		RefreshFolders(session, previous);
-		RefreshFolders(session, ids);
+	ResetCache(session);
+	if (ReadRecentFolders(session).empty()) {
+		return;
 	}
+	auto changed = std::vector<PeerId>();
+	for (const auto id : previous) {
+		if (!ranges::contains(ids, id)) {
+			changed.push_back(id);
+		}
+	}
+	for (const auto id : ids) {
+		if (!ranges::contains(previous, id)) {
+			changed.push_back(id);
+		}
+	}
+	RefreshFolders(session, changed);
 }
 
 void Remember(not_null<PeerData*> peer) {
@@ -198,10 +244,12 @@ std::unique_ptr<PeerListRow> MakeRecentFilterRow() {
 }
 
 bool RecentInFolder(not_null<History*> history, FilterId folderId) {
-	const auto session = &history->session();
-	return folderId
-		&& RecentFolderEnabled(session, folderId)
-		&& ranges::contains(ReadRecent(session), history->peer->id);
+	if (!folderId) {
+		return false;
+	}
+	const auto &cache = Cache(&history->session());
+	return cache.folders.contains(folderId)
+		&& cache.peers.contains(history->peer->id);
 }
 
 bool RecentFolderEnabled(
@@ -228,6 +276,7 @@ void SetRecentFolderEnabled(
 		parts.push_back(QString::number(id));
 	}
 	Expects(ForAccount(session).Set(kRecentFolderIds, parts.join(u',')));
+	ResetCache(session);
 	RefreshFolders(session, ReadRecent(session));
 }
 
