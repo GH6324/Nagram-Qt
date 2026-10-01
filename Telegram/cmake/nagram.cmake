@@ -93,6 +93,10 @@ set(nagram_sources
     nagram/settings/chats.cpp
     nagram/settings/compose.cpp
 	nagram/settings/config.cpp
+    nagram/settings/cloud_sync.cpp
+    nagram/sync/model.cpp
+    nagram/sync/saved_messages.cpp
+    nagram/sync/service.cpp
     nagram/settings/media.cpp
     nagram/settings/menu.cpp
     nagram/settings/privacy.cpp
@@ -257,6 +261,7 @@ if (DESKTOP_APP_TEST_APPS)
         nagram/media/url_template.cpp
         nagram/media/sticker_export_model.cpp
         nagram/snapshot/cloud_theme_model.cpp
+        nagram/sync/model.cpp
     )
 
     target_include_directories(test_nagram PRIVATE

@@ -81,16 +81,25 @@ bool Exportable(const OptionInfo &info) {
 		&& (info.flags & static_cast<unsigned>(Flag::Exportable)) != 0;
 }
 
+bool Carried(const OptionInfo &info, ExchangeTarget target) {
+	return Exportable(info)
+		&& (target == ExchangeTarget::File
+			|| !(info.flags & static_cast<unsigned>(Flag::LocalOnly)));
+}
+
 } // namespace
 
-ExchangeExport Exchange::Export(Options &options, const Registry &registry) {
+ExchangeExport Exchange::Export(
+		Options &options,
+		const Registry &registry,
+		ExchangeTarget target) {
 	auto result = ExchangeExport();
 	if (options._scope != Scope::Device) {
 		return result;
 	}
 	auto values = QJsonObject();
 	for (const auto &info : registry.All()) {
-		if (!Exportable(info)) {
+		if (!Carried(info, target)) {
 			continue;
 		}
 		const auto raw = options._prefs.read(info.key);
@@ -115,7 +124,8 @@ ExchangeExport Exchange::Export(Options &options, const Registry &registry) {
 ExchangePlan Exchange::PlanImport(
 		Options &options,
 		const Registry &registry,
-		const QByteArray &data) {
+		const QByteArray &data,
+		ExchangeTarget target) {
 	auto result = ExchangePlan();
 	if (options._scope != Scope::Device) {
 		result.error = QString::fromLatin1("Only device settings can be imported.");
@@ -144,7 +154,7 @@ ExchangePlan Exchange::PlanImport(
 		const auto encodedKey = it.key().toUtf8();
 		const auto info = registry.Find(std::string_view(
 			encodedKey.constData(), encodedKey.size()));
-		if (!info || !Exportable(*info)) {
+		if (!info || !Carried(*info, target)) {
 			result.skippedKeys.push_back(it.key());
 			continue;
 		}

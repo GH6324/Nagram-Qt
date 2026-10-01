@@ -6,7 +6,8 @@ namespace Nagram::Privacy {
 
 inline constexpr auto kDemoMode = Option<bool>{
 	"nagram.demoMode", Scope::Device, false,
-	Category::Privacy, "lng_nagram_demo_mode" };
+	Category::Privacy, "lng_nagram_demo_mode",
+	static_cast<unsigned>(Flag::LocalOnly) };
 
 [[nodiscard]] inline bool DemoMode() {
 	return ForDevice().Get(kDemoMode);

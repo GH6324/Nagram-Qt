@@ -42,6 +42,7 @@ enum class Flag : unsigned {
 	RefreshMessageView = 8,
 	RefreshDialogList = 16,
 	RefreshComposeButtons = 32,
+	LocalOnly = 64,
 };
 
 template <typename Type>

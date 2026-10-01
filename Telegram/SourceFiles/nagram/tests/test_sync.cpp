@@ -1,5 +1,25 @@
+#include "nagram/chats/local_pins_model.h"
+#include "nagram/chats/options.h"
+#include "nagram/compose/options.h"
+#include "nagram/core/diagnostics.h"
 #include "nagram/core/exchange.h"
+#include "nagram/filters/model.h"
+#include "nagram/interface/options.h"
+#include "nagram/links/inline_rules.h"
+#include "nagram/links/model.h"
+#include "nagram/links/options.h"
+#include "nagram/links/webview.h"
+#include "nagram/media/backend_options.h"
+#include "nagram/media/local_faved_model.h"
+#include "nagram/media/options.h"
+#include "nagram/menu/model.h"
+#include "nagram/messages/options.h"
+#include "nagram/network/options.h"
+#include "nagram/privacy/options.h"
+#include "nagram/services/auto_translate_model.h"
+#include "nagram/services/model.h"
 #include "nagram/snapshot/cloud_theme_model.h"
+#include "nagram/sync/model.h"
 
 #include <QtCore/QJsonDocument>
 #include <QtCore/QJsonObject>
@@ -163,9 +183,411 @@ void TestCloudThemeRef() {
 		"clearing one account's cloud theme touched another");
 }
 
+[[nodiscard]] QByteArray Json(const QJsonObject &object) {
+	return QJsonDocument(object).toJson(QJsonDocument::Compact);
+}
+
+[[nodiscard]] QJsonObject Object(const QByteArray &data) {
+	return QJsonDocument::fromJson(data).object();
+}
+
+void TestEnvelope() {
+	using namespace Nagram::Sync;
+
+	const auto exported = QByteArray(
+		R"({"version":1,"options":{"nagram.hideStories":true}})");
+	const auto reordered = QByteArray(
+		"{ \"options\": {\"nagram.hideStories\": true},\n\"version\": 1 }");
+	const auto hash = PayloadHash(exported);
+	Require(hash.size() == 64
+		&& hash == PayloadHash(reordered)
+		&& hash != PayloadHash(R"({"version":1,"options":{}})")
+		&& PayloadHash("not json").isEmpty(),
+		"payload hash must depend on the content only");
+
+	const auto encoded = EncodeEnvelope(
+		exported,
+		1790000000,
+		QString::fromLatin1("7.2.10"));
+	const auto decoded = DecodeEnvelope(encoded);
+	Require(decoded.error == EnvelopeError::None
+		&& decoded.value.updatedAt == 1790000000
+		&& decoded.value.app == QString::fromLatin1("7.2.10")
+		&& decoded.value.hash == hash
+		&& Object(decoded.value.payload) == Object(exported),
+		"envelope round trip");
+	Require(EncodeEnvelope("[]", 1, QString()).isEmpty(),
+		"envelope built from a broken export");
+
+	const auto with = [&](const char *key, const QJsonValue &value) {
+		auto object = Object(encoded);
+		object.insert(QString::fromLatin1(key), value);
+		return Json(object);
+	};
+	const auto without = [&](const char *key) {
+		auto object = Object(encoded);
+		object.remove(QString::fromLatin1(key));
+		return Json(object);
+	};
+	const auto error = [](const QByteArray &data) {
+		return DecodeEnvelope(data).error;
+	};
+	Require(error(with("version", 2)) == EnvelopeError::Newer
+		&& error(with("version", 99)) == EnvelopeError::Newer,
+		"newer envelope must be reported as newer");
+	Require(error(with("version", 0)) == EnvelopeError::Damaged
+		&& error(with("version", 1.5)) == EnvelopeError::Damaged
+		&& error(with("version", QString::fromLatin1("1")))
+			== EnvelopeError::Damaged
+		&& error(without("version")) == EnvelopeError::Damaged,
+		"bad envelope version accepted");
+	Require(error(with("kind", QString::fromLatin1("nagram-settings")))
+			== EnvelopeError::Foreign
+		&& error(with("kind", 1)) == EnvelopeError::Foreign
+		&& error(without("kind")) == EnvelopeError::Foreign
+		&& error(exported) == EnvelopeError::Foreign
+		&& error("{}") == EnvelopeError::Foreign,
+		"a file of another kind must be reported as foreign");
+	for (const auto key : { "updatedAt", "app", "payload" }) {
+		Require(error(without(key)) == EnvelopeError::Damaged,
+			"envelope with a missing field accepted");
+	}
+	Require(error(with("device", QString::fromLatin1("x")))
+			== EnvelopeError::Damaged
+		&& error(with("updatedAt", -1)) == EnvelopeError::Damaged
+		&& error(with("updatedAt", 1.5)) == EnvelopeError::Damaged
+		&& error(with("updatedAt", QString::fromLatin1("1")))
+			== EnvelopeError::Damaged
+		&& error(with("app", 7)) == EnvelopeError::Damaged
+		&& error(with("app", QString(33, QChar(u'x'))))
+			== EnvelopeError::Damaged
+		&& error(with("payload", QString::fromLatin1("x")))
+			== EnvelopeError::Damaged,
+		"malformed envelope accepted");
+	Require(error(with("payload", Object(
+			R"({"version":2,"options":{}})"))) == EnvelopeError::Newer
+		&& error(with("payload", Object(
+			R"({"version":1,"options":[]})"))) == EnvelopeError::Damaged
+		&& error(with("payload", Object(
+			R"({"version":1,"options":{},"extra":1})")))
+			== EnvelopeError::Damaged
+		&& error(with("payload", Object(R"({"options":{}})")))
+			== EnvelopeError::Damaged,
+		"malformed payload accepted");
+	Require(error("not json") == EnvelopeError::Damaged
+		&& error("[]") == EnvelopeError::Damaged
+		&& error(QByteArray()) == EnvelopeError::Damaged
+		&& error(encoded.left(encoded.size() / 2)) == EnvelopeError::Damaged,
+		"damaged envelope accepted");
+	Require(error(QByteArray(kMaxBackupBytes + 1, ' '))
+			== EnvelopeError::TooLarge,
+		"oversized envelope accepted");
+}
+
+void TestDecision() {
+	using namespace Nagram::Sync;
+
+	const auto a = QByteArray("a");
+	const auto b = QByteArray("b");
+	const auto c = QByteArray("c");
+	const auto none = QByteArray();
+	Require(Decide(a, none, none) == Action::Upload
+		&& Decide(a, a, none) == Action::Upload
+		&& Decide(a, b, none) == Action::Upload,
+		"no cloud backup must lead to an upload");
+	Require(Decide(a, none, a) == Action::UpToDate
+		&& Decide(a, a, a) == Action::UpToDate
+		&& Decide(a, b, a) == Action::UpToDate,
+		"equal content must be up to date");
+	Require(Decide(a, b, b) == Action::Upload,
+		"only this device changed");
+	Require(Decide(a, a, b) == Action::Download,
+		"only the cloud backup changed");
+	Require(Decide(a, none, b) == Action::Conflict
+		&& Decide(a, c, b) == Action::Conflict,
+		"both sides changed or never synced");
+}
+
+void TestState() {
+	using namespace Nagram;
+	using namespace Nagram::Sync;
+
+	const auto hash = PayloadHash(R"({"version":1,"options":{}})");
+	const auto raw = SerializeState({
+		.user = kUser,
+		.messageId = 42,
+		.hash = hash,
+		.updatedAt = 1790000000,
+	});
+	const auto parsed = ParseState(raw);
+	Require(parsed
+		&& parsed->user == kUser
+		&& parsed->messageId == 42
+		&& parsed->hash == hash
+		&& parsed->updatedAt == 1790000000,
+		"sync state round trip");
+	Require(ParseState(SerializeState({
+			.user = kUser,
+			.hash = hash,
+		})).has_value(),
+		"sync state without a known message");
+	const auto with = [&](const char *key, const QJsonValue &value) {
+		auto object = Object(raw);
+		object.insert(QString::fromLatin1(key), value);
+		return Json(object);
+	};
+	Require(ValidState(QByteArray())
+		&& ValidState(raw)
+		&& !ValidState(with("version", 2))
+		&& !ValidState(with("user", QString::fromLatin1("0")))
+		&& !ValidState(with("messageId", 42))
+		&& !ValidState(with("hash", QString::fromLatin1("abc")))
+		&& !ValidState(with("hash", QString(64, QChar(u'G'))))
+		&& !ValidState(with("updatedAt", -5))
+		&& !ValidState(with("extra", 1))
+		&& !ValidState("{}"),
+		"sync state validation");
+
+	auto registry = Registry();
+	Sync::RegisterOptions(registry);
+	const auto info = registry.Find(kState.key);
+	Require(info
+		&& info->scope == Scope::Account
+		&& info->fallbackRaw.isEmpty()
+		&& registry.HasFlag(kState.key, Flag::Hidden)
+		&& !registry.HasFlag(kState.key, Flag::Exportable),
+		"sync state must be hidden account data, empty by default");
+
+	auto firstPrefs = MemoryPrefs();
+	auto secondPrefs = MemoryPrefs();
+	auto first = Options(firstPrefs, Scope::Account);
+	auto second = Options(secondPrefs, Scope::Account);
+	Require(first.Set(kState, raw)
+		&& !first.Set(kState, QByteArray("{}"))
+		&& first.Get(kState) == raw
+		&& second.Get(kState).isEmpty(),
+		"sync state crossed accounts");
+}
+
+void TestAllowlist() {
+	using namespace Nagram;
+	using namespace Nagram::Sync;
+
+	const auto local = static_cast<unsigned>(Flag::LocalOnly);
+	const auto hidden = static_cast<unsigned>(Flag::Hidden);
+	const auto shared = Option<bool>{
+		"nagram.testShared", Scope::Device, false,
+		Category::Interface, "lng_nagram_test_shared" };
+	const auto number = Option<int>{
+		"nagram.testNumber", Scope::Device, 0,
+		Category::Interface, "lng_nagram_test_number" };
+	const auto machine = Option<bool>{
+		"nagram.testMachine", Scope::Device, false,
+		Category::Interface, "lng_nagram_test_machine", local };
+	const auto secret = Option<QString>{
+		"nagram.testSecret", Scope::Device, QString(),
+		Category::Interface, "lng_nagram_test_secret", hidden };
+	const auto account = Option<bool>{
+		"nagram.testAccountData", Scope::Account, false,
+		Category::Interface, "lng_nagram_test_account" };
+	auto registry = Registry();
+	Require(registry.Add(shared)
+		&& registry.Add(number)
+		&& registry.Add(machine)
+		&& registry.Add(secret)
+		&& registry.Add(account),
+		"sync test options");
+	Sync::RegisterOptions(registry);
+	Snapshot::RegisterCloudThemeOptions(registry);
+	Require(LocalOnlyKeys(registry)
+			== QStringList{ QString::fromLatin1("nagram.testMachine") },
+		"local-only keys of the test registry");
+
+	auto prefs = MemoryPrefs();
+	auto device = Options(prefs);
+	Require(device.Set(shared, true)
+		&& device.Set(number, 7)
+		&& device.Set(machine, true)
+		&& device.Set(secret, QString::fromLatin1("token-123"))
+		&& device.Set(
+			Snapshot::kCloudAccount,
+			QString::number(kUser)),
+		"sync test values");
+	prefs.values["nagram.cloudSyncState"] = "state-bytes";
+	prefs.values["nagram.testAccountData"] = "1";
+
+	const auto file = Exchange::Export(device, registry);
+	const auto sync = Exchange::Export(
+		device,
+		registry,
+		ExchangeTarget::Sync);
+	const auto fileValues = Object(file.data).value(
+		QString::fromLatin1("options")).toObject();
+	const auto syncValues = Object(sync.data).value(
+		QString::fromLatin1("options")).toObject();
+	Require(fileValues.keys() == QStringList{
+			QString::fromLatin1("nagram.testMachine"),
+			QString::fromLatin1("nagram.testNumber"),
+			QString::fromLatin1("nagram.testShared") },
+		"local file export keeps local-only keys");
+	Require(syncValues.keys() == QStringList{
+			QString::fromLatin1("nagram.testNumber"),
+			QString::fromLatin1("nagram.testShared") },
+		"backup must carry only exportable keys that are not local-only");
+	Require(!sync.data.contains("token-123")
+		&& !sync.data.contains("state-bytes")
+		&& !sync.data.contains("777000111")
+		&& !sync.data.contains("cloudSync")
+		&& !sync.data.contains("snapshotCloud"),
+		"credentials, account data or sync state leaked into the backup");
+
+	const auto envelope = EncodeEnvelope(sync.data, 100, QString());
+	const auto decoded = DecodeEnvelope(envelope);
+	Require(decoded.error == EnvelopeError::None
+		&& decoded.value.hash == PayloadHash(sync.data),
+		"backup envelope");
+
+	auto otherPrefs = MemoryPrefs();
+	auto other = Options(otherPrefs);
+	Require(other.Set(number, 3) && other.Set(machine, false),
+		"second device setup");
+	const auto before = Exchange::Export(other, registry);
+	const auto plan = Exchange::PlanImport(
+		other,
+		registry,
+		decoded.value.payload,
+		ExchangeTarget::Sync);
+	Require(plan.error.isEmpty()
+		&& plan.changes.size() == 2
+		&& plan.skippedKeys.isEmpty(),
+		"restore preview");
+	Require(other.Get(number) == 3 && !other.Get(shared),
+		"preview must not change settings");
+	Require(Exchange::Apply(other, registry, plan).applied
+		&& other.Get(number) == 7
+		&& other.Get(shared),
+		"restore apply");
+	Require(PayloadHash(Exchange::Export(
+			other,
+			registry,
+			ExchangeTarget::Sync).data) == decoded.value.hash,
+		"restored device must match the backup");
+	const auto again = Exchange::PlanImport(
+		other,
+		registry,
+		decoded.value.payload,
+		ExchangeTarget::Sync);
+	Require(again.error.isEmpty() && again.changes.empty(),
+		"applying the same backup twice must change nothing");
+
+	const auto crafted = QByteArray(R"({"version":1,"options":{"nagram.testMachine":true,"nagram.testSecret":"x","nagram.testAccountData":true,"nagram.cloudSyncState":{"version":1},"nagram.testNumber":9}})");
+	const auto filtered = Exchange::PlanImport(
+		other,
+		registry,
+		crafted,
+		ExchangeTarget::Sync);
+	Require(filtered.error.isEmpty()
+		&& filtered.changes.size() == 1
+		&& filtered.changes.front().key
+			== QString::fromLatin1("nagram.testNumber")
+		&& filtered.skippedKeys.size() == 4,
+		"a crafted backup must not reach local-only or hidden keys");
+	Require(Exchange::PlanImport(other, registry, crafted).changes.size() == 2,
+		"a local file may still set local-only keys");
+
+	Require(other.Set(number, 8), "change after preview");
+	Require(!Exchange::Apply(other, registry, filtered).applied
+		&& other.Get(number) == 8,
+		"a stale restore preview must be rejected as a whole");
+
+	Require(other.Set(number, 7), "rollback setup");
+	const auto rollback = Exchange::PlanImport(other, registry, before.data);
+	Require(rollback.error.isEmpty()
+		&& Exchange::Apply(other, registry, rollback).applied
+		&& other.Get(number) == 3,
+		"importing the earlier local export restores changed values");
+}
+
+void TestLocalOnlyList() {
+	using namespace Nagram;
+
+	auto registry = Registry();
+	Chats::RegisterOptions(registry);
+	Chats::RegisterLocalPinOptions(registry);
+	Interface::RegisterOptions(registry);
+	Compose::RegisterOptions(registry);
+	Media::RegisterOptions(registry);
+	Media::RegisterLocalFavedOptions(registry);
+	Media::RegisterBackendOptions(registry);
+	Menu::RegisterOptions(registry);
+	Privacy::RegisterOptions(registry);
+	Messages::RegisterOptions(registry);
+	Filters::RegisterOptions(registry);
+	Links::RegisterOptions(registry);
+	Links::RegisterBehaviorOptions(registry);
+	Links::RegisterInlineOptions(registry);
+	Links::RegisterWebviewOptions(registry);
+	Network::RegisterOptions(registry);
+	Snapshot::RegisterCloudThemeOptions(registry);
+	RegisterServiceOptions(registry);
+	AutoTranslate::RegisterOptions(registry);
+	RegisterDiagnosticsOptions(registry);
+	Sync::RegisterOptions(registry);
+
+	const auto expected = QStringList{
+		QString::fromLatin1("nagram.appIcon"),
+		QString::fromLatin1("nagram.customDoh"),
+		QString::fromLatin1("nagram.demoMode"),
+		QString::fromLatin1("nagram.disableBackupAddresses"),
+		QString::fromLatin1("nagram.ipStrategy"),
+		QString::fromLatin1("nagram.services"),
+		QString::fromLatin1("nagram.showRpcErrors"),
+		QString::fromLatin1("nagram.useSystemDns"),
+		QString::fromLatin1("nagram.webAppHeightScale"),
+		QString::fromLatin1("nagram.webAppWidthScale"),
+	};
+	Require(Sync::LocalOnlyKeys(registry) == expected,
+		"the list of settings kept on this device only changed");
+	for (const auto &info : registry.All()) {
+		if (info.flags & static_cast<unsigned>(Flag::LocalOnly)) {
+			Require(info.scope == Scope::Device
+				&& registry.HasFlag(info.key, Flag::Exportable),
+				"local-only is meant for exportable device settings");
+		}
+	}
+
+	auto prefs = MemoryPrefs();
+	auto device = Options(prefs);
+	Require(device.Set(Network::kIpStrategy, 1)
+		&& device.Set(Network::kUseSystemDns, true)
+		&& device.Set(Network::kDisableBackupAddresses, true)
+		&& device.Set(Privacy::kDemoMode, true)
+		&& device.Set(kShowRpcErrors, true)
+		&& device.Set(Links::kWebAppWidthScale, 150)
+		&& device.Set(Links::kWebAppHeightScale, 150),
+		"local-only values");
+	const auto sync = Exchange::Export(
+		device,
+		registry,
+		ExchangeTarget::Sync);
+	Require(Object(sync.data).value(
+			QString::fromLatin1("options")).toObject().isEmpty(),
+		"local-only settings reached the backup");
+	const auto file = Exchange::Export(device, registry);
+	Require(Object(file.data).value(
+			QString::fromLatin1("options")).toObject().size() == 7,
+		"local-only settings must stay in the local file export");
+}
+
 } // namespace
 
 void TestSync() {
 	TestCloudThemeRef();
 	std::cout << "PASS: Nagram screenshot cloud theme reference" << std::endl;
+	TestEnvelope();
+	TestDecision();
+	TestState();
+	TestAllowlist();
+	TestLocalOnlyList();
+	std::cout << "PASS: Nagram cloud backup" << std::endl;
 }

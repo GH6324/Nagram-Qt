@@ -4,6 +4,7 @@
 #include "nagram/core/diagnostics.h"
 #include "nagram/core/language.h"
 #include "nagram/settings/chats.h"
+#include "nagram/settings/cloud_sync.h"
 #include "nagram/settings/compose.h"
 #include "nagram/settings/home.h"
 #include "nagram/settings/interface.h"
@@ -158,64 +159,6 @@ void ShowModified(not_null<Window::SessionController*> controller) {
 	}));
 }
 
-void ShowImport(
-		not_null<Window::SessionController*> controller,
-		const QByteArray &bytes) {
-	const auto plan = Exchange::PlanImport(
-		ForDevice(), RegisteredOptions(), bytes);
-	if (!plan.error.isEmpty()) {
-		controller->showToast(plan.error);
-		return;
-	}
-	controller->show(Box([=](not_null<Ui::GenericBox*> box) {
-		box->setTitle(tr::lng_nagram_config_preview());
-		AddText(box, tr::lng_nagram_config_import_about(tr::now));
-		AddText(box, tr::lng_nagram_config_changes(
-			tr::now, lt_amount, QString::number(plan.changes.size())));
-		for (const auto &change : plan.changes) {
-			const auto encodedKey = change.key.toUtf8();
-			const auto info = RegisteredOptions().Find(std::string_view(
-				encodedKey.constData(), encodedKey.size()));
-			if (info) {
-				AddText(box, Title(*info) + u"\n"_q
-					+ ValueText(*info, change.before)
-					+ u" → "_q + ValueText(*info, change.after));
-			}
-		}
-		if (plan.adjustedKeys.contains(u"nagram.inlineBotRules"_q)) {
-			AddText(box, tr::lng_nagram_inline_import_disabled(tr::now));
-		}
-		if (!plan.skippedKeys.isEmpty()) {
-			AddText(box, tr::lng_nagram_config_unknown(
-				tr::now, lt_amount, QString::number(plan.skippedKeys.size()))
-				+ u"\n"_q + plan.skippedKeys.mid(0, 20).join('\n'));
-		}
-		if (!plan.changes.empty()) {
-			box->addButton(tr::lng_nagram_config_apply(),
-				crl::guard(controller, [=] {
-					const auto result = Exchange::Apply(
-						ForDevice(), RegisteredOptions(), plan);
-					if (!result.applied) {
-						box->showToast(result.error);
-						return;
-					}
-					box->closeBox();
-					controller->showToast(tr::lng_nagram_config_imported(tr::now));
-					if (ranges::any_of(plan.changes, [](const ExchangeChange &change) {
-						const auto key = change.key.toUtf8();
-						const auto info = RegisteredOptions().Find(std::string_view(
-							key.constData(), key.size()));
-						return info && (info->flags
-							& static_cast<unsigned>(Flag::RequiresRestart));
-					})) {
-						ShowRestartPrompt(controller);
-					}
-				}));
-		}
-		box->addButton(tr::lng_cancel(), [=] { box->closeBox(); });
-	}));
-}
-
 void Export(not_null<Window::SessionController*> controller) {
 	const auto exported = Exchange::Export(ForDevice(), RegisteredOptions());
 	if (!exported.invalidKeys.isEmpty()) {
@@ -349,6 +292,41 @@ const auto kMeta = BuildHelper({
 		.keywords = { u"log"_q, u"folder"_q },
 	});
 	builder.addDividerText(tr::lng_nagram_logs_note());
+	builder.addSubsectionTitle({
+		.id = u"nagram/config/sync"_q,
+		.title = tr::lng_nagram_sync_title(),
+		.keywords = { u"backup"_q, u"sync"_q, u"cloud"_q },
+	});
+	builder.addButton({
+		.id = u"nagram/config/sync-backup"_q,
+		.title = tr::lng_nagram_sync_backup(),
+		.st = &st::settingsButtonNoIcon,
+		.onClick = [=] { BackupToCloud(controller); },
+		.keywords = { u"backup"_q, u"saved"_q },
+	});
+	builder.addButton({
+		.id = u"nagram/config/sync-restore"_q,
+		.title = tr::lng_nagram_sync_restore(),
+		.st = &st::settingsButtonNoIcon,
+		.onClick = [=] { RestoreFromCloud(controller); },
+		.keywords = { u"restore"_q, u"saved"_q },
+	});
+	builder.addButton({
+		.id = u"nagram/config/sync-now"_q,
+		.title = tr::lng_nagram_sync_now(),
+		.st = &st::settingsButtonNoIcon,
+		.label = CloudSyncStatus(builder.session()),
+		.onClick = [=] { SyncWithCloud(controller); },
+		.keywords = { u"sync"_q },
+	});
+	builder.addButton({
+		.id = u"nagram/config/sync-delete"_q,
+		.title = tr::lng_nagram_sync_delete_remote(),
+		.st = &st::settingsButtonNoIcon,
+		.onClick = [=] { DeleteCloudBackup(controller); },
+		.keywords = { u"backup"_q, u"delete"_q },
+	});
+	builder.addDividerText(tr::lng_nagram_sync_about());
 });
 
 const SectionBuildMethod ConfigSection::kBuild = kMeta.build;
@@ -357,6 +335,69 @@ const SectionBuildMethod ConfigSection::kBuild = kMeta.build;
 
 Settings::Type ConfigId() {
 	return ConfigSection::Id();
+}
+
+void ShowImport(
+		not_null<Window::SessionController*> controller,
+		const QByteArray &bytes,
+		ExchangeTarget target,
+		Fn<void()> applied) {
+	const auto plan = Exchange::PlanImport(
+		ForDevice(), RegisteredOptions(), bytes, target);
+	if (!plan.error.isEmpty()) {
+		controller->showToast(plan.error);
+		return;
+	}
+	controller->show(Box([=](not_null<Ui::GenericBox*> box) {
+		box->setTitle(tr::lng_nagram_config_preview());
+		AddText(box, tr::lng_nagram_config_import_about(tr::now));
+		AddText(box, tr::lng_nagram_config_changes(
+			tr::now, lt_amount, QString::number(plan.changes.size())));
+		for (const auto &change : plan.changes) {
+			const auto encodedKey = change.key.toUtf8();
+			const auto info = RegisteredOptions().Find(std::string_view(
+				encodedKey.constData(), encodedKey.size()));
+			if (info) {
+				AddText(box, Title(*info) + u"\n"_q
+					+ ValueText(*info, change.before)
+					+ u" → "_q + ValueText(*info, change.after));
+			}
+		}
+		if (plan.adjustedKeys.contains(u"nagram.inlineBotRules"_q)) {
+			AddText(box, tr::lng_nagram_inline_import_disabled(tr::now));
+		}
+		if (!plan.skippedKeys.isEmpty()) {
+			AddText(box, tr::lng_nagram_config_unknown(
+				tr::now, lt_amount, QString::number(plan.skippedKeys.size()))
+				+ u"\n"_q + plan.skippedKeys.mid(0, 20).join('\n'));
+		}
+		if (!plan.changes.empty()) {
+			box->addButton(tr::lng_nagram_config_apply(),
+				crl::guard(controller, [=] {
+					const auto result = Exchange::Apply(
+						ForDevice(), RegisteredOptions(), plan);
+					if (!result.applied) {
+						box->showToast(result.error);
+						return;
+					}
+					box->closeBox();
+					controller->showToast(tr::lng_nagram_config_imported(tr::now));
+					if (applied) {
+						applied();
+					}
+					if (ranges::any_of(plan.changes, [](const ExchangeChange &change) {
+						const auto key = change.key.toUtf8();
+						const auto info = RegisteredOptions().Find(std::string_view(
+							key.constData(), key.size()));
+						return info && (info->flags
+							& static_cast<unsigned>(Flag::RequiresRestart));
+					})) {
+						ShowRestartPrompt(controller);
+					}
+				}));
+		}
+		box->addButton(tr::lng_cancel(), [=] { box->closeBox(); });
+	}));
 }
 
 } // namespace Nagram

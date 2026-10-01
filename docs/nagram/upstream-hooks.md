@@ -222,6 +222,8 @@ E21 截图在 `history_view_element.h/.cpp`、`history_view_message.cpp`、`hist
 
 无上游改动。批量导入先完成校验，再在同一事件循环内逐键写入并统一通知（见设计文档第 3.3 节）。
 
+云端备份（P3-08，S181）仍无上游改动，全部经公开接口：`Storage::Uploader` 的 `SendMediaType::SecondaryFile` 上传（只取得 `InputFile`，不建文档、不写本地文件）、`MTPmessages_SendMedia`、`MTPmessages_Search`／`MTPmessages_GetMessages`、`DocumentData::save` 与 `Data::Histories::deleteMessages`。没有使用 `ApiWrap::sendFiles`：它不返回消息 ID 也不报告失败，无法确认发送结果和取消；`Storage::PrepareMediaList` 因此也不需要。
+
 ### 2.11 P1／P2 补全第二轮
 
 | 条目 | 上游文件 | 改动 | 方式 |

@@ -20,6 +20,7 @@
 #include "nagram/links/webview.h"
 #include "nagram/network/options.h"
 #include "nagram/snapshot/snapshot.h"
+#include "nagram/sync/model.h"
 #include "nagram/core/diagnostics.h"
 
 #include "core/application.h"
@@ -131,6 +132,7 @@ const Registry &RegisteredOptions() {
 		RegisterServiceOptions(result);
 		AutoTranslate::RegisterOptions(result);
 		RegisterDiagnosticsOptions(result);
+		Sync::RegisterOptions(result);
 		return result;
 	}();
 	return registry;

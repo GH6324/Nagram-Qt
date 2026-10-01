@@ -85,8 +85,8 @@ inline const auto kMainMenuConfig = Option<QByteArray>{
 	ValidMainMenuBytes };
 inline const auto kAppIcon = Option<QString>{
 	"nagram.appIcon", Scope::Device, QString(),
-	Category::Interface, "lng_nagram_app_icon", 0,
-	ValidAppIcon };
+	Category::Interface, "lng_nagram_app_icon",
+	static_cast<unsigned>(Flag::LocalOnly), ValidAppIcon };
 inline constexpr auto kHideAppIconBadge = Option<bool>{
 	"nagram.hideAppIconBadge", Scope::Device, false,
 	Category::Interface, "lng_nagram_hide_app_icon_badge" };

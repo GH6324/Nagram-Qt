@@ -6,6 +6,11 @@
 
 namespace Nagram {
 
+enum class ExchangeTarget {
+	File,
+	Sync,
+};
+
 struct ExchangeChange {
 	QString key;
 	QByteArray before;
@@ -33,11 +38,13 @@ class Exchange final {
 public:
 	[[nodiscard]] static ExchangeExport Export(
 		Options &options,
-		const Registry &registry);
+		const Registry &registry,
+		ExchangeTarget target = ExchangeTarget::File);
 	[[nodiscard]] static ExchangePlan PlanImport(
 		Options &options,
 		const Registry &registry,
-		const QByteArray &data);
+		const QByteArray &data,
+		ExchangeTarget target = ExchangeTarget::File);
 	[[nodiscard]] static ExchangeApply Apply(
 		Options &options,
 		const Registry &registry,

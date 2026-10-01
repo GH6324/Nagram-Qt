@@ -28,10 +28,12 @@ inline constexpr auto kHashtagSearchPageChat = Option<int>{
 
 inline constexpr auto kWebAppWidthScale = Option<int>{
 	"nagram.webAppWidthScale", Scope::Device, 100,
-	Category::Rules, "lng_nagram_web_app_width", 0, ValidWebAppScale };
+	Category::Rules, "lng_nagram_web_app_width",
+	static_cast<unsigned>(Flag::LocalOnly), ValidWebAppScale };
 inline constexpr auto kWebAppHeightScale = Option<int>{
 	"nagram.webAppHeightScale", Scope::Device, 100,
-	Category::Rules, "lng_nagram_web_app_height", 0, ValidWebAppScale };
+	Category::Rules, "lng_nagram_web_app_height",
+	static_cast<unsigned>(Flag::LocalOnly), ValidWebAppScale };
 
 inline constexpr auto kWebAppAndroidPlatform = Option<bool>{
 	"nagram.webAppAndroidPlatform", Scope::Device, false,

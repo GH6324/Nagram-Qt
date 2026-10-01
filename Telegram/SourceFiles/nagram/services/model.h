@@ -17,7 +17,8 @@ namespace Nagram {
 [[nodiscard]] bool ValidServicesBytes(const QByteArray &raw);
 inline const auto kServicesConfig = Option<QByteArray>{
 	"nagram.services", Scope::Device, QByteArray(),
-	Category::Services, "lng_nagram_services", 0, ValidServicesBytes };
+	Category::Services, "lng_nagram_services",
+	static_cast<unsigned>(Flag::LocalOnly), ValidServicesBytes };
 inline constexpr auto kPreferSystemAi = Option<bool>{
 	"nagram.preferSystemAi", Scope::Device, false,
 	Category::Services, "lng_nagram_system_ai",
