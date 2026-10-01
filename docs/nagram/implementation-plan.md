@@ -1,16 +1,3 @@
-| ✅ S174 | `feat(rules): Android platform identity for web apps` | I09 | 全局开关，只改五处网页应用请求的平台参数，User-Agent 不变。条目放进已有的“网页应用”分组，没有新建“网页应用与地图”分组。五种入口的平台值、`Telegram.WebApp.platform`、已打开面板不变、桌面已实现事件均未现场验证 |
-| ☐ S175 | `feat(rules): custom map preview source` | I10 | 未实施：N019 是否做自定义地址模板尚未决定，条目、文案与挂钩均未进入代码 |
-
-不产生提交的条目：A017 噪音抑制、A146 播放器解码器、D115 封面自适应颜色，条件不满足，原因见专项设计 2.6–2.8。**P3-07 的 V2（rebase 到上游 `dev`、完整构建、三平台 CI）未做。**
-| ✅ S173 | `feat(media): export sticker sets to a folder` | F22–F25 | 只含普通贴纸集，卸载后目录保留。清单里的 ID 与哈希写成十进制字符串（设计未规定类型，64 位整数超出 JSON 数值精度）。F23、F24 不单独放说明，与 F25 共用一段。未变化的贴纸集如果目录里的 `set.json` 已不存在会重新导出；目标目录已被另一个贴纸集占用时改用带 ID 的目录名；文件已存在且大小相同时不重新下载。多账号共用一个目录时，各账号的同步会把对方的贴纸集从根清单移除（文件保留，下次同步补回）。目录结构与文件内容、增量同步、改名、同步中更换目录、目录不可写或磁盘写满、断网、双账号、Windows 与 Linux 的路径行为均未现场验证 |
-| ✅ S172 | `feat(media): custom music cover source` | F21 | 已核对 Android 端请求格式（见专项设计 2.3）：不含占位符的地址按 Android 的方式在末尾追加“表演者 - 标题”，另支持 `{artist}`、`{title}` 模板。只接受 `https` 或回环地址的 `http`。下载沿用上游 `webFileLoader` 及其体积上限，失败不回退到 Telegram。localhost 桩的各种响应、特殊字符的实际请求、加载中修改地址、导出文件均未现场验证 |
-| ✅ S171 | `feat(media): turn off audio processing in group calls` | F20 | 设置 tgcalls 已有的 `disableOutgoingAudioProcessing`，创建通话控制器时读取。私聊通话不变。开启后的通话效果、通话中切换、与上游“噪声抑制”同时开启时的实际效果、屏幕共享与直播观看均未现场验证 |
-已实现的步骤（P3-07，2026-10-01）。每个步骤一个提交，macOS arm64 Debug 增量构建与 `test_nagram` 通过；没有启动应用，界面与实际效果未现场核验。
-
-| 步骤 | 提交 | 条目 | 备注 |
-| --- | --- | --- | --- |
-| ✅ S170 | `feat(media): voice message bitrate` | F19 | 只改语音消息录制的 Opus 码率，取值固定为 16、24、48、64、96、128 kbps；圆形视频不变。各档码率的实际文件、录制中修改选项、暂停后继续与试听后发送均未现场验证 |
-
 # 分步实施计划
 
 本文件把 [设置页设计](settings-page.md) 的条目拆成可独立提交的步骤。每个步骤的上游改动见 [上游处理点](upstream-hooks.md)，架构约束见 [设计与路线](design.md)。
@@ -220,6 +207,19 @@ P3 功能不在本计划内。每项先在 `docs/nagram/` 下单独写设计并�
 | ✅ S195 | `docs(nagram): record P3-09 results` | D063 的合并说明；实施记录 | D063 不新增条目：由 F03 与上游实验项 `unlimited-recent-stickers` 覆盖。**P3-09 的 V2（rebase 到上游 `dev`、完整构建、三平台 CI）未做** |
 
 未实施的部分：按用户 ID 估算注册日期（缺少可分发的锚点数据）、标签搜索的“公开帖子”取值（需改上游判断）、其他设备造成的收藏溢出。`Storage::Account::reset()` 不清空内存偏好的问题不在本包范围内，两份本地列表自带用户归属校验。
+
+已实现的步骤（P3-07，2026-10-01）。每个步骤一个提交，macOS arm64 Debug 增量构建与 `test_nagram` 通过；没有启动应用，界面与实际效果未现场核验。
+
+| 步骤 | 提交 | 条目 | 备注 |
+| --- | --- | --- | --- |
+| ✅ S170 | `feat(media): voice message bitrate` | F19 | 只改语音消息录制的 Opus 码率，取值固定为 16、24、48、64、96、128 kbps；圆形视频不变。各档码率的实际文件、录制中修改选项、暂停后继续与试听后发送均未现场验证 |
+| ✅ S171 | `feat(media): turn off audio processing in group calls` | F20 | 设置 tgcalls 已有的 `disableOutgoingAudioProcessing`，创建通话控制器时读取。私聊通话不变。开启后的通话效果、通话中切换、与上游“噪声抑制”同时开启时的实际效果、屏幕共享与直播观看均未现场验证 |
+| ✅ S172 | `feat(media): custom music cover source` | F21 | 已核对 Android 端请求格式（见专项设计 2.3）：不含占位符的地址按 Android 的方式在末尾追加“表演者 - 标题”，另支持 `{artist}`、`{title}` 模板。只接受 `https` 或回环地址的 `http`。下载沿用上游 `webFileLoader` 及其体积上限，失败不回退到 Telegram。localhost 桩的各种响应、特殊字符的实际请求、加载中修改地址、导出文件均未现场验证 |
+| ✅ S173 | `feat(media): export sticker sets to a folder` | F22–F25 | 只含普通贴纸集，卸载后目录保留。清单里的 ID 与哈希写成十进制字符串（设计未规定类型，64 位整数超出 JSON 数值精度）。F23、F24 不单独放说明，与 F25 共用一段。未变化的贴纸集如果目录里的 `set.json` 已不存在会重新导出；目标目录已被另一个贴纸集占用时改用带 ID 的目录名；文件已存在且大小相同时不重新下载。多账号共用一个目录时，各账号的同步会把对方的贴纸集从根清单移除（文件保留，下次同步补回）。目录结构与文件内容、增量同步、改名、同步中更换目录、目录不可写或磁盘写满、断网、双账号、Windows 与 Linux 的路径行为均未现场验证 |
+| ✅ S174 | `feat(rules): Android platform identity for web apps` | I09 | 全局开关，只改五处网页应用请求的平台参数，User-Agent 不变。条目放进已有的“网页应用”分组，没有新建“网页应用与地图”分组。五种入口的平台值、`Telegram.WebApp.platform`、已打开面板不变、桌面已实现事件均未现场验证 |
+| ☐ S175 | `feat(rules): custom map preview source` | I10 | 未实施：N019 是否做自定义地址模板尚未决定，条目、文案与挂钩均未进入代码 |
+
+不产生提交的条目：A017 噪音抑制、A146 播放器解码器、D115 封面自适应颜色，条件不满足，原因见专项设计 2.6–2.8。**P3-07 的 V2（rebase 到上游 `dev`、完整构建、三平台 CI）未做。**
 
 已实现的步骤（P3-06，2026-10-01）。每个分组一个提交，macOS arm64 Debug 增量构建与 `test_nagram` 通过；没有启动应用，网络行为未现场验证。
 

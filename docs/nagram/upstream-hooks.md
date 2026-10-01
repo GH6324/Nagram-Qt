@@ -76,6 +76,7 @@ B25、B26（P3-09 本地置顶）：
 | B25 | `dialogs/dialogs_entry.cpp` | `Entry::computeSortPosition` 在没有上游置顶序号时返回 `Nagram::Chats::LocalPinSortKey(*this, filterId, _sortKeyByDate)`；开关关闭、文件夹视图或不在本地列表时原样返回日期键 | 替换 |
 | B25 | `window/window_peer_menu.cpp` | `PinnedLimitReached(controller, entry)` 在 `FindWastedPin` 未命中后先调用 `TryLocalPin`；`TogglePinnedThread(controller, entry, onToggled)` 的提前返回条件加入 `LocalUnpin`；`Filler::addTogglePin` 在提前返回链末尾加入 `AddLocalUnpinAction` | 拦截 |
 | B25 | `dialogs/ui/dialogs_layout.cpp` | 四处置顶图标判断（`PaintRow` 三处、`RowPainter::Paint` 的 `displayPinnedIcon`）由 `entry->isPinnedDialog(context.filter)` 改为 `Nagram::Chats::ShowsPinnedIcon(entry, context.filter)`。上游在四个布局分支里各自判断，没有公共出口 | 替换 |
+| B25 | `dialogs/dialogs_quick_action.cpp` | 滑动快捷操作的两处置顶判断（`ResolveQuickDialogLabel` 的标签与图标、`PerformQuickDialogAction` 的提示）由 `entry->isPinnedDialog(filterId)` 改为 `Nagram::Chats::ShowsPinnedIcon(entry, filterId)`，本地置顶的对话显示并提示“取消置顶” | 替换 |
 
 不改 `Dialogs::Entry::isPinnedDialog`、`Dialogs::PinnedList`、`ApiWrap::savePinnedOrder`。与服务端的归并订阅上游已有的 `Data::Session::pinnedDialogsOrderUpdated()`，没有新挂钩。
 
@@ -278,7 +279,7 @@ K01、K03 修改后由 `nagram/network/runtime.cpp` 对每个账号的 `MTP::Ins
 
 ## 3. 改动面预估
 
-上表去重后共涉及 85 个上游文件（已逐个确认在当前上游中存在），与旧实现的文件数相当：这些功能本身就分布在这些位置。上游改动以 `#include`、已有判断中的条件及单行调用为主；调用上游类私有方法时允许约 10 行以内的短块，并在提交正文说明原因。每个里程碑统计上游新增行数，解释集中改动，不再要求每个文件只改一行。M2 的 152 行调用／条件主要分布在输入按钮的既有判断处；D14 命令草稿分支与按钮刷新订阅因调用 `HistoryWidget` 私有方法而保留在上游文件。热点文件及其承载的条目：
+当前实际修改了 157 个上游 `Telegram/SourceFiles/` 文件（2026-10-01，`jj diff --from dev@upstream --to @ --summary` 中状态为 `M` 的路径；只计上游 `dev` 中已存在的文件，不含新增的 `nagram/`），整个仓库为 215 个（含品牌图标等二进制资源）：这些功能本身就分布在这些位置。上游改动以 `#include`、已有判断中的条件及单行调用为主；调用上游类私有方法时允许约 10 行以内的短块，并在提交正文说明原因。每个里程碑统计上游新增行数，解释集中改动，不再要求每个文件只改一行。M2 的 152 行调用／条件主要分布在输入按钮的既有判断处；D14 命令草稿分支与按钮刷新订阅因调用 `HistoryWidget` 私有方法而保留在上游文件。热点文件及其承载的条目：
 
 | 文件 | 条目数 |
 | --- | --- |
