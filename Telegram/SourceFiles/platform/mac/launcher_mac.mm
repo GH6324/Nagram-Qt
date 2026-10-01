@@ -8,6 +8,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "platform/mac/launcher_mac.h"
 
 #include "core/crash_reports.h"
+#include "nagram/core/relaunch.h"
 #include "core/update_checker.h"
 #include "base/base_file_utilities.h"
 #include "base/platform/base_platform_file_utilities.h"
@@ -42,6 +43,22 @@ bool Launcher::launchUpdater(UpdaterLaunch action) {
 		return true;
 	}
 #endif // OS_MAC_STORE
+
+	if (action == UpdaterLaunch::JustRelaunch) {
+		auto arguments = QStringList();
+		if (customWorkingDir()) {
+			arguments << u"-workdir"_q << cWorkingDir();
+		}
+		if (cRestartingToSettings()) arguments << u"-tosettings"_q;
+		if (Logs::DebugEnabled()) arguments << u"-debug"_q;
+		if (cStartInTray()) arguments << u"-startintray"_q;
+		if (cDataFile() != u"data"_q) {
+			arguments << u"-key"_q << cDataFile();
+		}
+		if (Nagram::RelaunchWithoutUpdater(arguments)) {
+			return true;
+		}
+	}
 
 	NSString *path = @"", *args = @"";
 	@try {

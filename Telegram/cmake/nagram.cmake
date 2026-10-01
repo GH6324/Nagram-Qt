@@ -12,6 +12,7 @@ set(nagram_sources
     nagram/core/exchange.cpp
     nagram/core/options.cpp
     nagram/core/diagnostics.cpp
+    nagram/core/relaunch.cpp
     nagram/display/view_refresher.cpp
     nagram/interface/main_menu.cpp
     nagram/interface/main_menu_model.cpp
