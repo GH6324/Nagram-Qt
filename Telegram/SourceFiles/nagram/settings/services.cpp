@@ -4,6 +4,7 @@
 #include "core/application.h"
 #include "core/file_utilities.h"
 #include "lang/lang_keys.h"
+#include "nagram/services/auto_translate.h"
 #include "nagram/services/context_model.h"
 #include "nagram/services/credentials.h"
 #include "nagram/services/presets.h"
@@ -770,6 +771,57 @@ const auto kMeta = BuildHelper({
 		.title = tr::lng_nagram_chat_translation(),
 		.keywords = { u"auto translate"_q, u"translation"_q },
 	});
+	const auto session = builder.session();
+	builder.addButton({
+		.id = u"nagram/services/auto-translate"_q,
+		.title = tr::lng_nagram_auto_translate(),
+		.st = &st::settingsButtonNoIcon,
+		.label = ForDevice().Value(AutoTranslate::kDeviceMode)
+			| rpl::map([](int value) {
+				return AutoTranslate::ModeLabel(
+					AutoTranslate::ValidMode(value)
+						? AutoTranslate::Mode(value)
+						: AutoTranslate::Mode::Inherit,
+					tr::lng_nagram_auto_translate_inherit(tr::now));
+			}),
+		.onClick = [=] {
+			controller->show(Box(AutoTranslate::DeviceModeBox));
+		},
+		.keywords = { u"auto translate"_q, u"translation"_q },
+	});
+	builder.addDividerText(AutoTranslate::AboutValue(session));
+	builder.addButton({
+		.id = u"nagram/services/auto-translate-account"_q,
+		.title = tr::lng_nagram_auto_translate_account(),
+		.st = &st::settingsButtonNoIcon,
+		.label = ForAccount(session).Value(AutoTranslate::kAccountMode)
+			| rpl::map([](int value) {
+				return AutoTranslate::ModeLabel(
+					AutoTranslate::ValidMode(value)
+						? AutoTranslate::Mode(value)
+						: AutoTranslate::Mode::Inherit,
+					tr::lng_nagram_auto_translate_account_inherit(tr::now));
+			}),
+		.onClick = [=] {
+			controller->show(Box(AutoTranslate::AccountModeBox, session));
+		},
+		.keywords = { u"auto translate"_q, u"account"_q },
+	});
+	builder.addButton({
+		.id = u"nagram/services/auto-translate-chats"_q,
+		.title = tr::lng_nagram_auto_translate_chats(),
+		.st = &st::settingsButtonNoIcon,
+		.label = ForAccount(session).Value(AutoTranslate::kChats)
+			| rpl::map([](const QByteArray &raw) {
+				return QString::number(AutoTranslate::ParseChats(
+					raw).value_or(AutoTranslate::ChatModes()).size());
+			}),
+		.onClick = [=] {
+			controller->show(Box(AutoTranslate::ChatsBox, session));
+		},
+		.keywords = { u"auto translate"_q, u"chat"_q },
+	});
+	builder.addDividerText(tr::lng_nagram_auto_translate_chats_about());
 	const auto chatButton = builder.addButton({
 		.id = u"nagram/services/chat-translation-service"_q,
 		.title = tr::lng_nagram_chat_translation_service(),

@@ -268,6 +268,25 @@ std::unique_ptr<Ui::TranslateProvider> CreateChatTranslateProvider(
 	return std::make_unique<ChatTranslateProvider>(history);
 }
 
+bool ChatTranslationServiceActive() {
+	if (!ForDevice().Get(kChatTranslationUseService)) {
+		return false;
+	}
+	const auto settings = Services();
+	if (!settings) {
+		return false;
+	}
+	const auto selected = settings->value(u"translation"_q).toString();
+	switch (ChooseChatTranslationMode(true, true, selected)) {
+	case ChatTranslationMode::Upstream: return false;
+	case ChatTranslationMode::System:
+		return Platform::IsTranslateProviderAvailable();
+	case ChatTranslationMode::External:
+		return FindService(*settings, selected).has_value();
+	}
+	Unexpected("Invalid chat translation mode.");
+}
+
 void CancelChatTranslation(Ui::TranslateProvider *provider) {
 	if (const auto chat = dynamic_cast<ChatTranslateProvider*>(provider)) {
 		chat->cancel();

@@ -11,6 +11,7 @@
 #include "nagram/privacy/options.h"
 #include "nagram/privacy/alias.h"
 #include "nagram/messages/options.h"
+#include "nagram/services/auto_translate_model.h"
 #include "nagram/services/model.h"
 #include "nagram/filters/model.h"
 #include "nagram/links/model.h"
@@ -128,6 +129,7 @@ const Registry &RegisteredOptions() {
 		Network::RegisterOptions(result);
 		Snapshot::RegisterOptions(result);
 		RegisterServiceOptions(result);
+		AutoTranslate::RegisterOptions(result);
 		RegisterDiagnosticsOptions(result);
 		return result;
 	}();

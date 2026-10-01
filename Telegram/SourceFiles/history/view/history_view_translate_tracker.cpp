@@ -24,6 +24,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "iv/iv_rich_page.h"
 #include "lang/translate_provider.h"
 #include "main/main_session.h"
+#include "nagram/services/auto_translate.h"
 #include "nagram/services/chat_translation.h"
 #include "spellcheck/platform/platform_language.h"
 
@@ -72,7 +73,13 @@ void TranslateTracker::setup() {
 		Core::App().settings().translateChatEnabledValue(),
 		Data::AmPremiumValue(&_history->session()),
 		std::move(autoTranslationValue),
-		_1 && (_2 || _3));
+		Nagram::AutoTranslate::StateValue(_history),
+		[](bool enabled, bool premium, auto automatic, auto state) {
+			return Nagram::AutoTranslate::Tracking(
+				enabled,
+				premium || automatic,
+				state);
+		});
 	_trackingLanguage.value() | rpl::on_next([=](bool tracking) {
 		_trackingLifetime.destroy();
 		if (tracking) {

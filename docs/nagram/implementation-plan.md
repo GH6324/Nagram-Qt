@@ -246,6 +246,8 @@ P3 功能不在本计划内。每项先在 `docs/nagram/` 下单独写设计并�
 | ✅ S141 | `feat(ai): recent messages as context for LLM translation` | H03（上下文） | 本机级开关 `nagram.translationContext`（设计为实例级 `useContext`，按要求改为本机级）。只用于整条消息的手动翻译；目标或入选消息禁止转发时不带上下文，不受 G13 影响。桩服务收到的请求体、话题视图中取不到相邻消息时退回无上下文、选中文字与禁止复制的对话不带上下文均未现场验证 |
 | ✅ S142 | `feat(ai): summarize messages with an LLM service` | H10、E36 | 菜单动作加预览框，不替换气泡内的上游摘要按钮；结果只显示，不发送、不写草稿。实例增加“总结提示词”。预览框的生成、取消、重试、复制，消息在预览期间被删除，H10 关闭或所选实例被删除后菜单无此项，多选的条数与字数提示均未现场验证 |
 | ✅ S143 | `feat(ai): whole-chat translation through the selected service` | H09 | 新的转发 provider 自己实现批量请求（顺序队列、每次最多 50 段与 96 KiB、单条 16 KiB、网络错误重试一次、连续 3 批失败熔断）；原 `ExternalTranslateProvider` 不再被 `TranslateTracker` 使用。工厂参数是 `history`（设计为 `session`），用来在重新切换翻译时解除熔断。`lng_nagram_services_about` 改为指向 H09。桩服务收到的正文范围、取消时连接被中止、熔断与恢复、请求中修改服务、系统翻译不可用的提示、H09 关闭时与上游的对照、两套消息视图均未现场验证 |
+| ✅ S144 | `feat(ai): auto-translate modes for device, account and chat` | H06–H08、聊天菜单入口 | 本机、账号、对话三层三态；非 Premium 账号的“开启”只在 H09 开启并选了系统翻译或外部实例时生效（设计第 8 节问题 1 的建议）。“关闭”不写服务端。H08 是对话框，不是子页。对话已打开后改为“开启”要重新打开对话才自动翻译。两套消息视图中的开／关／跟随、对话菜单子菜单、对话选择框、双账号与相同 peer ID、退出账号后覆盖清除、非 Premium 的不生效提示均未现场验证 |
+| ☐ S144（话题层级） | — | — | 未实施：上游只按 `History` 保存翻译状态，话题与所属群组共用一个翻译栏，补齐需要改约 20 处上游读取点（专项设计 2.1、第 8 节问题 2）。条目、文案与存储字段均未进入代码，覆盖映射 v1 不含话题字段 |
 
 | 包 | 专项设计 | 步骤 | 设置页条目 |
 | --- | --- | --- | --- |

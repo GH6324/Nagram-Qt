@@ -10,6 +10,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "nagram/privacy/alias.h"
 #include "nagram/privacy/admin_shortcuts.h"
 #include "nagram/filters/menu.h"
+#include "nagram/services/auto_translate.h"
 #include "nagram/chats/recent_chats.h"
 #include "nagram/chats/local_pins.h"
 
@@ -1970,6 +1971,7 @@ void Filler::fillHistoryActions() {
 	addDirectMessages();
 	addExportChat();
 	addTranslate();
+	Nagram::AutoTranslate::AddPeerMenu(_addAction, _controller, _peer);
 	Nagram::Filters::AddScopeAction(_addAction, _controller, _peer, nullptr);
 	addReport();
 	addClearHistory();

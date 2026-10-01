@@ -8,6 +8,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "history/history.h"
 #include "nagram/chats/sort.h"
 #include "nagram/privacy/alias.h"
+#include "nagram/services/auto_translate.h"
 
 #include "history/view/history_view_element.h"
 #include "history/view/history_view_item_preview.h"
@@ -4523,8 +4524,9 @@ void History::translateOfferFrom(LanguageId id) {
 	} else if (!_translation) {
 		_translation = std::make_unique<HistoryTranslation>(this, id);
 		using Flag = PeerData::TranslationFlag;
-		if (peer->autoTranslation()
-			&& (peer->translationFlag() == Flag::Enabled)) {
+		if ((peer->autoTranslation()
+			&& (peer->translationFlag() == Flag::Enabled))
+			|| Nagram::AutoTranslate::Enabled(this)) {
 			translateTo(Core::App().settings().translateTo());
 		}
 	} else {

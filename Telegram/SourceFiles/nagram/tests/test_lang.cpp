@@ -13,6 +13,7 @@ void TestOptions();
 void TestSpacing();
 void TestServices();
 void TestChatTranslation();
+void TestAutoTranslate();
 void TestFilters();
 void TestFilterScopes();
 void TestLinks();
@@ -167,6 +168,7 @@ int main() {
 		TestSpacing();
 		TestServices();
 		TestChatTranslation();
+		TestAutoTranslate();
 		TestFilters();
 		TestFilterScopes();
 		TestLinks();

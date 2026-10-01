@@ -110,6 +110,16 @@ enum class Mode { Inherit, On, Off };
 
 **关闭时与上游一致**：三个层级默认都是 `Inherit`，`Tracking` 与 `Enabled` 退化为上游原表达式；对话映射为空时不读取、不写入任何账号数据。
 
+**实施说明（S144）**
+
+- 代码在 `nagram/services/auto_translate.{h,cpp}` 与 `auto_translate_model.{h,cpp}`。上游挂钩用的名字与上表略有不同：`TranslateTracker::setup()` 的 `rpl::combine` 增加 `Nagram::AutoTranslate::StateValue(_history)`（解析后的模式加“整页翻译服务是否可用”），映射函数调用 `Nagram::AutoTranslate::Tracking(enabled, premium || automatic, state)`。
+- 第 8 节问题 1 按建议取值：`On` 只在上游条件成立（Premium 或频道自动翻译），或 H09 开启且 H01 选了系统翻译（本机可用）或有效的外部实例时让跟踪生效；否则等同 `Inherit`，H06 的说明下方显示不生效的原因。不检查外部实例的密钥是否可读（读取钥匙串会弹出系统授权），密钥缺失时由 H09 的请求报凭据错误。
+- `Enabled(history)` 在对话的服务端翻译开关为 `Disabled` 时返回假：用户在 Telegram 里对该对话选过“不翻译”时不自动翻译。
+- 模式在对话已打开且已出现翻译栏之后改为 `On` 时，不会立即翻译，重新打开对话后生效（自动翻译只在首次识别出语言时触发，与上游频道自动翻译一致）。
+- 对话覆盖的 peer ID 校验在模型里按序列化格式直接判断（标志位、类型为用户／群组／频道、ID 非零、十进制规范形式），不依赖 `data/data_peer_id.h`，以便进入 `test_nagram`。`{"version":1,"chats":{}}` 可以读入，写出时仍是空字节。
+- H08 是设置页里的一个对话框（不是子页）：列出已覆盖的对话，点击一行选 跟随账号设置／开启／关闭；“添加对话”打开对话选择框，不含收藏夹。达到 2,000 个对话上限时提示 `lng_nagram_auto_translate_limit`。覆盖数据无法读取时显示提示，原字节保留到用户下一次保存为止。
+- 对话菜单的“自动翻译”子菜单加在聊天的菜单里；话题菜单没有这一项。
+
 **话题层级（条件不满足）**
 
 `History::_translation` 每个 `History` 一份，`translatedTo()` 在上游有 20 余处读取（`TranslateBar`、`TranslateTracker::startBunch()`、`HistoryItem::translationDone()`、`Api::Transcribes::summarize()`、消息菜单等）。话题与所属群组共用同一个翻译状态和同一个翻译栏：话题设为“开”而群组不是“开”时，翻译会扩散到整个群；话题设为“关”时翻译栏仍显示群组状态，与实际不符。

@@ -97,6 +97,8 @@ set(nagram_sources
     nagram/settings/messages.cpp
     nagram/settings/services.cpp
     nagram/services/credentials.cpp
+    nagram/services/auto_translate.cpp
+    nagram/services/auto_translate_model.cpp
     nagram/services/chat_translation.cpp
     nagram/services/chat_translation_model.cpp
     nagram/services/context.cpp
@@ -218,6 +220,7 @@ if (DESKTOP_APP_TEST_APPS)
         nagram/tests/test_spacing.cpp
         nagram/tests/test_services.cpp
         nagram/tests/test_chat_translation.cpp
+        nagram/tests/test_auto_translate.cpp
         nagram/tests/test_filters.cpp
         nagram/tests/test_filter_scopes.cpp
         nagram/tests/test_links.cpp
@@ -232,6 +235,7 @@ if (DESKTOP_APP_TEST_APPS)
         nagram/core/regex.cpp
         nagram/interface/main_menu_model.cpp
         nagram/menu/model.cpp
+        nagram/services/auto_translate_model.cpp
         nagram/services/chat_translation_model.cpp
         nagram/services/context_model.cpp
         nagram/services/model.cpp
