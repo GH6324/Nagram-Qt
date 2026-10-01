@@ -155,6 +155,14 @@ F26、F27（P3-09 本机收藏）：
 
 不改 `FavedSetId` 集合的内容与持久化、`specialSetReceived`、`Api::CountFavedStickersHash`。与服务端的归并订阅上游已有的 `Data::Stickers::updated(StickersType::Stickers)`；本机集合的贴纸数据用上游公开的 `Serialize::Document::writeToStream` / `readStickerFromStream` 读写。
 
+P3-07 外部媒体后端：
+
+| 条目 | 上游位置 | 需要处理的上游逻辑 | 方式 |
+| --- | --- | --- | --- |
+| F19 | `media/audio/media_audio_capture.cpp` | `Instance::start` 在主线程读取 `Nagram::Media::VoiceRecordBitrate(32000)` 并传给 `Instance::Inner::start`（新增 `int bitrate` 参数和 `_bitrate` 成员）；`Instance::Inner::initializeFFmpeg` 的 `bit_rate` 改用 `_bitrate`。约 6 行：注册表只能在主线程读取，不能在采集线程里调用 | 替换 |
+
+选项为“跟随 Telegram”时 `VoiceRecordBitrate(32000)` 原样返回 32000。圆形视频录制的码率不改。
+
 ### 2.7 隐私与资料
 
 | 编号 | 上游位置 | 需要处理的上游逻辑 | 方式 |

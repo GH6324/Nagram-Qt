@@ -603,3 +603,7 @@
 "lng_nagram_custom_doh_invalid" = "请输入不带查询参数的 https 地址。";
 "lng_nagram_custom_doh_failed" = "无法访问自定义 DoH 地址：{error}。不会改用内置服务。";
 "lng_nagram_custom_doh_bad_response" = "自定义 DoH 地址没有返回 JSON 格式的 DNS 结果。不会改用内置服务。";
+"lng_nagram_recording_calls" = "录制与通话";
+"lng_nagram_voice_record_bitrate" = "语音消息码率";
+"lng_nagram_voice_record_bitrate_about" = "对之后录制的语音消息生效。码率越高，文件越大。";
+"lng_nagram_voice_record_bitrate_value" = "{value} kbps";

@@ -18,6 +18,7 @@ void TestPrivacy();
 void TestP3Misc();
 void TestLocalLists();
 void TestNetwork();
+void TestMedia();
 
 namespace {
 
@@ -168,6 +169,7 @@ int main() {
 		TestP3Misc();
 		TestLocalLists();
 		TestNetwork();
+		TestMedia();
 		const auto root = std::string(NAGRAM_LANG_SOURCE_DIR);
 		const auto upstream = ReadStrings(root + "/lang.strings", false);
 		const auto english = ReadStrings(root + "/nagram/nagram.strings", true);

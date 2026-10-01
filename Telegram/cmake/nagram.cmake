@@ -45,6 +45,7 @@ set(nagram_sources
     nagram/menu/reading.cpp
     nagram/menu/selection.cpp
 	nagram/media/sticker_catalog.cpp
+    nagram/media/audio.cpp
     nagram/media/extras.cpp
     nagram/media/local_faved.cpp
     nagram/media/local_faved_model.cpp
@@ -206,6 +207,7 @@ if (DESKTOP_APP_TEST_APPS)
         nagram/tests/test_p3_misc.cpp
         nagram/tests/test_local_lists.cpp
         nagram/tests/test_network.cpp
+        nagram/tests/test_media.cpp
         nagram/compose/spacing.cpp
         nagram/core/exchange.cpp
         nagram/interface/main_menu_model.cpp

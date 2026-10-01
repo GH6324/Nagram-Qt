@@ -1,6 +1,7 @@
 #include "nagram/settings/media.h"
 
 #include "nagram/media/options.h"
+#include "nagram/media/backend_options.h"
 #include "nagram/media/local_faved.h"
 #include "nagram/media/local_faved_model.h"
 #include "nagram/media/sticker_catalog.h"
@@ -124,6 +125,30 @@ void RecentLimitBox(not_null<Ui::GenericBox*> box) {
 	) | rpl::on_next([=](auto) { submit(); }, field->lifetime());
 	box->addButton(tr::lng_settings_save(), submit);
 	box->addButton(tr::lng_cancel(), [=] { box->closeBox(); });
+}
+
+QString VoiceBitrateLabel(int value) {
+	return value
+		? tr::lng_nagram_voice_record_bitrate_value(
+			tr::now,
+			lt_value,
+			QString::number(value))
+		: tr::lng_nagram_preview_follow(tr::now);
+}
+
+void VoiceBitrateBox(not_null<Ui::GenericBox*> box) {
+	box->setTitle(tr::lng_nagram_voice_record_bitrate());
+	const auto group = std::make_shared<Ui::RadiobuttonGroup>(
+		ForDevice().Get(Media::kVoiceRecordBitrate));
+	for (const auto value : { 0, 16, 24, 48, 64, 96, 128 }) {
+		box->addRow(object_ptr<Ui::Radiobutton>(
+			box, group, value, VoiceBitrateLabel(value),
+			st::settingsSendType), st::settingsSendTypePadding);
+	}
+	group->setChangedCallback([=](int value) {
+		Expects(ForDevice().Set(Media::kVoiceRecordBitrate, value));
+		box->closeBox();
+	});
 }
 
 const auto kMeta = BuildHelper({
@@ -257,6 +282,21 @@ const auto kMeta = BuildHelper({
 		.onClick = [=] { ShowStickerCatalog(controller); },
 		.keywords = { u"sticker"_q, u"catalog"_q },
 	});
+	builder.addSubsectionTitle({
+		.id = u"nagram/media/recording-calls"_q,
+		.title = tr::lng_nagram_recording_calls(),
+		.keywords = { u"recording"_q, u"calls"_q },
+	});
+	builder.addButton({
+		.id = u"nagram/media/voice-bitrate"_q,
+		.title = tr::lng_nagram_voice_record_bitrate(),
+		.st = &st::settingsButtonNoIcon,
+		.label = ForDevice().Value(Media::kVoiceRecordBitrate)
+			| rpl::map(VoiceBitrateLabel),
+		.onClick = [=] { controller->show(Box(VoiceBitrateBox)); },
+		.keywords = { u"voice"_q, u"bitrate"_q, u"recording"_q },
+	});
+	builder.addDividerText(tr::lng_nagram_voice_record_bitrate_about());
 });
 
 const SectionBuildMethod MediaSection::kBuild = kMeta.build;

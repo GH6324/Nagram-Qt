@@ -607,3 +607,7 @@ Telegram/cmake/td_lang.cmake. Every key uses the lng_nagram_ prefix.
 "lng_nagram_custom_doh_invalid" = "Enter an https address without a query string.";
 "lng_nagram_custom_doh_failed" = "The custom DoH address could not be reached: {error}. Built-in services are not used.";
 "lng_nagram_custom_doh_bad_response" = "The custom DoH address did not return a JSON DNS answer. Built-in services are not used.";
+"lng_nagram_recording_calls" = "Recording and calls";
+"lng_nagram_voice_record_bitrate" = "Voice message bitrate";
+"lng_nagram_voice_record_bitrate_about" = "Applies to voice messages recorded from now on. A higher bitrate makes larger files.";
+"lng_nagram_voice_record_bitrate_value" = "{value} kbps";
