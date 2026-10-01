@@ -33,7 +33,7 @@ class Options;
 [[nodiscard]] Options &ForDevice();
 
 enum class Scope { Device, Account };
-enum class Category { Interface, Chats, Messages, Compose, Menu, Media, Privacy, Services, Rules };
+enum class Category { Interface, Chats, Messages, Compose, Menu, Media, Privacy, Services, Rules, Network };
 enum class Flag : unsigned {
 	None = 0,
 	RequiresRestart = 1,

@@ -65,6 +65,8 @@ set(nagram_sources
     nagram/links/open.cpp
     nagram/links/behavior.cpp
     nagram/links/settings.cpp
+    nagram/network/model.cpp
+    nagram/network/runtime.cpp
     nagram/snapshot/snapshot.cpp
     nagram/privacy/profile.cpp
     nagram/privacy/alias.cpp
@@ -75,6 +77,7 @@ set(nagram_sources
     nagram/privacy/protection_model.cpp
     nagram/settings/home.cpp
     nagram/settings/rules.cpp
+    nagram/settings/network.cpp
     nagram/settings/chats.cpp
     nagram/settings/compose.cpp
 	nagram/settings/config.cpp
@@ -202,6 +205,7 @@ if (DESKTOP_APP_TEST_APPS)
         nagram/tests/test_privacy.cpp
         nagram/tests/test_p3_misc.cpp
         nagram/tests/test_local_lists.cpp
+        nagram/tests/test_network.cpp
         nagram/compose/spacing.cpp
         nagram/core/exchange.cpp
         nagram/interface/main_menu_model.cpp
@@ -212,6 +216,7 @@ if (DESKTOP_APP_TEST_APPS)
         nagram/privacy/protection_model.cpp
         nagram/chats/local_pins_model.cpp
         nagram/media/local_faved_model.cpp
+        nagram/network/model.cpp
     )
 
     target_include_directories(test_nagram PRIVATE

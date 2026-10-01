@@ -584,3 +584,13 @@
 "lng_nagram_debug_logs_disable" = "关闭调试日志？";
 "lng_nagram_show_logs" = "在文件夹中显示日志文件";
 "lng_nagram_logs_note" = "错误提示只显示代码和类型。日志只保存在本机，分享前请先检查内容。";
+"lng_nagram_network" = "网络";
+"lng_nagram_network_connection" = "连接";
+"lng_nagram_ip_strategy" = "IP 版本";
+"lng_nagram_ip_strategy_ipv4_only" = "仅 IPv4";
+"lng_nagram_ip_strategy_prefer_ipv4" = "优先 IPv4";
+"lng_nagram_ip_strategy_prefer_ipv6" = "优先 IPv6";
+"lng_nagram_ip_strategy_ipv6_only" = "仅 IPv6";
+"lng_nagram_ip_strategy_about" = "修改后重新连接。选择“仅 IPv6”时，网络不支持 IPv6 将无法连接。非默认值优先于代理设置中的“尝试通过 IPv6 连接”。";
+"lng_nagram_disable_backup_addresses" = "不请求备用服务器地址";
+"lng_nagram_disable_backup_addresses_about" = "无法连接时不再通过 DNS 和云服务查询备用地址。使用代理时 Telegram 本来就不请求。";

@@ -13,6 +13,7 @@
 #include "nagram/settings/privacy.h"
 #include "nagram/settings/restart.h"
 #include "nagram/settings/rules.h"
+#include "nagram/settings/network.h"
 #include "nagram/settings/services.h"
 #include "core/application.h"
 #include "core/file_utilities.h"
@@ -83,6 +84,7 @@ Settings::Type CategorySection(Category category) {
 	case Category::Privacy: return PrivacyId();
 	case Category::Services: return ServicesId();
 	case Category::Rules: return RulesId();
+	case Category::Network: return NetworkId();
 	}
 	Unexpected("Invalid Nagram option category.");
 }

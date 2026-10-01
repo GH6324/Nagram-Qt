@@ -9,6 +9,7 @@
 #include "nagram/settings/privacy.h"
 #include "nagram/settings/services.h"
 #include "nagram/settings/rules.h"
+#include "nagram/settings/network.h"
 
 #include "boxes/about_box.h"
 #include "core/click_handler_types.h"
@@ -114,6 +115,12 @@ const auto kMeta = BuildHelper({
 		.targetSection = RulesId(),
 		.icon = { &st::menuIconChatBubble },
 		.keywords = { u"filter"_q, u"link"_q },
+	});
+	builder.addSectionButton({
+		.title = tr::lng_nagram_network(),
+		.targetSection = NetworkId(),
+		.icon = { &st::menuIconNetwork },
+		.keywords = { u"network"_q, u"connection"_q, u"IPv6"_q },
 	});
 	builder.addSectionButton({
 		.title = tr::lng_nagram_config_title(),

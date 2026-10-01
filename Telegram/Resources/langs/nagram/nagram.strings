@@ -588,3 +588,13 @@ Telegram/cmake/td_lang.cmake. Every key uses the lng_nagram_ prefix.
 "lng_nagram_debug_logs_disable" = "Disable debug logs?";
 "lng_nagram_show_logs" = "Show log file in folder";
 "lng_nagram_logs_note" = "Error codes show only the code and type. Logs stay on this device; check them before sharing.";
+"lng_nagram_network" = "Network";
+"lng_nagram_network_connection" = "Connection";
+"lng_nagram_ip_strategy" = "IP version";
+"lng_nagram_ip_strategy_ipv4_only" = "IPv4 only";
+"lng_nagram_ip_strategy_prefer_ipv4" = "Prefer IPv4";
+"lng_nagram_ip_strategy_prefer_ipv6" = "Prefer IPv6";
+"lng_nagram_ip_strategy_ipv6_only" = "IPv6 only";
+"lng_nagram_ip_strategy_about" = "Reconnects after a change. With IPv6 only, a network without IPv6 can't connect. A non-default value overrides “Try connecting through IPv6” in proxy settings.";
+"lng_nagram_disable_backup_addresses" = "Don't request backup server addresses";
+"lng_nagram_disable_backup_addresses_about" = "Stops looking up backup addresses through DNS and cloud services when the connection fails. Telegram already skips this while a proxy is used.";

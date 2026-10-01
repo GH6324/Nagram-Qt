@@ -231,6 +231,20 @@ E21 截图在 `history_view_element.h/.cpp`、`history_view_message.cpp`、`hist
 | G12 | `boxes/moderate_messages_box.cpp` | 入口处合并默认勾选 | 读取 |
 | J05 | `mtproto/mtp_instance.h/.cpp`、`main/main_session.cpp` | 新增 `SetRpcErrorObserver`，在未被默认处理的 RPC 错误记录日志后通知；会话创建时安装 Nagram 观察者 | 读取 |
 
+### 2.12 网络（P3-06）
+
+Nagram 侧代码在 `nagram/network/`：`model.*` 是纯逻辑，`runtime.*` 读取注册表并向上游提供取值函数。会话线程读取的值由主线程写入原子变量。
+
+| 条目 | 上游文件 | 改动 | 方式 |
+| --- | --- | --- | --- |
+| K01 | `mtproto/session.cpp` | `Session::refreshOptions` 的 `useIPv4`、`useIPv6` 改为 `Nagram::Network::UseIPv4(true)`、`UseIPv6(settings.tryIPv6())` | 替换 |
+| K01 | `mtproto/session_private.cpp` | `SessionPrivate::appendTestConnection` 的 `OptionPreferIPv6.value()` 包一层 `Nagram::Network::PreferIPv6(...)`（会话线程，读原子值） | 替换 |
+| K01 | `mtproto/mtp_instance.cpp` | `Instance::Private::resolveProxyDomain` 的回调把 `ips` 先经 `Nagram::Network::OrderIps(ips)` 过滤与排序 | 替换 |
+| K01 | `boxes/connection_box.cpp`（两处）、`core/proxy_rotation_manager.cpp`（一处） | `MTP::StartProxyCheck` 的 `tryIPv6` 实参包一层 `Nagram::Network::UseIPv6(...)` | 替换 |
+| K02 | `mtproto/config_loader.cpp` | `ConfigLoader::refreshSpecialLoader` 与 `sendSpecialRequest` 的条件增加 `Nagram::Network::BackupAddressesDisabled()` | 读取 |
+
+K01 修改后由 `nagram/network/runtime.cpp` 对每个账号的 `MTP::Instance` 调用 `restart()`，不经过上游文件。策略为 0 时各函数原样返回传入值。
+
 ## 3. 改动面预估
 
 上表去重后共涉及 85 个上游文件（已逐个确认在当前上游中存在），与旧实现的文件数相当：这些功能本身就分布在这些位置。上游改动以 `#include`、已有判断中的条件及单行调用为主；调用上游类私有方法时允许约 10 行以内的短块，并在提交正文说明原因。每个里程碑统计上游新增行数，解释集中改动，不再要求每个文件只改一行。M2 的 152 行调用／条件主要分布在输入按钮的既有判断处；D14 命令草稿分支与按钮刷新订阅因调用 `HistoryWidget` 私有方法而保留在上游文件。热点文件及其承载的条目：
