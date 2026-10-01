@@ -204,6 +204,9 @@ P3 功能不在本计划内。每项先在 `docs/nagram/` 下单独写设计并�
 | ✅ S192 | `feat(privacy): registration date on profiles` | G17 | 只显示 Telegram 已下发的注册月份；按 ID 估算缺少锚点数据，不做。上游没有注册月份专用的更新标志，随 `barSettingsValue()` 刷新。下发了注册月份的用户资料页未现场验证 |
 | ✅ S193 | `feat(chats): local pins beyond the server limit` | B25、B26 | 本地集合按账号保存并带用户归属校验（`nagram/core/owned_json.h`，S194 复用），上限 100；沿用上游置顶图标，不新增图标资源。置顶到上限后的本机置顶、归档列表、其他设备置顶后的归并、断线重连、双账号与退出账号均未现场验证 |
 | ✅ S194 | `feat(media): keep overflowed favorite stickers locally` | F26、F27 | 只保留本机操作挤出的贴纸，上限 200；其他设备造成的溢出不保留。每个条目记录写入时的应用版本（设计为整份列表记录一个），便于逐项读取。服务端是否同样丢弃最旧一项、收藏到上限后的保留、取消本机收藏、重启后恢复、其他设备收藏后的归并、双账号均未现场验证 |
+| ✅ S195 | `docs(nagram): record P3-09 results` | D063 的合并说明；实施记录 | D063 不新增条目：由 F03 与上游实验项 `unlimited-recent-stickers` 覆盖。**P3-09 的 V2（rebase 到上游 `dev`、完整构建、三平台 CI）未做** |
+
+未实施的部分：按用户 ID 估算注册日期（缺少可分发的锚点数据）、标签搜索的“公开帖子”取值（需改上游判断）、其他设备造成的收藏溢出。`Storage::Account::reset()` 不清空内存偏好的问题不在本包范围内，两份本地列表自带用户归属校验。
 
 | 包 | 专项设计 | 步骤 | 设置页条目 |
 | --- | --- | --- | --- |
@@ -213,7 +216,7 @@ P3 功能不在本计划内。每项先在 `docs/nagram/` 下单独写设计并�
 | P3-06 | [网络](p3-06-network.md) | S160–S162 | K01–K06 |
 | P3-07 | [外部媒体后端](p3-07-media-backends.md) | S170–S175 | F19–F25、I09–I10 |
 | P3-08 | [云同步与独立服务](p3-08-sync-services.md) | S180–S182 | J08–J11 |
-| P3-09 与 F16 未归包项 | [低频高级项](p3-09-advanced-misc.md) | S190–S195 | B25–B26、F26–F27、G17、I11–I15 |
+| P3-09 与 F16 未归包项（已实现） | [低频高级项](p3-09-advanced-misc.md) | S190–S195 | B25–B26、F26–F27、G17、I11–I15 |
 
 ## 5. 每个功能提交的检查清单
 

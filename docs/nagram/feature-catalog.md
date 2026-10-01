@@ -518,7 +518,7 @@
 | D060 | 全局：底部状态使用图标 | `replaceBottomInfoWithIcons` | `bool` / `true` | 纳入/合并 · [F03](requirements.md#f03) |
 | D061 | 全局：删除消息标记 | `deletedMark` | `QString` / `🧹` | 纳入/合并 · [F12](requirements.md#f12)；暂不实现 |
 | D062 | 全局：编辑消息标记 | `editedMark` | `QString` / `构造时确定/空值` | 纳入/合并 · [F03](requirements.md#f03) |
-| D063 | 全局：扩展最近贴纸容量 | `unlimitedRecentStickers` | `bool` / `false` | 纳入/合并 · [F06](requirements.md#f06) |
+| D063 | 全局：扩展最近贴纸容量 | `unlimitedRecentStickers` | `bool` / `false` | 纳入/合并 · [F06](requirements.md#f06)；桌面与 D064 合并为设置页 F03，不单设条目 |
 | D064 | 全局：最近贴纸数量 | `recentStickersCount` | `int` / `100` | 纳入/合并 · [F06](requirements.md#f06) |
 | D065 | 全局：菜单中的反应面板 | `showReactionsPanelInContextMenu` | `ContextMenuVisibility` / `Visible` | 纳入/合并 · [F05](requirements.md#f05) |
 | D066 | 全局：菜单中的浏览量面板 | `showViewsPanelInContextMenu` | `ContextMenuVisibility` / `Visible` | 纳入/合并 · [F05](requirements.md#f05) |
