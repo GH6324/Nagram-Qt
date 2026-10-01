@@ -16,14 +16,65 @@ namespace {
 
 using Strings = std::map<std::string, std::string>;
 
+// A regex here overflows the stack in MSVC on long upstream entries.
+[[nodiscard]] bool ParseEntry(
+		const std::string &line,
+		std::string &key,
+		std::string &value) {
+	const auto size = line.size();
+	auto i = std::size_t();
+	const auto skipSpaces = [&] {
+		while (i < size && (line[i] == ' ' || line[i] == '\t')) {
+			++i;
+		}
+	};
+	const auto skip = [&](char ch) {
+		if (i < size && line[i] == ch) {
+			++i;
+			return true;
+		}
+		return false;
+	};
+	skipSpaces();
+	if (!skip('"')) {
+		return false;
+	}
+	const auto keyEnd = line.find('"', i);
+	if (keyEnd == std::string::npos || keyEnd == i) {
+		return false;
+	}
+	key = line.substr(i, keyEnd - i);
+	i = keyEnd + 1;
+	skipSpaces();
+	if (!skip('=')) {
+		return false;
+	}
+	skipSpaces();
+	if (!skip('"')) {
+		return false;
+	}
+	const auto valueStart = i;
+	while (i < size && line[i] != '"') {
+		i += (line[i] == '\\') ? 2 : 1;
+	}
+	if (i >= size) {
+		return false;
+	}
+	value = line.substr(valueStart, i - valueStart);
+	++i;
+	if (!skip(';')) {
+		return false;
+	}
+	skipSpaces();
+	return (i == size);
+}
+
 [[nodiscard]] Strings ReadStrings(const std::string &path, bool strict) {
 	auto input = std::ifstream(path);
 	if (!input) {
 		throw std::runtime_error("Cannot open " + path);
 	}
 
-	const auto entry = std::regex(
-		R"nagram(^[ \t]*"([^"]+)"[ \t]*=[ \t]*"((?:\\.|[^"\\])*)";[ \t]*$)nagram");
 	auto result = Strings();
 	auto line = std::string();
 	auto number = 0;
@@ -36,16 +87,16 @@ using Strings = std::map<std::string, std::string>;
 		if (first == std::string::npos || line[first] != '"') {
 			continue;
 		}
-		auto match = std::smatch();
-		if (!std::regex_match(line, match, entry)) {
+		auto key = std::string();
+		auto value = std::string();
+		if (!ParseEntry(line, key, value)) {
 			if (strict) {
 				throw std::runtime_error(path + ":" + std::to_string(number)
 					+ ": invalid string entry");
 			}
 			continue;
 		}
-		const auto key = match[1].str();
-		if (!result.emplace(key, match[2].str()).second) {
+		if (!result.emplace(key, value).second) {
 			throw std::runtime_error(path + ":" + std::to_string(number)
 				+ ": duplicate key " + key);
 		}
