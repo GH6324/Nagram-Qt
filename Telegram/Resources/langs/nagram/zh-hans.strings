@@ -133,6 +133,8 @@
 "lng_nagram_hide_my_phone" = "遮盖我的手机号";
 "lng_nagram_hide_read_time" = "隐藏已读时间提示";
 "lng_nagram_hide_share_phone_prompt" = "隐藏分享手机号提示";
+"lng_nagram_do_not_share_phone" = "添加联系人时默认不分享我的手机号";
+"lng_nagram_do_not_share_phone_about" = "只改变“分享我的手机号”的初始勾选，仍可在添加时手动勾选。";
 "lng_nagram_profile_id_format" = "在资料页显示 ID";
 "lng_nagram_id_off" = "关闭";
 "lng_nagram_id_bot_api" = "Bot API 格式";

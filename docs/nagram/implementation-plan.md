@@ -186,6 +186,12 @@ P3 功能不在本计划内。每项先在 `docs/nagram/` 下单独写设计并�
 
 各包的专项设计与预留编号如下；步骤和条目的细节以专项设计为准，实现后并入本文件、[设置页设计](settings-page.md)和[上游处理点](upstream-hooks.md)。
 
+已实现的步骤（P3-03，2026-10-01）。每个条目一个提交，macOS arm64 Debug 增量构建与 `test_nagram` 通过；界面未现场核验。
+
+| 步骤 | 提交 | 条目 | 备注 |
+| --- | --- | --- | --- |
+| ✅ S120 | `feat(privacy): keep phone number unshared by default when adding contacts` | G16 | 只改复选框初始值；添加联系人框的开／关对照未现场验证 |
+
 | 包 | 专项设计 | 步骤 | 设置页条目 |
 | --- | --- | --- | --- |
 | P3-03 | [内容保护与敏感内容](p3-03-content-protection.md) | S120–S123 | G13–G16 |

@@ -18,6 +18,9 @@ inline constexpr auto kHideReadTime = Option<bool>{
 inline constexpr auto kHideSharePhonePrompt = Option<bool>{
 	"nagram.hideSharePhonePrompt", Scope::Device, false,
 	Category::Privacy, "lng_nagram_hide_share_phone_prompt" };
+inline constexpr auto kDoNotSharePhone = Option<bool>{
+	"nagram.doNotSharePhone", Scope::Device, false,
+	Category::Privacy, "lng_nagram_do_not_share_phone" };
 inline constexpr auto kProfileIdFormat = Option<int>{
 	"nagram.profileIdFormat", Scope::Device, 0,
 	Category::Privacy, "lng_nagram_profile_id_format", 0,
@@ -62,6 +65,7 @@ inline void RegisterOptions(Registry &registry) {
 	Expects(registry.Add(kNameOrder));
 	Expects(registry.Add(kPersianCalendar));
 	Expects(registry.Add(kModerateDefaults));
+	Expects(registry.Add(kDoNotSharePhone));
 }
 
 } // namespace Nagram::Privacy

@@ -6,6 +6,7 @@ For license and copyright information please follow this link:
 https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 #include "boxes/peers/edit_contact_box.h"
+#include "nagram/privacy/protection.h"
 
 #include "api/api_peer_photo.h"
 #include "api/api_text_entities.h"
@@ -784,7 +785,7 @@ void Controller::setupSharePhoneNumber() {
 		object_ptr<Ui::Checkbox>(
 			_box,
 			tr::lng_contact_share_phone(tr::now),
-			true,
+			!Nagram::Privacy::DoNotSharePhoneByDefault(),
 			st::defaultBoxCheckbox),
 		st::addContactWarningMargin);
 	_box->addRow(

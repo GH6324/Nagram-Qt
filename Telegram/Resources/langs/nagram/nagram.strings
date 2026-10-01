@@ -137,6 +137,8 @@ Telegram/cmake/td_lang.cmake. Every key uses the lng_nagram_ prefix.
 "lng_nagram_hide_my_phone" = "Hide my phone number";
 "lng_nagram_hide_read_time" = "Hide read time hints";
 "lng_nagram_hide_share_phone_prompt" = "Hide share phone number prompt";
+"lng_nagram_do_not_share_phone" = "Do not share my phone number by default when adding contacts";
+"lng_nagram_do_not_share_phone_about" = "Only changes the initial state of “Share my phone number”. You can still tick it when adding a contact.";
 "lng_nagram_profile_id_format" = "Show ID on profile";
 "lng_nagram_id_off" = "Off";
 "lng_nagram_id_bot_api" = "Bot API format";

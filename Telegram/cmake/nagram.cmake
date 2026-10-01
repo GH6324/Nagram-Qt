@@ -66,6 +66,7 @@ set(nagram_sources
     nagram/privacy/admin_shortcuts.cpp
     nagram/privacy/display.cpp
     nagram/privacy/alias_model.cpp
+    nagram/privacy/protection.cpp
     nagram/settings/home.cpp
     nagram/settings/rules.cpp
     nagram/settings/chats.cpp
@@ -192,6 +193,7 @@ if (DESKTOP_APP_TEST_APPS)
         nagram/tests/test_services.cpp
         nagram/tests/test_filters.cpp
         nagram/tests/test_links.cpp
+        nagram/tests/test_privacy.cpp
         nagram/compose/spacing.cpp
         nagram/core/exchange.cpp
         nagram/interface/main_menu_model.cpp

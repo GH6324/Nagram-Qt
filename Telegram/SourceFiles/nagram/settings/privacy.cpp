@@ -182,6 +182,11 @@ const auto kMeta = BuildHelper({
 		tr::lng_nagram_hide_share_phone_prompt(),
 		u"nagram/privacy/hide-share-phone-prompt"_q,
 		{ u"share"_q, u"phone"_q });
+	AddToggle(builder, Privacy::kDoNotSharePhone,
+		tr::lng_nagram_do_not_share_phone(),
+		u"nagram/privacy/do-not-share-phone"_q,
+		{ u"share"_q, u"phone"_q, u"contact"_q });
+	builder.addDividerText(tr::lng_nagram_do_not_share_phone_about());
 	const auto controller = builder.controller();
 	builder.addButton({
 		.id = u"nagram/privacy/profile-id-format"_q,

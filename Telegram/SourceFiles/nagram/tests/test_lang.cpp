@@ -14,6 +14,7 @@ void TestSpacing();
 void TestServices();
 void TestFilters();
 void TestLinks();
+void TestPrivacy();
 
 namespace {
 
@@ -160,6 +161,7 @@ int main() {
 		TestServices();
 		TestFilters();
 		TestLinks();
+		TestPrivacy();
 		const auto root = std::string(NAGRAM_LANG_SOURCE_DIR);
 		const auto upstream = ReadStrings(root + "/lang.strings", false);
 		const auto english = ReadStrings(root + "/nagram/nagram.strings", true);

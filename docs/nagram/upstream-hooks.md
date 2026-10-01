@@ -148,6 +148,7 @@
 | G07 | `info/profile/tabs/adapters/info_profile_tab_peer_lists.cpp`、`info/profile/info_profile_shared_media_classic.cpp`、`info/profile/info_profile_top_bar.cpp` | 不显示礼物标签、礼物区、礼物按钮与置顶礼物 | 读取 |
 | G08 | `window/window_peer_menu.cpp` | 不显示创建待办入口 | 过滤 |
 | G09 | `window/window_peer_menu.cpp` | 聊天与资料菜单在“管理”后加入子菜单，调用上游权限、邀请链接、成员列表与最近操作入口 | 读取 |
+| G16 | `boxes/peers/edit_contact_box.cpp` | `Controller::setupSharePhoneNumber()` 中“分享我的手机号”复选框的初始值改为 `!Nagram::Privacy::DoNotSharePhoneByDefault()` | 替换 |
 | 本地别名 | `data/data_peer.cpp`（显示名）、`history/history.cpp`、`info/profile/info_profile_values.cpp`、`window/window_peer_menu.cpp` | 显示名与本地搜索使用别名，原名保留 | 替换 |
 
 ### 2.8 翻译与 AI
