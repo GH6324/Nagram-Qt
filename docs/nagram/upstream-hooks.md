@@ -179,13 +179,13 @@ E21 截图在 `history_view_element.h/.cpp`、`history_view_message.cpp`、`hist
 | --- | --- | --- | --- |
 | A16、A17 | `window/section_widget.cpp` | 主题忽略条件改用 `IgnoreChatThemeValue(peer)`，按会话类型合并 A10 | 替换 |
 | A18 | `window/window_main_menu.cpp` | 节日判断前加“始终显示” | 读取 |
-| A19 | `window/main_window.cpp` | 账号名显示条件增加本开关 | 读取 |
+| A19 | `window/main_window.cpp` | 账号名显示条件增加本开关；与 A12 共用的设置变化订阅在切换时刷新标题 | 读取 |
 | B19 | `settings/sections/settings_main.cpp` | 手机号确认建议前判断 | 过滤 |
 | B20 | `ui/widgets/chat_filters_tabs_strip.cpp` | 标签条样式经 `FiltersTabsStyle` 选择 | 替换 |
 | B21 | `window/window_session_controller.cpp` | 控制器构造时订阅加入频道事件 | 读取 |
 | B22 | `dialogs/dialogs_widget.cpp` | `peerSearchRequired` 增加条件 | 读取 |
 | B23 | `data/data_channel.h`、`history/history.cpp`、`window/window_peer_menu.cpp`、`boxes/peers/community_box.cpp` | `collapsedInDialogs()` 在总开关开启时返回 false；两处直接读标志位的判断改走该函数；隐藏“合并显示”开关 | 替换 |
-| B24 | `boxes/share_box.cpp` | 默认列表在收藏夹后插入最近会话，并对后续列表去重 | 读取 |
+| B24 | `boxes/share_box.cpp`、`boxes/peer_list_controllers.cpp`、`window/window_peer_menu.cpp` | 分享框与转发选择框的默认列表在收藏夹后插入最近会话，并对后续列表去重 | 读取 |
 | C28 | 无（`nagram/messages/format.cpp`） | 编辑标记文字来源 | 替换 |
 | C29 | `apiwrap.cpp` | 加入频道时不设置 `SimilarExpanded` | 读取 |
 | C30 | `history/view/history_view_reply.cpp` | 回复块按非气泡样式绘制底色，跳过背景图案 | 读取 |
