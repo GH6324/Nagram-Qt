@@ -289,6 +289,13 @@ Telegram/cmake/td_lang.cmake. Every key uses the lng_nagram_ prefix.
 "lng_nagram_menu_no_repeat_channels" = "Do not offer repeat in channels";
 "lng_nagram_hidden_messages" = "Hidden messages";
 "lng_nagram_hidden_messages_clear" = "Show all locally hidden messages again?";
+"lng_nagram_links_search_group" = "Links and search";
+"lng_nagram_disable_official_auto_login" = "Do not log in automatically on official Telegram websites";
+"lng_nagram_disable_official_auto_login_about" = "No login token is added to the link. Website logins that ask for confirmation are not affected.";
+"lng_nagram_hashtag_page_channel" = "When clicking a hashtag in a channel";
+"lng_nagram_hashtag_page_chat" = "When clicking a hashtag in other chats";
+"lng_nagram_hashtag_page_this_chat" = "Search in this chat";
+"lng_nagram_hashtag_page_my_messages" = "Search in my messages";
 "lng_nagram_menu_reading" = "Show original / converted text";
 "lng_nagram_menu_media_filename" = "File name";
 "lng_nagram_menu_media_type" = "Type";

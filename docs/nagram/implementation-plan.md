@@ -195,6 +195,12 @@ P3 功能不在本计划内。每项先在 `docs/nagram/` 下单独写设计并�
 | ✅ S122 | `feat(privacy): ignore content restrictions` | G14 | 只作用于客户端已收到的数据；`sensitive` 原因不受影响。缺少带 `all` 平台限制的样本，会话与消息的开／关对照未现场验证 |
 | ✅ S123 | `feat(privacy): show sensitive media without the warning` | G15 | 保留“已加载、账号可调整、不需年龄验证”的门槛，不改服务端设置。敏感媒体样本、离线启动后联网、双账号能力不同均未现场验证。**P3-03 的 V2（rebase 到上游 `dev`、完整构建、三平台 CI）未做** |
 
+已实现的步骤（P3-09 与 F16 未归包项，2026-10-01）。每个分组一个提交，macOS arm64 Debug 增量构建与 `test_nagram` 通过；界面未现场核验。
+
+| 步骤 | 提交 | 条目 | 备注 |
+| --- | --- | --- | --- |
+| ✅ S190 | `feat(rules): official web auto-login and hashtag search page` | I11–I13 | 标签搜索只提供“跟随 Telegram”“本对话”“我的消息”；“公开帖子”需改上游判断，不做。官方域名链接、三类对话与话题视图中点击标签均未现场验证 |
+
 | 包 | 专项设计 | 步骤 | 设置页条目 |
 | --- | --- | --- | --- |
 | P3-03（已实现） | [内容保护与敏感内容](p3-03-content-protection.md) | S120–S123 | G13–G16 |

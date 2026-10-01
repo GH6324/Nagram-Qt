@@ -11,6 +11,7 @@
 #include "nagram/services/model.h"
 #include "nagram/filters/model.h"
 #include "nagram/links/model.h"
+#include "nagram/links/options.h"
 #include "nagram/snapshot/snapshot.h"
 #include "nagram/core/diagnostics.h"
 
@@ -112,6 +113,7 @@ const Registry &RegisteredOptions() {
 		Messages::RegisterOptions(result);
 		Filters::RegisterOptions(result);
 		Links::RegisterOptions(result);
+		Links::RegisterBehaviorOptions(result);
 		Snapshot::RegisterOptions(result);
 		RegisterServiceOptions(result);
 		RegisterDiagnosticsOptions(result);

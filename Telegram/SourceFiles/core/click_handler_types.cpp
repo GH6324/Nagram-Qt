@@ -6,6 +6,7 @@ For license and copyright information please follow this link:
 https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 #include "core/click_handler_types.h"
+#include "nagram/links/behavior.h"
 
 #include "base/unixtime.h"
 #include "lang/lang_keys.h"
@@ -139,6 +140,7 @@ constexpr auto kReminderSetToastDuration = 4 * crl::time(1000);
 // Possible context owners: media viewer, profile, history widget.
 
 void SearchByHashtag(ClickContext context, const QString &tag) {
+	const auto scope = Nagram::Links::HashtagClickScope(context, tag);
 	const auto my = context.other.value<ClickHandlerContext>();
 	if (const auto delegate = my.elementDelegate
 		? my.elementDelegate()

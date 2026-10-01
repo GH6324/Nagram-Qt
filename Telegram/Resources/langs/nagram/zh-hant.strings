@@ -285,6 +285,13 @@
 "lng_nagram_menu_no_repeat_channels" = "頻道中不提供複讀";
 "lng_nagram_hidden_messages" = "已隱藏的訊息";
 "lng_nagram_hidden_messages_clear" = "重新顯示所有在本機隱藏的訊息？";
+"lng_nagram_links_search_group" = "連結與搜尋";
+"lng_nagram_disable_official_auto_login" = "開啟 Telegram 官方網頁時不自動登入";
+"lng_nagram_disable_official_auto_login_about" = "不在連結中附帶登入權杖。需要確認的網站登入不受影響。";
+"lng_nagram_hashtag_page_channel" = "在頻道中點擊主題標籤時";
+"lng_nagram_hashtag_page_chat" = "在其他對話中點擊主題標籤時";
+"lng_nagram_hashtag_page_this_chat" = "在此對話中搜尋";
+"lng_nagram_hashtag_page_my_messages" = "在我的訊息中搜尋";
 "lng_nagram_menu_reading" = "顯示原文 / 轉換後文字";
 "lng_nagram_menu_media_filename" = "檔案名稱";
 "lng_nagram_menu_media_type" = "類型";

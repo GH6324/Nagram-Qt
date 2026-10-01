@@ -59,6 +59,7 @@ set(nagram_sources
     nagram/filters/hidden_messages.cpp
     nagram/links/model.cpp
     nagram/links/open.cpp
+    nagram/links/behavior.cpp
     nagram/links/settings.cpp
     nagram/snapshot/snapshot.cpp
     nagram/privacy/profile.cpp
@@ -195,6 +196,7 @@ if (DESKTOP_APP_TEST_APPS)
         nagram/tests/test_filters.cpp
         nagram/tests/test_links.cpp
         nagram/tests/test_privacy.cpp
+        nagram/tests/test_p3_misc.cpp
         nagram/compose/spacing.cpp
         nagram/core/exchange.cpp
         nagram/interface/main_menu_model.cpp
