@@ -5,6 +5,12 @@
 #include <gsl/pointers>
 
 class HistoryItem;
+namespace Ui {
+class PopupMenu;
+} // namespace Ui
+namespace Window {
+class SessionController;
+} // namespace Window
 
 namespace Main {
 class Session;
@@ -17,6 +23,11 @@ void ShowCustomTranscription(
     std::shared_ptr<Main::SessionShow> show,
     not_null<HistoryItem*> item,
     bool manage = false);
+
+void InsertTranscribeSelectedAction(
+	Ui::PopupMenu *menu,
+	Window::SessionController *controller,
+	MessageIdsList selected);
 
 [[nodiscard]] bool ExternalTranscriptionSelected(
 	not_null<Main::Session*> session);

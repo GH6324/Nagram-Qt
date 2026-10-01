@@ -9,6 +9,7 @@
 #include "nagram/menu/reading.h"
 #include "nagram/filters/menu.h"
 #include "nagram/services/summary.h"
+#include "nagram/services/transcription.h"
 #include "nagram/snapshot/snapshot.h"
 
 #include "ui/widgets/menu/menu.h"
@@ -55,6 +56,7 @@ void Apply(
 				selected, select);
 			Snapshot::InsertAction(menu, controller, item, selected);
 			InsertSummaryAction(menu, item, controller, selected);
+			InsertTranscribeSelectedAction(menu, controller, selected);
 		}
 		if (item) {
 			InsertMediaInfoAction(menu, item, controller);

@@ -195,6 +195,7 @@ P3-07 外部媒体后端：
 | H03（含 P3-04 的预设、Anthropic 协议、配置 v2） | 无上游改动 | — | — |
 | H03（上下文，P3-04） | `boxes/translate_box.cpp` | `TranslateBox()` 内 `State` 的构造改为接收 `peer`、`msgId`、`hasCopyRestriction`，工厂由 `Nagram::CreateInteractiveTranslateProvider` 换成 `Nagram::CreateMessageTranslateProvider`；开关关闭或取不到上下文时后者原样转给前者 | 替换 |
 | H10、E36（P3-04） | 无上游改动 | 经已有的 `Nagram::Menu::Apply` 插入“总结”；上游气泡内的摘要按钮不变 | — |
+| E37（P3-04） | 无上游改动 | 经已有的 `Nagram::Menu::Apply` 插入“转写所选语音”；结果写入 H02 已有的外部转写缓存 | — |
 | H06–H08（P3-04） | `history/view/history_view_translate_tracker.cpp`、`history/history.cpp`、`window/window_peer_menu.cpp` | `TranslateTracker::setup()` 的 `rpl::combine` 增加 `Nagram::AutoTranslate::StateValue(_history)`，跟踪条件由 `_1 && (_2 \|\| _3)` 改为调用 `Nagram::AutoTranslate::Tracking`（三层都为“跟随”时与原表达式相同）；`History::translateOfferFrom()` 的自动翻译条件增加 `\|\| Nagram::AutoTranslate::Enabled(this)`；`Filler` 在 `addTranslate()` 之后加一行 `Nagram::AutoTranslate::AddPeerMenu` | 替换、读取 |
 | H09（P3-04） | `history/view/history_view_translate_tracker.cpp` | 构造函数的 `_provider` 由 `Ui::CreateTranslateProvider(session)` 换成 `Nagram::CreateChatTranslateProvider(_history)`（H09 关闭时原样转发给前者）；`cancelSentRequest()` 加一行 `Nagram::CancelChatTranslation(_provider.get())` 中止进行中的外部请求 | 替换 |
 | H04 | `boxes/compose_ai_box.cpp`、`ui/controls/compose_ai_button_factory.cpp` | 草稿 AI 入口改由系统模型处理 | 拦截 |

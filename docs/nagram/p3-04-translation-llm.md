@@ -289,6 +289,15 @@ enum class Mode { Inherit, On, Off };
 
 **provider 预设**：转写预设与翻译预设共用预设表，协议仍为 `openai`（`multipart/form-data`，`response_format=json`，读取 `text`）。候选：OpenAI（已有）、Groq、SiliconFlow，endpoint 均为 `audio/transcriptions`，base URL 与 2.5 相同，同样需核对官方文档。`ParseService` 对转写仍要求 `protocol == "openai"`。
 
+**实施说明（S145）**
+
+- 批量代码在 `nagram/services/transcription.cpp`（与缓存类同文件），跳过规则与队列状态机在 `transcription_queue.{h,cpp}`（纯逻辑，有单元测试）。单条转写改为共用读取音频与解析结果的两个辅助函数，行为不变。
+- “已下载”指音频当前在内存中或有本地文件（`DocumentMedia::loaded(true)`）。只在本地缓存数据库里、当前没有加载进内存的语音按“未下载”跳过；不为批量触发任何加载或下载。
+- 所选消息按时间排序，前 20 条可处理的进入队列，其余计入“跳过”。非语音消息不计入任何数字。
+- 上传前逐条重新取消息：已删除、文档已变或变成限时媒体的按失败计。服务配置在批量期间变化时停止队列并提示配置已变化。
+- 结束后在同一个框里显示成功、失败、跳过（含停止后未处理的）条数；停止时在前面加一行原因。开始按钮只生效一次，重试需重新打开，届时已有结果的消息会被跳过。
+- 转写预设：预设表里只有原有的 OpenAI 转写。Groq、SiliconFlow 的转写地址在本机的 Nagram Android／iOS 源码中查不到（iOS 的 `NagramSTTConfiguration.swift` 只有 OpenAI 的默认地址），没有联网核对手段，按要求不加。用户可以用 OpenAI 转写预设改地址来接入其他 OpenAI 兼容的转写服务。
+
 **条件不满足的部分**：Gemini 原生音频、Azure OpenAI、Deepgram 等不是 OpenAI 形态，各自需要新的请求构造、鉴权和响应解析，并要有 localhost 桩才能测试。当前没有明确要接入的目标，本包不做。provider 返回的大小限制目前只能从 HTTP 413 得知，按 `Http` 错误显示状态码。
 
 **关闭时与上游一致**：H02 为默认时 E37 不出现；单条转写路径不变。

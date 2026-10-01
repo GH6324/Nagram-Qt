@@ -713,3 +713,11 @@ Telegram/cmake/td_lang.cmake. Every key uses the lng_nagram_ prefix.
 "lng_nagram_auto_translate_unavailable" = "On has no effect for this account right now: it requires Telegram Premium or a translation service selected for whole-chat translation.";
 "lng_nagram_auto_translate_invalid" = "The saved chat settings could not be read and are ignored. Adding a chat replaces them.";
 "lng_nagram_auto_translate_limit" = "This setting could not be saved. At most {amount} chats can have their own setting.";
+"lng_nagram_menu_transcribe_selected" = "Transcribe selected voice messages";
+"lng_nagram_transcribe_batch_about" = "Audio messages to upload: {amount}.\nService: {name}\n{url}\n\nOnly audio already downloaded on this device is uploaded, one message at a time. Closing this window cancels the rest; finished results stay in the messages.";
+"lng_nagram_transcribe_batch_skipped" = "Skipped: {amount} (not downloaded, larger than 24 MiB, expiring, already transcribed, or beyond the limit of {limit} per batch).";
+"lng_nagram_transcribe_batch_progress" = "Transcribing {index} of {amount}…";
+"lng_nagram_transcribe_batch_done" = "Done: {done} transcribed, {failed} failed, {skipped} skipped.";
+"lng_nagram_transcribe_batch_stopped" = "Stopped: {reason}";
+"lng_nagram_transcribe_batch_empty" = "None of the selected messages can be transcribed.";
+"lng_nagram_transcribe_batch_start" = "Upload and transcribe";

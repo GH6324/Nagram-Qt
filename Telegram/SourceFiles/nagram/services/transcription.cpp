@@ -13,12 +13,18 @@
 #include "main/session/session_show.h"
 #include "nagram/core/options.h"
 #include "nagram/display/view_refresher.h"
+#include "nagram/menu/actions.h"
 #include "nagram/privacy/protection.h"
 #include "nagram/services/model.h"
 #include "nagram/services/request.h"
+#include "nagram/services/transcription_queue.h"
 #include "ui/layers/generic_box.h"
 #include "ui/text/text_utilities.h"
 #include "ui/widgets/labels.h"
+#include "ui/widgets/menu/menu.h"
+#include "ui/widgets/menu/menu_action.h"
+#include "ui/widgets/popup_menu.h"
+#include "window/window_session_controller.h"
 
 #include <QtCore/QFile>
 #include <QtCore/QJsonDocument>
@@ -27,6 +33,7 @@
 #include <memory>
 
 #include "styles/style_layers.h"
+#include "styles/style_menu_icons.h"
 
 namespace Nagram {
 namespace {
@@ -207,7 +214,304 @@ void ExternalTranscriptions::clear() {
 	}
 }
 
+[[nodiscard]] DocumentData *AudioDocument(HistoryItem *item) {
+	const auto media = item ? item->media() : nullptr;
+	const auto document = media ? media->document() : nullptr;
+	return (document
+		&& (document->isVoiceMessage() || document->isVideoMessage()))
+		? document
+		: nullptr;
+}
+
+[[nodiscard]] QByteArray ReadAudio(
+		not_null<DocumentData*> document,
+		const std::shared_ptr<Data::DocumentMedia> &media) {
+	auto bytes = media->bytes();
+	if (bytes.isEmpty()) {
+		const auto location = document->location(true);
+		if (!location.isEmpty() && location.accessEnable()) {
+			auto file = QFile(location.name());
+			if (file.open(QIODevice::ReadOnly)) {
+				bytes = file.read(kTranscribeMaxBytes + 1);
+			}
+			location.accessDisable();
+		}
+	}
+	return bytes;
+}
+
+[[nodiscard]] std::optional<QString> TranscriptText(const QByteArray &body) {
+	const auto value = QJsonDocument::fromJson(body).object().value(
+		u"text"_q);
+	const auto text = value.toString();
+	return (value.isString()
+		&& !text.isEmpty()
+		&& text.size() <= kMaximumText
+		&& !text.contains(QChar(0)))
+		? std::make_optional(text)
+		: std::nullopt;
+}
+
+struct BatchEntry {
+	FullMsgId id;
+	DocumentId documentId = 0;
+	std::shared_ptr<Data::DocumentMedia> media;
+};
+
+struct BatchScope {
+	std::vector<BatchEntry> entries;
+	int skipped = 0;
+};
+
+[[nodiscard]] BatchScope CollectBatch(
+		not_null<Main::Session*> session,
+		const MessageIdsList &ids) {
+	auto items = std::vector<not_null<HistoryItem*>>();
+	for (const auto &id : ids) {
+		if (const auto item = session->data().message(id)) {
+			items.push_back(item);
+		}
+	}
+	ranges::sort(items, [](const auto &a, const auto &b) {
+		return (a->date() != b->date())
+			? (a->date() < b->date())
+			: (a->fullId() < b->fullId());
+	});
+	const auto &cache = ExternalTranscriptions::For(session);
+	auto candidates = std::vector<TranscribeCandidate>();
+	auto entries = std::vector<BatchEntry>();
+	for (const auto &item : items) {
+		const auto document = AudioDocument(item);
+		auto media = document ? document->createMediaView() : nullptr;
+		candidates.push_back({
+			.audio = (document != nullptr),
+			.expiring = document && (item->media()->ttlSeconds() != 0),
+			.cached = document && (cache.find(item) != nullptr),
+			.downloaded = media && media->loaded(true),
+			.size = document ? document->size : 0,
+		});
+		entries.push_back({
+			.id = item->fullId(),
+			.documentId = document ? document->id : DocumentId(),
+			.media = std::move(media),
+		});
+	}
+	const auto plan = PlanTranscription(candidates);
+	auto result = BatchScope{ .skipped = plan.skipped };
+	for (const auto &index : plan.accepted) {
+		result.entries.push_back(std::move(entries[index]));
+	}
+	return result;
+}
+
+void BatchTranscriptionBox(
+		not_null<Ui::GenericBox*> box,
+		not_null<Main::Session*> session,
+		MessageIdsList ids,
+		ServiceDefinition service,
+		QByteArray config) {
+	struct State {
+		ServiceRequest request;
+		BatchScope scope;
+		TranscriptionQueue queue;
+		ServiceError error = ServiceError::None;
+		int status = 0;
+		bool started = false;
+		Fn<void()> step;
+	};
+	box->setTitle(tr::lng_nagram_menu_transcribe_selected());
+	const auto state = box->lifetime().make_state<State>();
+	state->scope = CollectBatch(session, ids);
+	const auto total = int(state->scope.entries.size());
+	const auto skipped = state->scope.skipped;
+	const auto skippedText = skipped
+		? (u"\n\n"_q + tr::lng_nagram_transcribe_batch_skipped(
+			tr::now,
+			lt_amount,
+			QString::number(skipped),
+			lt_limit,
+			QString::number(kTranscribeBatchLimit)))
+		: QString();
+	if (!total) {
+		box->addRow(object_ptr<Ui::FlatLabel>(
+			box,
+			tr::lng_nagram_transcribe_batch_empty(tr::now) + skippedText,
+			st::boxLabel));
+		box->addButton(tr::lng_close(), [=] { box->closeBox(); });
+		return;
+	}
+	box->addRow(object_ptr<Ui::FlatLabel>(
+		box,
+		tr::lng_nagram_transcribe_batch_about(
+			tr::now,
+			lt_amount,
+			QString::number(total),
+			lt_name,
+			service.name,
+			lt_url,
+			ServiceEndpoint(service).toDisplayString()) + skippedText,
+		st::boxLabel));
+	const auto label = box->addRow(
+		object_ptr<Ui::FlatLabel>(box, st::boxLabel));
+	const auto finish = [=] {
+		const auto &queue = state->queue;
+		const auto summary = tr::lng_nagram_transcribe_batch_done(
+			tr::now,
+			lt_done,
+			QString::number(queue.done()),
+			lt_failed,
+			QString::number(queue.failed()),
+			lt_skipped,
+			QString::number(skipped + queue.left()));
+		const auto reason = (queue.stopped() == TranscribeStop::Changed)
+			? tr::lng_nagram_config_changed_error(tr::now)
+			: (queue.stopped() == TranscribeStop::Finished)
+			? QString()
+			: ServiceErrorText(state->error, state->status);
+		label->setText(reason.isEmpty()
+			? summary
+			: (tr::lng_nagram_transcribe_batch_stopped(
+				tr::now,
+				lt_reason,
+				reason) + u"\n\n"_q + summary));
+	};
+	state->step = crl::guard(box, [=] {
+		const auto index = state->queue.current();
+		if (!index) {
+			finish();
+			return;
+		} else if (ForDevice().Get(kServicesConfig) != config) {
+			state->queue.report(TranscribeOutcome::Changed);
+			state->step();
+			return;
+		}
+		const auto &entry = state->scope.entries[*index];
+		const auto item = session->data().message(entry.id);
+		const auto document = AudioDocument(item);
+		auto bytes = (document
+			&& document->id == entry.documentId
+			&& !item->media()->ttlSeconds())
+			? ReadAudio(document, entry.media)
+			: QByteArray();
+		if (bytes.isEmpty()) {
+			state->queue.report(TranscribeOutcome::Failed);
+			state->step();
+			return;
+		}
+		label->setText(tr::lng_nagram_transcribe_batch_progress(
+			tr::now,
+			lt_index,
+			QString::number(*index + 1),
+			lt_amount,
+			QString::number(total)));
+		const auto round = document->isVideoMessage();
+		const auto generation = ExternalTranscriptions::For(
+			session).generation(round);
+		state->request.audio(
+			service,
+			std::move(bytes),
+			round ? u"audio.mp4"_q : u"audio.ogg"_q,
+			crl::guard(box, [=](ServiceResult response) {
+				const auto text = (response.error == ServiceError::None)
+					? TranscriptText(response.body)
+					: std::nullopt;
+				const auto current = session->data().message(entry.id);
+				const auto stored = text
+					&& current
+					&& ExternalTranscriptions::For(session).set(
+						current,
+						entry.documentId,
+						config,
+						generation,
+						*text);
+				if (!stored) {
+					state->error = (response.error == ServiceError::None)
+						? ServiceError::Response
+						: response.error;
+					state->status = response.status;
+				}
+				state->queue.report(stored
+					? TranscribeOutcome::Done
+					: (response.error == ServiceError::Credential
+						|| response.error == ServiceError::Configuration)
+					? TranscribeOutcome::Fatal
+					: (response.error == ServiceError::Network)
+					? TranscribeOutcome::Network
+					: TranscribeOutcome::Failed);
+				state->step();
+			}));
+	});
+	box->addButton(tr::lng_nagram_transcribe_batch_start(), [=] {
+		if (state->started) {
+			return;
+		}
+		state->started = true;
+		state->queue = TranscriptionQueue(total);
+		state->step();
+	});
+	box->addButton(tr::lng_cancel(), [=] {
+		state->queue.cancel();
+		state->request.cancel();
+		box->closeBox();
+	});
+}
+
 } // namespace
+
+void InsertTranscribeSelectedAction(
+		Ui::PopupMenu *menu,
+		Window::SessionController *controller,
+		MessageIdsList selected) {
+	if (!menu || !controller || selected.empty()) {
+		return;
+	}
+	const auto session = &controller->session();
+	if (!ExternalTranscriptions::For(session).selected()
+		|| ranges::none_of(selected, [&](const FullMsgId &id) {
+			const auto item = session->data().message(id);
+			return AudioDocument(item) && !item->media()->ttlSeconds();
+		})) {
+		return;
+	}
+	const auto action = Ui::Menu::CreateAction(
+		menu,
+		tr::lng_nagram_menu_transcribe_selected(tr::now),
+		crl::guard(controller, [=] {
+			const auto config = Services();
+			const auto service = config
+				? FindService(
+					*config,
+					config->value(u"transcription"_q).toString())
+				: std::nullopt;
+			if (!service || service->kind != ServiceKind::Transcription) {
+				controller->showToast(tr::lng_nagram_service_invalid(tr::now));
+				return;
+			}
+			controller->show(Box(
+				BatchTranscriptionBox,
+				session,
+				selected,
+				*service,
+				ForDevice().Get(kServicesConfig)));
+		}));
+	auto widget = base::make_unique_q<Ui::Menu::Action>(
+		menu->menu(),
+		menu->menu()->st(),
+		action,
+		&st::menuIconSoundOn,
+		&st::menuIconSoundOn);
+	auto position = int(menu->actions().size());
+	for (auto index = 0; index != position; ++index) {
+		const auto tag = menu->actions()[index]->property("nagramMenuActionId");
+		if (tag.isValid() && tag.toInt() == int(Menu::ActionId::Delete)) {
+			position = index;
+			break;
+		}
+	}
+	Menu::Tag(
+		menu->insertAction(position, std::move(widget)),
+		Menu::ActionId::TranscribeSelected);
+}
 
 bool ExternalTranscriptionSelected(not_null<Main::Session*> session) {
 	return ExternalTranscriptions::For(session).selected();
@@ -302,22 +606,11 @@ void ShowCustomTranscription(
 				box->showToast(tr::lng_nagram_transcribe_missing(tr::now));
 				return;
 			}
-			auto bytes = state->media->bytes();
-			constexpr auto limit = 24 * 1024 * 1024;
-			if (document->size > limit) {
+			if (document->size > kTranscribeMaxBytes) {
 				label->setText(ServiceErrorText(ServiceError::TooLarge));
 				return;
 			}
-			if (bytes.isEmpty()) {
-				const auto location = document->location(true);
-				if (!location.isEmpty() && location.accessEnable()) {
-					auto file = QFile(location.name());
-					if (file.open(QIODevice::ReadOnly)) {
-						bytes = file.read(limit + 1);
-					}
-					location.accessDisable();
-				}
-			}
+			auto bytes = ReadAudio(document, state->media);
 			if (bytes.isEmpty()) {
 				document->save(item->fullId(), QString());
 				label->setText(tr::lng_nagram_transcribe_download(tr::now));
@@ -335,21 +628,18 @@ void ShowCustomTranscription(
 						label->setText(ServiceErrorText(response.error, response.status));
 						return;
 					}
-					const auto value = QJsonDocument::fromJson(
-						response.body).object().value(u"text"_q);
-					if (!value.isString() || value.toString().isEmpty()
-						|| value.toString().size() > 16384
-						|| value.toString().contains(QChar(0))) {
+					const auto text = TranscriptText(response.body);
+					if (!text) {
 						label->setText(ServiceErrorText(ServiceError::Response));
 						return;
 					}
 					const auto item = show->session().data().message(id);
 					if (!item || !ExternalTranscriptions::For(session).set(
-							item, documentId, serviceConfig, generation, value.toString())) {
+							item, documentId, serviceConfig, generation, *text)) {
 						label->setText(tr::lng_nagram_transcribe_missing(tr::now));
 						return;
 					}
-					state->result = value.toString();
+					state->result = *text;
 					label->setText(state->result);
 				}));
 		});

@@ -2,6 +2,7 @@
 #include "nagram/services/model.h"
 #include "nagram/services/presets.h"
 #include "nagram/services/summary_model.h"
+#include "nagram/services/transcription_queue.h"
 #include "base/basic_types.h"
 
 #include <QtCore/QJsonArray>
@@ -386,6 +387,105 @@ void TestSummary(const Nagram::ServiceDefinition &service) {
 	std::cout << "PASS: Nagram message summary" << std::endl;
 }
 
+void TestTranscriptionQueue() {
+	using namespace Nagram;
+	using Skip = TranscribeSkip;
+	using Outcome = TranscribeOutcome;
+	using Stop = TranscribeStop;
+	const auto ready = TranscribeCandidate{
+		.audio = true,
+		.downloaded = true,
+		.size = 1024,
+	};
+	Require(ClassifyTranscription(ready) == Skip::None, "ready audio skipped");
+	Require(ClassifyTranscription({}) == Skip::NotAudio, "text message");
+	auto candidate = ready;
+	candidate.expiring = true;
+	Require(ClassifyTranscription(candidate) == Skip::Expiring, "expiring");
+	candidate = ready;
+	candidate.cached = true;
+	Require(ClassifyTranscription(candidate) == Skip::Cached, "cached");
+	candidate = ready;
+	candidate.downloaded = false;
+	Require(ClassifyTranscription(candidate) == Skip::NotDownloaded,
+		"not downloaded");
+	candidate = ready;
+	candidate.size = kTranscribeMaxBytes + 1;
+	Require(ClassifyTranscription(candidate) == Skip::TooLarge, "too large");
+	candidate.size = kTranscribeMaxBytes;
+	Require(ClassifyTranscription(candidate) == Skip::None, "size limit");
+	candidate.size = 0;
+	Require(ClassifyTranscription(candidate) == Skip::TooLarge, "empty file");
+
+	auto cached = ready;
+	cached.cached = true;
+	const auto mixed = PlanTranscription({ ready, {}, cached, ready, {} });
+	Require(mixed.accepted == (std::vector<int>{ 0, 3 }) && mixed.skipped == 1,
+		"plan counts only audio messages");
+	const auto many = PlanTranscription(std::vector<TranscribeCandidate>(
+		kTranscribeBatchLimit + 4, ready));
+	Require(int(many.accepted.size()) == kTranscribeBatchLimit
+		&& many.skipped == 4 && many.accepted.back() == kTranscribeBatchLimit - 1,
+		"batch limit");
+	Require(PlanTranscription({}).accepted.empty(), "empty plan");
+
+	auto empty = TranscriptionQueue();
+	Require(!empty.current() && empty.stopped() == Stop::Finished,
+		"empty queue is not finished");
+	auto queue = TranscriptionQueue(3);
+	Require(queue.current() == 0 && queue.stopped() == Stop::None, "start");
+	queue.report(Outcome::Done);
+	queue.report(Outcome::Failed);
+	Require(queue.current() == 2 && queue.left() == 1, "continues on failure");
+	queue.report(Outcome::Done);
+	Require(!queue.current() && queue.stopped() == Stop::Finished
+		&& queue.done() == 2 && queue.failed() == 1 && !queue.left(),
+		"finished counts");
+	queue.report(Outcome::Done);
+	Require(queue.done() == 2, "report after the end counted");
+
+	queue = TranscriptionQueue(5);
+	queue.report(Outcome::Done);
+	queue.report(Outcome::Fatal);
+	Require(!queue.current() && queue.stopped() == Stop::Fatal
+		&& queue.done() == 1 && queue.failed() == 1 && queue.left() == 3,
+		"credential error does not stop the queue");
+
+	queue = TranscriptionQueue(8);
+	queue.report(Outcome::Network);
+	queue.report(Outcome::Network);
+	queue.report(Outcome::Done);
+	queue.report(Outcome::Network);
+	queue.report(Outcome::Failed);
+	queue.report(Outcome::Network);
+	queue.report(Outcome::Network);
+	Require(queue.current() == 7, "separated network errors stopped the queue");
+	queue = TranscriptionQueue(8);
+	queue.report(Outcome::Done);
+	for (auto i = 0; i != kTranscribeNetworkFailures; ++i) {
+		Require(queue.current().has_value(), "stopped too early");
+		queue.report(Outcome::Network);
+	}
+	Require(!queue.current() && queue.stopped() == Stop::Network
+		&& queue.done() == 1 && queue.left() == 4,
+		"three network errors in a row do not stop the queue");
+
+	queue = TranscriptionQueue(4);
+	queue.report(Outcome::Done);
+	queue.report(Outcome::Changed);
+	Require(queue.stopped() == Stop::Changed && queue.left() == 2,
+		"changed configuration does not stop the queue");
+
+	queue = TranscriptionQueue(4);
+	queue.report(Outcome::Done);
+	queue.cancel();
+	queue.report(Outcome::Done);
+	Require(!queue.current() && queue.stopped() == Stop::Cancelled
+		&& queue.done() == 1 && queue.left() == 3,
+		"cancel loses finished results or keeps running");
+	std::cout << "PASS: Nagram batch transcription queue" << std::endl;
+}
+
 } // namespace
 
 void TestServices() {
@@ -509,4 +609,5 @@ void TestServices() {
 	TestPresets();
 	TestContext(service);
 	TestSummary(service);
+	TestTranscriptionQueue();
 }

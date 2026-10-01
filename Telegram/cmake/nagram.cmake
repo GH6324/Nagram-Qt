@@ -112,6 +112,7 @@ set(nagram_sources
     nagram/services/translation.cpp
     nagram/services/draft_translation.cpp
     nagram/services/transcription.cpp
+    nagram/services/transcription_queue.cpp
     nagram/services/system_ai.cpp
 )
 
@@ -241,6 +242,7 @@ if (DESKTOP_APP_TEST_APPS)
         nagram/services/model.cpp
         nagram/services/presets.cpp
         nagram/services/summary_model.cpp
+        nagram/services/transcription_queue.cpp
         nagram/filters/model.cpp
         nagram/links/model.cpp
         nagram/links/inline_rules.cpp

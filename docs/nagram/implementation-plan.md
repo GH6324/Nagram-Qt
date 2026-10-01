@@ -248,11 +248,13 @@ P3 功能不在本计划内。每项先在 `docs/nagram/` 下单独写设计并�
 | ✅ S143 | `feat(ai): whole-chat translation through the selected service` | H09 | 新的转发 provider 自己实现批量请求（顺序队列、每次最多 50 段与 96 KiB、单条 16 KiB、网络错误重试一次、连续 3 批失败熔断）；原 `ExternalTranslateProvider` 不再被 `TranslateTracker` 使用。工厂参数是 `history`（设计为 `session`），用来在重新切换翻译时解除熔断。`lng_nagram_services_about` 改为指向 H09。桩服务收到的正文范围、取消时连接被中止、熔断与恢复、请求中修改服务、系统翻译不可用的提示、H09 关闭时与上游的对照、两套消息视图均未现场验证 |
 | ✅ S144 | `feat(ai): auto-translate modes for device, account and chat` | H06–H08、聊天菜单入口 | 本机、账号、对话三层三态；非 Premium 账号的“开启”只在 H09 开启并选了系统翻译或外部实例时生效（设计第 8 节问题 1 的建议）。“关闭”不写服务端。H08 是对话框，不是子页。对话已打开后改为“开启”要重新打开对话才自动翻译。两套消息视图中的开／关／跟随、对话菜单子菜单、对话选择框、双账号与相同 peer ID、退出账号后覆盖清除、非 Premium 的不生效提示均未现场验证 |
 | ☐ S144（话题层级） | — | — | 未实施：上游只按 `History` 保存翻译状态，话题与所属群组共用一个翻译栏，补齐需要改约 20 处上游读取点（专项设计 2.1、第 8 节问题 2）。条目、文案与存储字段均未进入代码，覆盖映射 v1 不含话题字段 |
+| ✅ S145 | `feat(ai): batch transcription of selected voice messages` | E37 | 提交标题比设计少了“转写预设”：Groq、SiliconFlow 的转写地址在参考源码中核对不到，没有新增转写预设（预设表保留原有的 OpenAI 转写）。只处理当前在内存中或有本地文件的音频，不触发下载；一次最多 20 条，顺序上传；凭据或配置错误立即停止，连续 3 条网络错误停止，取消后已完成的结果保留。确认框的条数、进度、停止原因与结束统计，气泡刷新，批量期间修改服务配置，重复发起时跳过已有结果均未现场验证。**P3-04 的 V2（rebase 到上游 `dev`、完整构建、三平台 CI）未做** |
+| ☐ S145（非 OpenAI 形态的转写协议） | — | — | 未实施：Gemini 原生音频、Azure OpenAI、Deepgram 等各自需要新的请求构造、鉴权和响应解析，并要有 localhost 桩才能测试，当前没有明确要接入的目标（专项设计 2.6）。条目、文案与协议均未进入代码，`ParseService` 对转写仍只接受 `openai` |
 
 | 包 | 专项设计 | 步骤 | 设置页条目 |
 | --- | --- | --- | --- |
 | P3-03（已实现） | [内容保护与敏感内容](p3-03-content-protection.md) | S120–S123 | G13–G16 |
-| P3-04 | [自动翻译继承与 LLM](p3-04-translation-llm.md) | S140–S145 | H06–H10、E36–E37 |
+| P3-04（S140–S145 已实现；话题层级与非 OpenAI 转写协议未实施） | [自动翻译继承与 LLM](p3-04-translation-llm.md) | S140–S145 | H06–H10、E36–E37 |
 | P3-05（S150、S151、S153 已实现，S152 待确认规则源） | [规则继承与 inline bot](p3-05-rules-inline-bot.md) | S150–S153 | I04–I08 |
 | P3-06（S160、S161 已实现，S162 待基准） | [网络](p3-06-network.md) | S160–S162 | K01–K06 |
 | P3-07（S170–S174 已实现，S175 未决定） | [外部媒体后端](p3-07-media-backends.md) | S170–S175 | F19–F25、I09–I10 |

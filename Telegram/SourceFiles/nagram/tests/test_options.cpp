@@ -90,6 +90,12 @@ void TestOptions() {
 		== Visibility::Hide, "select between action default");
 	Require(Menu::ReadVisibility({}, ActionId::SeenBy) == Visibility::Show
 		&& Menu::IsUpstream(ActionId::SeenBy), "seen by stays upstream");
+	Require(Menu::ReadVisibility({}, ActionId::TranscribeSelected)
+			== Visibility::Hide
+		&& !Menu::IsUpstream(ActionId::TranscribeSelected)
+		&& Menu::ValidateConfig(Menu::WriteVisibility(
+			{}, ActionId::TranscribeSelected, Visibility::Show)),
+		"transcribe selected is hidden by default");
 	Require(Menu::ReadVisibility({}, ActionId::Summarize) == Visibility::Hide
 		&& !Menu::IsUpstream(ActionId::Summarize)
 		&& Menu::ValidateConfig(Menu::WriteVisibility(

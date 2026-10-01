@@ -709,3 +709,11 @@
 "lng_nagram_auto_translate_unavailable" = "“开启”目前对此账号不生效：需要 Telegram Premium，或为整个对话的翻译选择翻译服务。";
 "lng_nagram_auto_translate_invalid" = "已保存的对话设置无法读取，已忽略。添加对话会覆盖这些数据。";
 "lng_nagram_auto_translate_limit" = "无法保存此设置。最多 {amount} 个对话可以单独设置。";
+"lng_nagram_menu_transcribe_selected" = "转写所选语音";
+"lng_nagram_transcribe_batch_about" = "将上传的语音：{amount} 条。\n服务：{name}\n{url}\n\n只上传本机已下载的音频，逐条处理。关闭窗口会取消剩余部分，已完成的结果保留在消息中。";
+"lng_nagram_transcribe_batch_skipped" = "已跳过：{amount} 条（未下载、超过 24 MiB、限时媒体、已有转写结果，或超出每批 {limit} 条的上限）。";
+"lng_nagram_transcribe_batch_progress" = "正在转写第 {index} / {amount} 条…";
+"lng_nagram_transcribe_batch_done" = "完成：成功 {done} 条，失败 {failed} 条，跳过 {skipped} 条。";
+"lng_nagram_transcribe_batch_stopped" = "已停止：{reason}";
+"lng_nagram_transcribe_batch_empty" = "所选消息中没有可转写的语音。";
+"lng_nagram_transcribe_batch_start" = "上传并转写";
