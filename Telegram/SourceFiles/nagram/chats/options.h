@@ -111,12 +111,15 @@ inline constexpr auto kDisableScrollToNextTopic = Option<bool>{
 	"nagram.disableScrollToNextTopic", Scope::Device, false,
 	Category::Chats, "lng_nagram_disable_scroll_to_next_topic" };
 
+inline constexpr auto kMinimumRecentChats = 5;
+inline constexpr auto kMaximumRecentChats = 100;
+
 [[nodiscard]] inline bool ValidRecentChats(const QString &value) {
 	if (value.isEmpty()) {
 		return true;
 	}
 	const auto parts = value.split(u',');
-	if (parts.size() > 30) {
+	if (parts.size() > kMaximumRecentChats) {
 		return false;
 	}
 	for (const auto &part : parts) {
@@ -131,6 +134,12 @@ inline constexpr auto kDisableScrollToNextTopic = Option<bool>{
 inline constexpr auto kRecentChats = Option<bool>{
 	"nagram.recentChats", Scope::Device, false,
 	Category::Chats, "lng_nagram_recent_chats_option" };
+inline constexpr auto kRecentChatsLimit = Option<int>{
+	"nagram.recentChatsLimit", Scope::Device, 30,
+	Category::Chats, "lng_nagram_recent_chats_limit", 0,
+	[](const int &value) {
+		return value >= kMinimumRecentChats && value <= kMaximumRecentChats;
+	} };
 inline const auto kRecentChatsList = Option<QString>{
 	"nagram.recentChatsList", Scope::Account, QString(),
 	Category::Chats, "lng_nagram_recent_chats",
@@ -198,6 +207,7 @@ inline void RegisterOptions(Registry &registry) {
 	Expects(registry.Add(kDisableScrollToNextChannel));
 	Expects(registry.Add(kDisableScrollToNextTopic));
 	Expects(registry.Add(kRecentChats));
+	Expects(registry.Add(kRecentChatsLimit));
 	Expects(registry.Add(kRecentChatsList));
 	Expects(registry.Add(kRecentInShare));
 	Expects(registry.Add(kRecentFolderIds));

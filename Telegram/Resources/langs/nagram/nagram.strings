@@ -67,6 +67,8 @@ Telegram/cmake/td_lang.cmake. Every key uses the lng_nagram_ prefix.
 "lng_nagram_disable_community_grouping" = "Never group community chats";
 "lng_nagram_disable_community_grouping_note" = "Every chat of a community is shown on its own, and the \"show as one\" switch is hidden. Takes effect after restart.";
 "lng_nagram_recent_chats_option" = "Remember recent chats";
+"lng_nagram_recent_chats_limit" = "Recent chats kept";
+"lng_nagram_recent_chats_limit_hint" = "Enter 5–100";
 "lng_nagram_recent_in_share" = "Show recent chats first when forwarding";
 "lng_nagram_recent_chats_note" = "Adds “Recent chats” to the main menu. The list is kept on this device for each account. Turning this off clears it.";
 "lng_nagram_recent_chats" = "Recent chats";

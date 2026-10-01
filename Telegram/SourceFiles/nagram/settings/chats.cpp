@@ -15,6 +15,7 @@
 #include "ui/layers/generic_box.h"
 #include "ui/widgets/buttons.h"
 #include "ui/widgets/checkbox.h"
+#include "ui/widgets/fields/input_field.h"
 #include "ui/wrap/vertical_layout.h"
 #include "window/window_session_controller.h"
 #include "styles/style_menu_icons.h"
@@ -146,6 +147,30 @@ void StartupFolderBox(
 		}
 		box->closeBox();
 	});
+}
+
+void RecentChatsLimitBox(not_null<Ui::GenericBox*> box) {
+	box->setTitle(tr::lng_nagram_recent_chats_limit());
+	const auto field = box->addRow(object_ptr<Ui::InputField>(
+		box,
+		st::defaultInputField,
+		tr::lng_nagram_recent_chats_limit_hint(),
+		QString::number(ForDevice().Get(Chats::kRecentChatsLimit))));
+	field->setInputMethodHints(Qt::ImhDigitsOnly);
+	box->setFocusCallback([=] { field->setFocusFast(); });
+	const auto submit = [=] {
+		auto valid = false;
+		const auto value = field->getLastText().trimmed().toInt(&valid);
+		if (!valid || !ForDevice().Set(Chats::kRecentChatsLimit, value)) {
+			field->showError();
+			return;
+		}
+		box->closeBox();
+	};
+	field->submits(
+	) | rpl::on_next([=](auto) { submit(); }, field->lifetime());
+	box->addButton(tr::lng_settings_save(), submit);
+	box->addButton(tr::lng_cancel(), [=] { box->closeBox(); });
 }
 
 const auto kMeta = BuildHelper({
@@ -296,6 +321,15 @@ const auto kMeta = BuildHelper({
 		tr::lng_nagram_recent_chats_option(),
 		u"nagram/chats/recent-chats"_q,
 		{ u"recent"_q, u"history"_q, u"main menu"_q });
+	builder.addButton({
+		.id = u"nagram/chats/recent-chats-limit"_q,
+		.title = tr::lng_nagram_recent_chats_limit(),
+		.st = &st::settingsButtonNoIcon,
+		.label = ForDevice().Value(Chats::kRecentChatsLimit)
+			| rpl::map([](int value) { return QString::number(value); }),
+		.onClick = [=] { controller->show(Box(RecentChatsLimitBox)); },
+		.keywords = { u"recent"_q, u"limit"_q, u"count"_q },
+	});
 	builder.addDividerText(tr::lng_nagram_recent_chats_note());
 	AddToggle(builder, Chats::kRecentInShare,
 		tr::lng_nagram_recent_in_share(),

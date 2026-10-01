@@ -14,8 +14,6 @@
 namespace Nagram::Chats {
 namespace {
 
-constexpr auto kMaximumRecentChats = 30; // matches ValidRecentChats
-
 std::vector<PeerId> ReadRecent(not_null<Main::Session*> session) {
 	auto result = std::vector<PeerId>();
 	const auto value = ForAccount(session).Get(kRecentChatsList);
@@ -65,8 +63,9 @@ void Remember(not_null<PeerData*> peer) {
 	auto ids = ReadRecent(session);
 	ids.erase(ranges::remove(ids, peer->id), ids.end());
 	ids.insert(ids.begin(), peer->id);
-	if (ids.size() > kMaximumRecentChats) {
-		ids.resize(kMaximumRecentChats);
+	const auto limit = ForDevice().Get(kRecentChatsLimit);
+	if (int(ids.size()) > limit) {
+		ids.resize(limit);
 	}
 	WriteRecent(session, ids);
 }
@@ -154,6 +153,13 @@ void WatchRecentChats(not_null<Window::SessionController*> controller) {
 		return !enabled;
 	}) | rpl::on_next([=] {
 		WriteRecent(session, {});
+	}, controller->lifetime());
+	ForDevice().Value(kRecentChatsLimit) | rpl::on_next([=](int limit) {
+		auto ids = ReadRecent(session);
+		if (int(ids.size()) > limit) {
+			ids.resize(limit);
+			WriteRecent(session, ids);
+		}
 	}, controller->lifetime());
 }
 
