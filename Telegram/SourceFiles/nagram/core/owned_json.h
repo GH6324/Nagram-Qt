@@ -12,14 +12,15 @@
 namespace Nagram {
 
 [[nodiscard]] inline std::optional<quint64> DecimalId(
-		const QJsonValue &value) {
+		const QJsonValue &value,
+		bool allowZero = false) {
 	if (!value.isString()) {
 		return std::nullopt;
 	}
 	const auto text = value.toString();
 	auto ok = false;
 	const auto id = text.toULongLong(&ok);
-	return (ok && id && QString::number(id) == text)
+	return (ok && (id || allowZero) && QString::number(id) == text)
 		? std::make_optional(quint64(id))
 		: std::nullopt;
 }

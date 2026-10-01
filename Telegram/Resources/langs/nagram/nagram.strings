@@ -133,6 +133,10 @@ Telegram/cmake/td_lang.cmake. Every key uses the lng_nagram_ prefix.
 "lng_nagram_hide_recommended_emoji" = "Hide recommended emoji";
 "lng_nagram_hide_gif_categories" = "Hide suggested GIF categories";
 "lng_nagram_hide_greeting_sticker" = "Hide greeting sticker in new private chats";
+"lng_nagram_unlimited_faved_stickers" = "Keep pushed-out favorite stickers on this device when favorites are full";
+"lng_nagram_unlimited_faved_stickers_about" = "Only keeps stickers pushed out when you add a favorite on this device. They are not synced to other devices, and changes made on other devices are not kept. Up to 200 stickers. When turned off, local favorites are no longer shown but stay saved.";
+"lng_nagram_local_faved_stickers" = "Favorite stickers kept on this device";
+"lng_nagram_local_faved_stickers_clear" = "Remove all favorite stickers kept on this device?";
 "lng_nagram_disable_video_autoplay" = "Disable video autoplay in chats";
 "lng_nagram_gif_playback_controls" = "Show GIF playback controls";
 "lng_nagram_mp4_file_preview" = "Keep video preview for MP4 files";

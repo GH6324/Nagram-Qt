@@ -5,6 +5,7 @@
 #include "nagram/chats/local_pins_model.h"
 #include "nagram/compose/options.h"
 #include "nagram/media/options.h"
+#include "nagram/media/local_faved_model.h"
 #include "nagram/menu/model.h"
 #include "nagram/privacy/options.h"
 #include "nagram/privacy/alias.h"
@@ -109,6 +110,7 @@ const Registry &RegisteredOptions() {
 		Interface::RegisterOptions(result);
 		Compose::RegisterOptions(result);
 		Media::RegisterOptions(result);
+		Media::RegisterLocalFavedOptions(result);
 		Menu::RegisterOptions(result);
 		Privacy::RegisterOptions(result);
 		Privacy::RegisterAliasOptions(result);

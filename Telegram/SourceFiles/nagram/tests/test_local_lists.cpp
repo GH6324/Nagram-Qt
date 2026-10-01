@@ -1,5 +1,8 @@
 #include "nagram/chats/local_pins_model.h"
 #include "nagram/core/exchange.h"
+#include "nagram/media/local_faved_model.h"
+
+#include <QtCore/QJsonArray>
 
 #include <QtCore/QJsonDocument>
 #include <QtCore/QJsonObject>
@@ -201,9 +204,145 @@ void TestLocalPins() {
 		Flag::RefreshDialogList), "local pins must refresh the chat list");
 }
 
+[[nodiscard]] Nagram::Media::LocalFavedItem FavedItem(quint64 id) {
+	return {
+		.id = id,
+		.set = id + 1000,
+		.hash = id * 7,
+		.app = 7002010,
+		.data = QByteArray::fromHex("00ff10") + QByteArray::number(id),
+	};
+}
+
+[[nodiscard]] std::vector<quint64> FavedIds(
+		const std::vector<Nagram::Media::LocalFavedItem> &items) {
+	auto result = std::vector<quint64>();
+	for (const auto &item : items) {
+		result.push_back(item.id);
+	}
+	return result;
+}
+
+void TestLocalFaved() {
+	using namespace Nagram;
+	using namespace Nagram::Media;
+	auto items = std::vector<LocalFavedItem>();
+	Require(AddFavedItem(items, FavedItem(1))
+		&& AddFavedItem(items, FavedItem(2))
+		&& AddFavedItem(items, FavedItem(3))
+		&& FavedIds(items) == std::vector<quint64>{ 3, 2, 1 },
+		"new local favorites must go first");
+	auto replaced = FavedItem(1);
+	replaced.data = "fresh";
+	Require(AddFavedItem(items, replaced)
+		&& FavedIds(items) == std::vector<quint64>{ 1, 3, 2 }
+		&& items.front().data == "fresh",
+		"a sticker must be kept once, with its newest data");
+	auto withoutSet = FavedItem(9);
+	withoutSet.set = 0;
+	Require(!AddFavedItem(items, withoutSet) && items.size() == 3,
+		"a sticker without a set accepted");
+
+	const auto raw = SerializeLocalFaved(items, kUser);
+	auto skipped = 0;
+	Require(ValidLocalFaved(raw)
+		&& ParseLocalFaved(raw, kUser, &skipped) == items
+		&& !skipped, "local favorites round trip");
+	auto zeroHash = FavedItem(4);
+	zeroHash.hash = 0;
+	zeroHash.id = 0xFFFFFFFFFFFFFFFFULL;
+	const auto edge = std::vector<LocalFavedItem>{ zeroHash };
+	Require(ParseLocalFaved(SerializeLocalFaved(edge, kUser), kUser) == edge,
+		"64 bit ids and an empty access hash must survive the round trip");
+	Require(SerializeLocalFaved({}, kUser).isEmpty()
+		&& ParseLocalFaved(QByteArray(), kUser).empty(),
+		"empty local favorites must clear the stored value");
+
+	Require(ParseLocalFaved(raw, kOtherUser).empty(),
+		"local favorites of another user must read as empty");
+	auto foreign = ParseLocalFaved(raw, kOtherUser);
+	Require(AddFavedItem(foreign, FavedItem(50)),
+		"local favorite after a user change");
+	const auto overwritten = SerializeLocalFaved(foreign, kOtherUser);
+	Require(FavedIds(ParseLocalFaved(overwritten, kOtherUser))
+			== std::vector<quint64>{ 50 }
+		&& ParseLocalFaved(overwritten, kUser).empty(),
+		"writing must replace the list of the previous user");
+
+	Require(RemoveFavedItem(items, 3)
+		&& !RemoveFavedItem(items, 3)
+		&& FavedIds(items) == std::vector<quint64>{ 1, 2 },
+		"local favorite removal");
+	items = { FavedItem(5), FavedItem(4), FavedItem(3), FavedItem(2) };
+	Require(MergeFavedItems(items, { 4, 2, 77 })
+		&& FavedIds(items) == std::vector<quint64>{ 5, 3 },
+		"server favorites must be removed, the rest keeps its order");
+	Require(!MergeFavedItems(items, { 77 }) && items.size() == 2,
+		"merge without common stickers changed the list");
+
+	auto full = std::vector<LocalFavedItem>();
+	for (auto i = 1; i <= kLocalFavedLimit; ++i) {
+		Require(AddFavedItem(full, FavedItem(quint64(i))),
+			"local favorite below the limit");
+	}
+	const auto before = full;
+	Require(!AddFavedItem(full, FavedItem(5000)) && full == before,
+		"local favorite above the limit must be refused, keeping the list");
+	const auto fullRaw = SerializeLocalFaved(full, kUser);
+	Require(ValidLocalFaved(fullRaw)
+		&& ParseLocalFaved(fullRaw, kUser) == full,
+		"a full local favorites list must stay valid");
+
+	auto object = QJsonDocument::fromJson(
+		SerializeLocalFaved({ FavedItem(1), FavedItem(2), FavedItem(3) },
+			kUser)).object();
+	auto list = object.value(QString::fromLatin1("items")).toArray();
+	auto damaged = list[1].toObject();
+	damaged.insert(QString::fromLatin1("data"), QString::fromLatin1("%%%"));
+	list[1] = damaged;
+	list.push_back(list[0]);
+	list.push_back(QString::fromLatin1("not an object"));
+	object.insert(QString::fromLatin1("items"), list);
+	const auto partly = QJsonDocument(object).toJson(QJsonDocument::Compact);
+	skipped = 0;
+	Require(ValidLocalFaved(partly)
+		&& FavedIds(ParseLocalFaved(partly, kUser, &skipped))
+			== std::vector<quint64>{ 1, 3 }
+		&& skipped == 3,
+		"a damaged item must be skipped and counted, keeping the rest");
+
+	for (const auto broken : {
+			"",
+			"not json",
+			R"({"user":"1","items":[]})",
+			R"({"version":2,"user":"1","items":[]})",
+			R"({"version":1,"user":"1","items":[],"extra":1})",
+			R"({"version":1,"user":1,"items":[]})",
+			R"({"version":1,"user":"01","items":[]})",
+			R"({"version":1,"user":"1","items":{}})" }) {
+		Require(!ValidLocalFaved(broken)
+			&& ParseLocalFaved(broken, 1).empty(),
+			"broken local favorites accepted");
+	}
+	auto tooMany = QJsonArray();
+	for (auto i = 0; i <= kLocalFavedLimit; ++i) {
+		tooMany.push_back(QJsonObject());
+	}
+	object.insert(QString::fromLatin1("items"), tooMany);
+	Require(!ValidLocalFaved(
+		QJsonDocument(object).toJson(QJsonDocument::Compact)),
+		"local favorites above the limit accepted");
+
+	auto registry = Registry();
+	RegisterLocalFavedOptions(registry);
+	CheckAccountList(registry, kUnlimitedFavedStickers, kLocalFavedStickers,
+		Category::Media, raw);
+}
+
 } // namespace
 
 void TestLocalLists() {
 	TestLocalPins();
+	TestLocalFaved();
 	std::cout << "PASS: Nagram local lists" << std::endl;
 }

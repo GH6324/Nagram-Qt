@@ -46,6 +46,8 @@ set(nagram_sources
     nagram/menu/selection.cpp
 	nagram/media/sticker_catalog.cpp
     nagram/media/extras.cpp
+    nagram/media/local_faved.cpp
+    nagram/media/local_faved_model.cpp
     nagram/messages/format.cpp
     nagram/messages/content.cpp
     nagram/messages/badges.cpp
@@ -209,6 +211,7 @@ if (DESKTOP_APP_TEST_APPS)
         nagram/links/model.cpp
         nagram/privacy/protection_model.cpp
         nagram/chats/local_pins_model.cpp
+        nagram/media/local_faved_model.cpp
     )
 
     target_include_directories(test_nagram PRIVATE

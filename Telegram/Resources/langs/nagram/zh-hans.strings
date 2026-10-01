@@ -129,6 +129,10 @@
 "lng_nagram_hide_recommended_emoji" = "隐藏推荐表情";
 "lng_nagram_hide_gif_categories" = "隐藏 GIF 推荐分类";
 "lng_nagram_hide_greeting_sticker" = "隐藏新私聊的问候贴纸";
+"lng_nagram_unlimited_faved_stickers" = "收藏已满时在本机保留被挤出的贴纸";
+"lng_nagram_unlimited_faved_stickers_about" = "只保留在本机收藏新贴纸时被挤出的贴纸，不会同步到其他设备；其他设备造成的变化不会保留。最多 200 个。关闭后本机收藏不再显示，记录保留。";
+"lng_nagram_local_faved_stickers" = "本机收藏的贴纸";
+"lng_nagram_local_faved_stickers_clear" = "移除所有本机收藏的贴纸？";
 "lng_nagram_disable_video_autoplay" = "关闭聊天中的视频自动播放";
 "lng_nagram_gif_playback_controls" = "显示 GIF 播放控制";
 "lng_nagram_mp4_file_preview" = "以文件发送 MP4 时保留视频预览";

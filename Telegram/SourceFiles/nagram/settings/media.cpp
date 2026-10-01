@@ -1,12 +1,15 @@
 #include "nagram/settings/media.h"
 
 #include "nagram/media/options.h"
+#include "nagram/media/local_faved.h"
+#include "nagram/media/local_faved_model.h"
 #include "nagram/media/sticker_catalog.h"
 #include "nagram/settings/home.h"
 #include "nagram/settings/restart.h"
 #include "lang/lang_keys.h"
 #include "settings/settings_builder.h"
 #include "settings/settings_common_session.h"
+#include "ui/boxes/confirm_box.h"
 #include "ui/layers/generic_box.h"
 #include "ui/vertical_list.h"
 #include "ui/widgets/buttons.h"
@@ -203,6 +206,31 @@ const auto kMeta = BuildHelper({
 			}),
 		.onClick = [=] { controller->show(Box(PanelScaleBox, controller)); },
 		.keywords = { u"sticker"_q, u"panel"_q, u"size"_q },
+	});
+	AddToggle(builder, Media::kUnlimitedFavedStickers,
+		tr::lng_nagram_unlimited_faved_stickers(),
+		u"nagram/media/unlimited-faved-stickers"_q,
+		{ u"favorite"_q, u"sticker"_q, u"unlimited"_q, u"limit"_q });
+	builder.addDividerText(tr::lng_nagram_unlimited_faved_stickers_about());
+	const auto session = builder.session();
+	builder.addButton({
+		.id = u"nagram/media/local-faved-stickers"_q,
+		.title = tr::lng_nagram_local_faved_stickers(),
+		.st = &st::settingsButtonNoIcon,
+		.label = Media::LocalFavedCountValue(session)
+			| rpl::map([](int count) { return QString::number(count); }),
+		.onClick = [=] {
+			controller->show(Ui::MakeConfirmBox({
+				.text = tr::lng_nagram_local_faved_stickers_clear(),
+				.confirmed = [=](Fn<void()> &&close) {
+					Media::ClearLocalFaved(session);
+					close();
+				},
+			}));
+		},
+		.keywords = { u"favorite"_q, u"sticker"_q, u"local"_q },
+		.shown = Media::LocalFavedCountValue(session)
+			| rpl::map([](int count) { return count > 0; }),
 	});
 	AddToggle(builder, Media::kDownloadsInMainMenu,
 		tr::lng_nagram_downloads_in_main_menu(),

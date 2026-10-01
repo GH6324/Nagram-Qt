@@ -146,6 +146,15 @@ B25、B26（P3-09 本地置顶）：
 | F11 | `storage/localimageloader.cpp` | 以文件发送的 MP4 附加视频属性与预览 | 读取 |
 | F12、F13 | 无上游改动（使用 `Data::Stickers` 已有接口） | — | — |
 
+F26、F27（P3-09 本机收藏）：
+
+| 条目 | 上游位置 | 需要处理的上游逻辑 | 方式 |
+| --- | --- | --- | --- |
+| F26 | `data/stickers/data_stickers.cpp` | `Stickers::checkFavedLimit` 移除末项之后、`MaybeShowPremiumToast` 之前调用 `Nagram::Media::KeepOverflowFaved(session, removing)`，返回 true 时不提示；`Stickers::isFaved` 先判断 `LocalFaved(document)`；`Stickers::setIsNotFaved` 加一行 `RemoveLocalFaved(document)` | 拦截 |
+| F26 | `chat_helpers/stickers_list_widget.cpp` | `StickersListWidget::refreshFavedStickers` 的贴纸列表改为 `Nagram::Media::WithLocalFaved(&session(), 服务端集合)`，服务端集合不存在但本机集合非空时不提前返回（约 6 行短块：需要改动函数内局部变量的来源和提前返回条件） | 替换 |
+
+不改 `FavedSetId` 集合的内容与持久化、`specialSetReceived`、`Api::CountFavedStickersHash`。与服务端的归并订阅上游已有的 `Data::Stickers::updated(StickersType::Stickers)`；本机集合的贴纸数据用上游公开的 `Serialize::Document::writeToStream` / `readStickerFromStream` 读写。
+
 ### 2.7 隐私与资料
 
 | 编号 | 上游位置 | 需要处理的上游逻辑 | 方式 |

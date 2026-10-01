@@ -8,6 +8,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "chat_helpers/stickers_list_widget.h"
 #include "nagram/media/options.h"
 #include "nagram/media/extras.h"
+#include "nagram/media/local_faved.h"
 
 #include "base/options.h"
 #include "base/timer_rpl.h"
@@ -3466,14 +3467,17 @@ void StickersListWidget::refreshFavedStickers() {
 	clearSelection();
 	const auto &sets = session().data().stickers().sets();
 	const auto it = sets.find(Data::Stickers::FavedSetId);
-	if (it == sets.cend()) {
+	const auto set = (it != sets.cend()) ? it->second.get() : nullptr;
+	const auto stickers = Nagram::Media::WithLocalFaved(
+		&session(),
+		set ? set->stickers : Data::StickersPack());
+	if (stickers.isEmpty()) {
 		return;
 	}
 	const auto skipPremium = !session().premiumPossible();
-	const auto set = it->second.get();
 	const auto externalLayout = false;
 	const auto shortName = QString();
-	auto elements = PrepareStickers(set->stickers, skipPremium);
+	auto elements = PrepareStickers(stickers, skipPremium);
 	if (elements.empty()) {
 		return;
 	}
@@ -3483,13 +3487,13 @@ void StickersListWidget::refreshFavedStickers() {
 		(SetFlag::Official | SetFlag::Special),
 		Lang::Hard::FavedSetTitle(),
 		shortName,
-		set->count,
+		set ? set->count : 0,
 		externalLayout,
 		std::move(elements)
 	});
 	_favedStickersMap = base::flat_set<not_null<DocumentData*>> {
-		set->stickers.begin(),
-		set->stickers.end()
+		stickers.begin(),
+		stickers.end()
 	};
 }
 
