@@ -184,8 +184,8 @@ E21 截图在 `history_view_element.h/.cpp`、`history_view_message.cpp`、`hist
 | B20 | `ui/widgets/chat_filters_tabs_strip.cpp` | 标签条样式经 `FiltersTabsStyle` 选择 | 替换 |
 | B21 | `window/window_session_controller.cpp` | 控制器构造时订阅加入频道事件 | 读取 |
 | B22 | `dialogs/dialogs_widget.cpp` | `peerSearchRequired` 增加条件 | 读取 |
-| B23 | `data/data_channel.h`、`history/history.cpp`、`window/window_peer_menu.cpp`、`boxes/peers/community_box.cpp` | `collapsedInDialogs()` 在总开关开启时返回 false；两处直接读标志位的判断改走该函数；隐藏“合并显示”开关 | 替换 |
-| B24 | `boxes/share_box.cpp`、`boxes/peer_list_controllers.cpp`、`window/window_peer_menu.cpp` | 分享框与转发选择框的默认列表在收藏夹后插入最近会话，并对后续列表去重 | 读取 |
+| B23 | `data/data_channel.h`、`history/history.cpp`、`window/window_peer_menu.cpp`、`boxes/peers/community_box.cpp`、`dialogs/dialogs_row.cpp`、`dialogs/dialogs_widget.cpp` | `collapsedInDialogs()` 在总开关开启时返回 false；两处直接读标志位的判断改走该函数；隐藏“合并显示”开关；会话头像不画社区展开角标，点头像不进入社区 | 替换 |
+| B24 | `boxes/share_box.cpp`、`boxes/peer_list_controllers.cpp`、`window/window_peer_menu.cpp` | 分享框与转发选择框的默认列表在收藏夹后插入最近会话，并对后续列表去重；编辑文件夹的会话选择框同样先列最近会话（只依赖 B16） | 读取 |
 | C28 | 无（`nagram/messages/format.cpp`） | 编辑标记文字来源 | 替换 |
 | C29 | `apiwrap.cpp` | 加入频道时不设置 `SimilarExpanded` | 读取 |
 | C30 | `history/view/history_view_reply.cpp` | 回复块按非气泡样式绘制底色，跳过背景图案 | 读取 |
