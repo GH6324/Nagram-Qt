@@ -2,9 +2,34 @@
 
 #include "nagram/core/options.h"
 
+#include <array>
+
 namespace Nagram::Interface {
 
 [[nodiscard]] bool ValidMainMenuBytes(const QByteArray &value);
+
+inline constexpr auto kAppIconIds = std::array{
+	u"block",
+	u"block_black",
+	u"block_blue",
+	u"block_niello",
+	u"block_purple",
+	u"classic",
+	u"colorful",
+	u"cyan",
+	u"black",
+};
+[[nodiscard]] inline bool ValidAppIcon(const QString &value) {
+	if (value.isEmpty()) {
+		return true;
+	}
+	for (const auto id : kAppIconIds) {
+		if (value == QStringView(id)) {
+			return true;
+		}
+	}
+	return false;
+}
 
 inline constexpr auto kRestart = static_cast<unsigned>(Flag::RequiresRestart);
 inline constexpr auto kBubbleRoundness = Option<int>{
@@ -58,6 +83,10 @@ inline const auto kMainMenuConfig = Option<QByteArray>{
 	"nagram.mainMenu", Scope::Device, QByteArray(),
 	Category::Interface, "lng_nagram_main_menu", 0,
 	ValidMainMenuBytes };
+inline const auto kAppIcon = Option<QString>{
+	"nagram.appIcon", Scope::Device, QString(),
+	Category::Interface, "lng_nagram_app_icon", 0,
+	ValidAppIcon };
 inline constexpr auto kHideAppIconBadge = Option<bool>{
 	"nagram.hideAppIconBadge", Scope::Device, false,
 	Category::Interface, "lng_nagram_hide_app_icon_badge" };
@@ -90,6 +119,7 @@ inline void RegisterOptions(Registry &registry) {
 	Expects(registry.Add(kAccountNameInTitle));
 	Expects(registry.Add(kAlwaysSeasonal));
 	Expects(registry.Add(kMainMenuConfig));
+	Expects(registry.Add(kAppIcon));
 	Expects(registry.Add(kHideAppIconBadge));
 	Expects(registry.Add(kNotificationDelay));
 	Expects(registry.Add(kOtherDeviceNotificationDelay));

@@ -15,6 +15,12 @@ The canonical icon is the Nagram iOS layered artwork, retained in
 with Xcode Icon Composer into `nagram.png`; application PNGs, the Windows ICO,
 macOS icon sets and non-macOS tray glyphs are derived from this artwork.
 Desktop PNG renditions use 8-bit sRGB with alpha for platform compatibility.
+
+On macOS the bundle icon is compiled from `Nagram.icon` when Xcode 26 or later
+is available, so the system renders it. The alternate icons offered in the
+settings are the Nagram iOS alternates, retained as `Nagram*.icon` next to it;
+`export_icons.py` renders their light and dark renditions into
+`Telegram/Resources/nagram/icons`. The same copyright applies to them.
 Required upstream and third-party notices remain unchanged.
 
 The macOS menu bar retains the upstream Telegram paper-plane glyph and unread

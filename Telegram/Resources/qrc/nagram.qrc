@@ -3,4 +3,15 @@
     <file alias="zh-hans.strings">../langs/nagram/zh-hans.strings</file>
     <file alias="zh-hant.strings">../langs/nagram/zh-hant.strings</file>
   </qresource>
+  <qresource prefix="/nagram/icons">
+    <file alias="block.png">../nagram/icons/block.png</file>
+    <file alias="block_black.png">../nagram/icons/block_black.png</file>
+    <file alias="block_blue.png">../nagram/icons/block_blue.png</file>
+    <file alias="block_niello.png">../nagram/icons/block_niello.png</file>
+    <file alias="block_purple.png">../nagram/icons/block_purple.png</file>
+    <file alias="classic.png">../nagram/icons/classic.png</file>
+    <file alias="colorful.png">../nagram/icons/colorful.png</file>
+    <file alias="cyan.png">../nagram/icons/cyan.png</file>
+    <file alias="black.png">../nagram/icons/black.png</file>
+  </qresource>
 </RCC>

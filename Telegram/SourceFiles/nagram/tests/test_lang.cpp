@@ -1,3 +1,6 @@
+#include "nagram/interface/options.h"
+
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <map>
@@ -181,6 +184,18 @@ int main() {
 		for (const auto &locale : { "zh-hans", "zh-hant" }) {
 			const auto path = root + "/nagram/" + locale + ".strings";
 			CheckTranslation(english, path);
+		}
+		for (const auto id : Nagram::Interface::kAppIconIds) {
+			const auto name = QString::fromUtf16(id).toStdString();
+			if (!english.contains("lng_nagram_app_icon_" + name)) {
+				throw std::runtime_error("App icon has no title: " + name);
+			}
+			for (const auto suffix : { ".png", "_dark.png" }) {
+				const auto path = root + "/../nagram/icons/" + name + suffix;
+				if (!std::filesystem::exists(path)) {
+					throw std::runtime_error("Missing app icon: " + path);
+				}
+			}
 		}
 		std::cout << "PASS: Nagram strings (" << english.size()
 			<< " English keys)" << std::endl;

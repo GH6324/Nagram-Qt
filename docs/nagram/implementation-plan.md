@@ -174,6 +174,12 @@
 | ✅ S108 | `feat(ai): Google, Microsoft and Yandex translation, DeepL formality` | H05 | 请求构造、响应解析、鉴权头有单元测试；未用真实密钥联调 |
 | ✅ S109 | `feat(chats): recent chats first when forwarding` | B24 | |
 
+### 应用图标（2026-10-02）
+
+| 步骤 | 提交 | 条目 | 备注 |
+| --- | --- | --- | --- |
+| ✅ S110 | `feat(interface): app icon selection` | A20 | 图标源与导出脚本在 `Telegram/Resources/branding/`；macOS 默认图标改为编译 `Nagram.icon`；macOS 切换效果经用户手动确认，Windows、Linux 待核对 |
+
 ### P3
 
 P3 功能不在本计划内。每项先在 `docs/nagram/` 下单独写设计并确认，再按本文件的规则拆分步骤。

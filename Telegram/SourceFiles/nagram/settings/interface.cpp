@@ -1,5 +1,6 @@
 #include "nagram/settings/interface.h"
 
+#include "nagram/interface/app_icon.h"
 #include "nagram/interface/options.h"
 #include "nagram/interface/main_menu.h"
 #include "nagram/settings/home.h"
@@ -12,9 +13,13 @@
 #include "ui/widgets/buttons.h"
 #include "ui/widgets/checkbox.h"
 #include "ui/widgets/fields/input_field.h"
+#include "ui/widgets/labels.h"
 #include "window/window_session_controller.h"
+#include "styles/style_layers.h"
 #include "styles/style_menu_icons.h"
+#include "styles/style_nagram_interface.h"
 #include "styles/style_settings.h"
+#include "styles/style_widgets.h"
 
 namespace Nagram {
 namespace {
@@ -182,6 +187,53 @@ void AddDelay(
 	});
 }
 
+void AppIconBox(not_null<Ui::GenericBox*> box) {
+	box->setTitle(tr::lng_nagram_app_icon());
+	const auto choices = Interface::AppIconChoices();
+	const auto current = ForDevice().Get(Interface::kAppIcon);
+	const auto shown = box->lifetime().make_state<QString>(current);
+	const auto size = st::nagramAppIconPreview;
+	const auto preview = box->addRow(
+		object_ptr<Ui::RpWidget>(box),
+		st::nagramAppIconPreviewMargin);
+	preview->resize(st::boxWidth, size);
+	preview->paintRequest(
+	) | rpl::on_next([=] {
+		auto p = QPainter(preview);
+		const auto ratio = style::DevicePixelRatio();
+		auto image = Interface::AppIconPreview(*shown).scaled(
+			QSize(size, size) * ratio,
+			Qt::IgnoreAspectRatio,
+			Qt::SmoothTransformation);
+		image.setDevicePixelRatio(ratio);
+		p.drawImage((preview->width() - size) / 2, 0, image);
+	}, preview->lifetime());
+	auto selected = 0;
+	for (auto i = 0; i != int(choices.size()); ++i) {
+		if (choices[i].id == current) {
+			selected = i;
+		}
+	}
+	const auto group = std::make_shared<Ui::RadiobuttonGroup>(selected);
+	for (auto i = 0; i != int(choices.size()); ++i) {
+		box->addRow(object_ptr<Ui::Radiobutton>(
+			box, group, i, choices[i].title, st::settingsSendType),
+			st::settingsSendTypePadding);
+	}
+	group->setChangedCallback([=](int value) {
+		*shown = choices[value].id;
+		Expects(ForDevice().Set(Interface::kAppIcon, *shown));
+		preview->update();
+	});
+	box->addRow(
+		object_ptr<Ui::FlatLabel>(
+			box,
+			tr::lng_nagram_app_icon_about(),
+			st::boxDividerLabel),
+		st::settingsSendTypePadding);
+	box->addButton(tr::lng_close(), [=] { box->closeBox(); });
+}
+
 void AddToggle(
 		SectionBuilder &builder,
 		const Option<bool> &option,
@@ -309,6 +361,15 @@ const auto kMeta = BuildHelper({
 		.id = u"nagram/interface/window-notification"_q,
 		.title = tr::lng_nagram_window_notification(),
 		.keywords = { u"window"_q, u"notification"_q },
+	});
+	builder.addButton({
+		.id = u"nagram/interface/app-icon"_q,
+		.title = tr::lng_nagram_app_icon(),
+		.st = &st::settingsButtonNoIcon,
+		.label = ForDevice().Value(Interface::kAppIcon)
+			| rpl::map(Interface::AppIconTitle),
+		.onClick = [=] { controller->show(Box(AppIconBox)); },
+		.keywords = { u"icon"_q, u"dock"_q, u"taskbar"_q },
 	});
 	AddToggle(builder, Interface::kHideAppIconBadge,
 		tr::lng_nagram_hide_app_icon_badge(),

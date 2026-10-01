@@ -7,6 +7,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 #include "platform/win/tray_win.h"
 
+#include "nagram/interface/app_icon.h"
 #include "base/invoke_queued.h"
 #include "base/qt_signal_producer.h"
 #include "core/application.h"
@@ -110,6 +111,13 @@ bool DarkTasbarValueValid/* = false*/;
 	static auto ScaledLogoNoMargin = base::flat_map<int, QImage>();
 	static auto ScaledLogoDark = base::flat_map<int, QImage>();
 	static auto ScaledLogoLight = base::flat_map<int, QImage>();
+	static auto Generation = 0;
+	const auto generation = Nagram::Interface::AppIconGeneration();
+	if (Generation != generation) {
+		Generation = generation;
+		ScaledLogo.clear();
+		ScaledLogoNoMargin.clear();
+	}
 
 	const auto darkMode = IsDarkTaskbar();
 	auto &scaled = (monochrome && darkMode)

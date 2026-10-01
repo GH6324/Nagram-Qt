@@ -19,6 +19,7 @@ set(nagram_sources
     nagram/interface/notifications.cpp
     nagram/interface/text.cpp
     nagram/interface/appearance.cpp
+    nagram/interface/app_icon.cpp
     nagram/chats/startup_folder.cpp
     nagram/chats/sort.cpp
     nagram/chats/recent_chats.cpp
@@ -132,6 +133,53 @@ if (APPLE AND NOT DESKTOP_APP_DISABLE_SWIFT6)
 endif()
 
 nice_target_sources(Telegram ${res_loc} PRIVATE qrc/nagram.qrc)
+if (APPLE)
+    nice_target_sources(Telegram ${res_loc} PRIVATE qrc/nagram_mac.qrc)
+endif()
+
+# Compiles the Icon Composer document so macOS renders the app icon itself.
+function(nagram_mac_app_icon result)
+    set(${result} FALSE PARENT_SCOPE)
+    execute_process(
+        COMMAND xcodebuild -version
+        OUTPUT_VARIABLE xcode_version_output
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        ERROR_QUIET)
+    if (NOT xcode_version_output MATCHES "Xcode ([0-9]+)")
+        message(STATUS "Nagram: Xcode not found, using the static app icon.")
+        return()
+    elseif (CMAKE_MATCH_1 LESS 26)
+        message(STATUS "Nagram: Xcode ${CMAKE_MATCH_1} cannot compile .icon documents, using the static app icon.")
+        return()
+    endif()
+    set(icon_source ${res_loc}/branding/Nagram.icon)
+    set(icon_output ${CMAKE_CURRENT_BINARY_DIR}/nagram_icon)
+    set(icon_deployment "${CMAKE_OSX_DEPLOYMENT_TARGET}")
+    if (NOT icon_deployment)
+        set(icon_deployment 11.0)
+    endif()
+    file(GLOB_RECURSE icon_inputs CONFIGURE_DEPENDS ${icon_source}/*)
+    add_custom_command(
+        OUTPUT ${icon_output}/Assets.car ${icon_output}/Nagram.icns
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${icon_output}
+        COMMAND xcrun actool ${icon_source}
+            --compile ${icon_output}
+            --app-icon Nagram
+            --platform macosx
+            --minimum-deployment-target ${icon_deployment}
+            --output-partial-info-plist ${icon_output}/partial.plist
+            --output-format human-readable-text
+        DEPENDS ${icon_inputs}
+        VERBATIM)
+    set_source_files_properties(
+        ${icon_output}/Assets.car
+        ${icon_output}/Nagram.icns
+        PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+    target_add_resource(Telegram
+        ${icon_output}/Assets.car
+        ${icon_output}/Nagram.icns)
+    set(${result} TRUE PARENT_SCOPE)
+endfunction()
 
 if (DESKTOP_APP_TEST_APPS)
     add_executable(test_nagram)

@@ -184,7 +184,7 @@ void TestOptions() {
 		Flag::RefreshDialogList), "stories use widget refresh");
 	auto interface = Registry();
 	Interface::RegisterOptions(interface);
-	Require(interface.All().size() == 18, "interface option count");
+	Require(interface.All().size() == 19, "interface option count");
 	Require(interface.HasFlag(Interface::kHalfwidthUiPunctuation.key,
 		Flag::RequiresRestart), "interface text restart flag");
 	Require(interface.HasFlag(Interface::kBubbleRoundness.key,
@@ -395,5 +395,12 @@ void TestOptions() {
 	Require(!Exchange::Apply(exchangeOptions, exchangeRegistry, stale).applied,
 		"stale import applied");
 	Require(exchangeOptions.Get(option) == 20, "stale import changed storage");
+	Require(Interface::ValidAppIcon(QString()), "default app icon rejected");
+	Require(Interface::ValidAppIcon(QString::fromLatin1("block_niello")),
+		"app icon rejected");
+	Require(!Interface::ValidAppIcon(QString::fromLatin1("../block")),
+		"app icon path accepted");
+	Require(!Interface::ValidAppIcon(QString::fromLatin1("Block")),
+		"unknown app icon accepted");
 	std::cout << "PASS: Nagram settings exchange" << std::endl;
 }

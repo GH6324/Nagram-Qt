@@ -8,6 +8,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "window/main_window.h"
 #include "nagram/interface/options.h"
 #include "nagram/interface/appearance.h"
+#include "nagram/interface/app_icon.h"
 #include "nagram/privacy/options.h"
 
 #include "api/api_updates.h"
@@ -143,11 +144,17 @@ const char kOptionNewWindowsSizeAsFirst[] = "new-windows-size-as-first";
 const char kOptionDisableTouchbar[] = "touchbar-disabled";
 
 const QImage &Logo() {
+	if (const auto custom = Nagram::Interface::CustomLogo()) {
+		return *custom;
+	}
 	static const auto result = QImage(u":/gui/art/logo_256.png"_q);
 	return result;
 }
 
 const QImage &LogoNoMargin() {
+	if (const auto custom = Nagram::Interface::CustomLogo()) {
+		return *custom;
+	}
 	static const auto result = QImage(u":/gui/art/logo_256_no_margin.png"_q);
 	return result;
 }
@@ -217,6 +224,9 @@ QIcon CreateSupportIcon(Main::Session *session) {
 }
 
 QIcon CreateIcon(Main::Session *session, bool returnNullIfDefault) {
+	if (auto custom = Nagram::Interface::CustomAppIcon(); !custom.isNull()) {
+		return custom;
+	}
 	const auto supportIcon = CreateSupportIcon(session);
 	if (!supportIcon.isNull() || returnNullIfDefault) {
 		return supportIcon;

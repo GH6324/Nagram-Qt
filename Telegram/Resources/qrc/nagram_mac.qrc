@@ -1,0 +1,13 @@
+<RCC>
+  <qresource prefix="/nagram/icons">
+    <file alias="block_dark.png">../nagram/icons/block_dark.png</file>
+    <file alias="block_black_dark.png">../nagram/icons/block_black_dark.png</file>
+    <file alias="block_blue_dark.png">../nagram/icons/block_blue_dark.png</file>
+    <file alias="block_niello_dark.png">../nagram/icons/block_niello_dark.png</file>
+    <file alias="block_purple_dark.png">../nagram/icons/block_purple_dark.png</file>
+    <file alias="classic_dark.png">../nagram/icons/classic_dark.png</file>
+    <file alias="colorful_dark.png">../nagram/icons/colorful_dark.png</file>
+    <file alias="cyan_dark.png">../nagram/icons/cyan_dark.png</file>
+    <file alias="black_dark.png">../nagram/icons/black_dark.png</file>
+  </qresource>
+</RCC>
