@@ -139,6 +139,8 @@
 "lng_nagram_force_copy_about" = "只作用於本機已收到的訊息和已下載的媒體。轉傳仍由 Telegram 限制，限時和付費媒體不受影響。";
 "lng_nagram_ignore_restrictions" = "忽略內容限制";
 "lng_nagram_ignore_restrictions_about" = "顯示被標記為在本平台無法使用的對話和訊息。Telegram 未下發的內容無法顯示。";
+"lng_nagram_skip_sensitive_warning" = "自動顯示敏感媒體";
+"lng_nagram_skip_sensitive_warning_about" = "只影響本機，不改變帳號的敏感內容設定。需要年齡驗證時不生效。";
 "lng_nagram_profile_id_format" = "在個人資料顯示 ID";
 "lng_nagram_id_off" = "關閉";
 "lng_nagram_id_bot_api" = "Bot API 格式";

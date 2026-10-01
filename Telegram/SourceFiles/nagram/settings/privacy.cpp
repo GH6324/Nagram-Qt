@@ -3,6 +3,8 @@
 #include "nagram/privacy/options.h"
 #include "nagram/settings/home.h"
 #include "nagram/settings/restart.h"
+#include "api/api_sensitive_content.h"
+#include "apiwrap.h"
 #include "lang/lang_keys.h"
 #include "main/main_session.h"
 #include "main/main_session_settings.h"
@@ -197,6 +199,20 @@ const auto kMeta = BuildHelper({
 		u"nagram/privacy/ignore-restrictions"_q,
 		{ u"restriction"_q, u"unavailable"_q });
 	builder.addDividerText(tr::lng_nagram_ignore_restrictions_about());
+	const auto sensitive = &session->api().sensitiveContent();
+	if (builder.controller()) {
+		sensitive->reload();
+	}
+	if (builder.controller() || sensitive->canChangeCurrent()) {
+		builder.scope([&] {
+			AddToggle(builder, Privacy::kSkipSensitiveWarning,
+				tr::lng_nagram_skip_sensitive_warning(),
+				u"nagram/privacy/skip-sensitive-warning"_q,
+				{ u"sensitive"_q, u"18+"_q, u"spoiler"_q });
+			builder.addDividerText(
+				tr::lng_nagram_skip_sensitive_warning_about());
+		}, sensitive->canChange());
+	}
 	const auto controller = builder.controller();
 	builder.addButton({
 		.id = u"nagram/privacy/profile-id-format"_q,

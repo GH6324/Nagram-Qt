@@ -5,6 +5,9 @@
 
 class HistoryItem;
 class PeerData;
+namespace Main {
+class Session;
+} // namespace Main
 namespace Window {
 class SessionController;
 } // namespace Window
@@ -13,6 +16,11 @@ namespace Nagram::Privacy {
 
 [[nodiscard]] bool CopyAllowed(bool force, bool allowsForwarding);
 [[nodiscard]] bool CopyForbidden(bool force, bool forbidsForward);
+[[nodiscard]] bool SensitiveWarningSkipped(
+	bool enabled,
+	bool loaded,
+	bool canChange,
+	bool ageVerifyNeeded);
 
 [[nodiscard]] bool DoNotSharePhoneByDefault();
 
@@ -25,5 +33,10 @@ namespace Nagram::Privacy {
 
 [[nodiscard]] bool IgnoreRestrictions();
 void WatchRestrictions(gsl::not_null<Window::SessionController*> controller);
+
+[[nodiscard]] bool SkipSensitiveWarning(gsl::not_null<Main::Session*> session);
+void AttachSensitive(gsl::not_null<Main::Session*> session);
+[[nodiscard]] rpl::producer<> SensitiveRevealed(
+	gsl::not_null<Main::Session*> session);
 
 } // namespace Nagram::Privacy

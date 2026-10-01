@@ -10,4 +10,12 @@ bool CopyForbidden(bool force, bool forbidsForward) {
 	return !force && forbidsForward;
 }
 
+bool SensitiveWarningSkipped(
+		bool enabled,
+		bool loaded,
+		bool canChange,
+		bool ageVerifyNeeded) {
+	return enabled && loaded && canChange && !ageVerifyNeeded;
+}
+
 } // namespace Nagram::Privacy

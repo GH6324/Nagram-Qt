@@ -193,10 +193,11 @@ P3 功能不在本计划内。每项先在 `docs/nagram/` 下单独写设计并�
 | ✅ S120 | `feat(privacy): keep phone number unshared by default when adding contacts` | G16 | 只改复选框初始值；添加联系人框的开／关对照未现场验证 |
 | ✅ S121 | `feat(privacy): copy and save protected content` | G13 | 同时解除受保护会话的截屏保护；转发、动态、导出、限时与付费媒体、消息截图（E21）保持不变。受保护会话的复制、保存、共享媒体页与媒体查看器未现场验证 |
 | ✅ S122 | `feat(privacy): ignore content restrictions` | G14 | 只作用于客户端已收到的数据；`sensitive` 原因不受影响。缺少带 `all` 平台限制的样本，会话与消息的开／关对照未现场验证 |
+| ✅ S123 | `feat(privacy): show sensitive media without the warning` | G15 | 保留“已加载、账号可调整、不需年龄验证”的门槛，不改服务端设置。敏感媒体样本、离线启动后联网、双账号能力不同均未现场验证。**P3-03 的 V2（rebase 到上游 `dev`、完整构建、三平台 CI）未做** |
 
 | 包 | 专项设计 | 步骤 | 设置页条目 |
 | --- | --- | --- | --- |
-| P3-03 | [内容保护与敏感内容](p3-03-content-protection.md) | S120–S123 | G13–G16 |
+| P3-03（已实现） | [内容保护与敏感内容](p3-03-content-protection.md) | S120–S123 | G13–G16 |
 | P3-04 | [自动翻译继承与 LLM](p3-04-translation-llm.md) | S140–S145 | H06–H10、E36–E37 |
 | P3-05 | [规则继承与 inline bot](p3-05-rules-inline-bot.md) | S150–S153 | I04–I08 |
 | P3-06 | [网络](p3-06-network.md) | S160–S162 | K01–K06 |

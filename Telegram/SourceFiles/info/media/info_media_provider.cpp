@@ -73,6 +73,14 @@ Provider::Provider(not_null<AbstractController*> controller)
 			}
 		}
 	}, _lifetime);
+
+	Nagram::Privacy::SensitiveRevealed(
+		&_controller->session()
+	) | rpl::on_next([=] {
+		for (auto &[id, layout] : _layouts) {
+			layout.item->maybeClearSensitiveSpoiler();
+		}
+	}, _lifetime);
 }
 
 Type Provider::type() {

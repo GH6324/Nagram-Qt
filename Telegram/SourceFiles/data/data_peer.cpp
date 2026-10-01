@@ -133,7 +133,7 @@ QString UnavailableReason::Compute(
 
 bool UnavailableReason::IgnoreSensitiveMark(
 		not_null<Main::Session*> session) {
-	return ranges::contains(
+	return Nagram::Privacy::SkipSensitiveWarning(session) || ranges::contains(
 			IgnoredReasons(session),
 			UnavailableReason::Sensitive().reason);
 }

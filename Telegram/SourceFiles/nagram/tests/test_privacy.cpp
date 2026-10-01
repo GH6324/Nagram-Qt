@@ -114,6 +114,22 @@ void CheckCopyRules() {
 	}
 }
 
+void CheckSensitiveRules() {
+	using namespace Nagram::Privacy;
+	for (auto mask = 0; mask != 16; ++mask) {
+		const auto enabled = (mask & 1) != 0;
+		const auto loaded = (mask & 2) != 0;
+		const auto canChange = (mask & 4) != 0;
+		const auto ageVerifyNeeded = (mask & 8) != 0;
+		Require(SensitiveWarningSkipped(
+			enabled,
+			loaded,
+			canChange,
+			ageVerifyNeeded) == (mask == 7),
+			"sensitive media shown without an adjustable account setting");
+	}
+}
+
 } // namespace
 
 void TestPrivacy() {
@@ -123,6 +139,8 @@ void TestPrivacy() {
 	CheckSwitch(registry, Privacy::kDoNotSharePhone, false);
 	CheckSwitch(registry, Privacy::kForceCopy, true);
 	CheckSwitch(registry, Privacy::kIgnoreContentRestrictions, true);
+	CheckSwitch(registry, Privacy::kSkipSensitiveWarning, true);
+	CheckSensitiveRules();
 	CheckCopyRules();
 
 	auto prefs = MemoryPrefs();
