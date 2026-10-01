@@ -2,6 +2,10 @@
 
 #include "nagram/core/options.h"
 
+#include <QtCore/QSize>
+
+#include <algorithm>
+
 namespace Nagram::Links {
 
 enum class HashtagPage { Follow, ThisChat, MyMessages };
@@ -17,6 +21,31 @@ inline constexpr auto kHashtagSearchPageChat = Option<int>{
 	"nagram.hashtagSearchPageChat", Scope::Device, 0,
 	Category::Rules, "lng_nagram_hashtag_page_chat", 0,
 	[](const int &value) { return value >= 0 && value <= 2; } };
+
+[[nodiscard]] constexpr bool ValidWebAppScale(const int &value) {
+	return value >= 100 && value <= 200 && value % 25 == 0;
+}
+
+inline constexpr auto kWebAppWidthScale = Option<int>{
+	"nagram.webAppWidthScale", Scope::Device, 100,
+	Category::Rules, "lng_nagram_web_app_width", 0, ValidWebAppScale };
+inline constexpr auto kWebAppHeightScale = Option<int>{
+	"nagram.webAppHeightScale", Scope::Device, 100,
+	Category::Rules, "lng_nagram_web_app_height", 0, ValidWebAppScale };
+
+[[nodiscard]] inline QSize ScaledPanelSize(
+		QSize base,
+		int widthScale,
+		int heightScale,
+		QSize available) {
+	auto result = QSize(
+		base.width() * widthScale / 100,
+		base.height() * heightScale / 100);
+	if (!available.isEmpty()) {
+		result = result.boundedTo(available.expandedTo(base));
+	}
+	return result;
+}
 
 [[nodiscard]] inline HashtagPage ResolveHashtagPage(
 		bool clicked,
@@ -37,6 +66,8 @@ inline void RegisterBehaviorOptions(Registry &registry) {
 	Expects(registry.Add(kDisableOfficialAutoLogin));
 	Expects(registry.Add(kHashtagSearchPageChannel));
 	Expects(registry.Add(kHashtagSearchPageChat));
+	Expects(registry.Add(kWebAppWidthScale));
+	Expects(registry.Add(kWebAppHeightScale));
 }
 
 } // namespace Nagram::Links

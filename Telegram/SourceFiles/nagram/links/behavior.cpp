@@ -11,8 +11,14 @@
 #include "main/main_session.h"
 #include "window/window_session_controller.h"
 
+#include <QtGui/QGuiApplication>
+#include <QtGui/QScreen>
+#include <QtGui/QWindow>
+
 namespace Nagram::Links {
 namespace {
+
+constexpr auto kWebAppScreenMargin = 80;
 
 auto ClickActive = false;
 PeerData *ClickPeer = nullptr;
@@ -68,6 +74,23 @@ void ApplyHashtagSearchPage(Dialogs::SearchState &state) {
 		state.inChat = peer->owner().history(peer).get();
 		state.tab = state.defaultTabForMe();
 	}
+}
+
+QSize WebAppPanelSize(QSize base) {
+	const auto width = ForDevice().Get(kWebAppWidthScale);
+	const auto height = ForDevice().Get(kWebAppHeightScale);
+	if (width == 100 && height == 100) {
+		return base;
+	}
+	const auto window = QGuiApplication::focusWindow();
+	const auto screen = window
+		? window->screen()
+		: QGuiApplication::primaryScreen();
+	const auto margin = style::ConvertScale(kWebAppScreenMargin);
+	const auto available = screen
+		? (screen->availableGeometry().size() - QSize(margin, margin))
+		: QSize();
+	return ScaledPanelSize(base, width, height, available);
 }
 
 } // namespace Nagram::Links

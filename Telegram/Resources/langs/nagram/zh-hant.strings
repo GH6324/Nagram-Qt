@@ -292,6 +292,10 @@
 "lng_nagram_hashtag_page_chat" = "在其他對話中點擊主題標籤時";
 "lng_nagram_hashtag_page_this_chat" = "在此對話中搜尋";
 "lng_nagram_hashtag_page_my_messages" = "在我的訊息中搜尋";
+"lng_nagram_web_app_group" = "網頁應用程式";
+"lng_nagram_web_app_width" = "網頁應用程式視窗寬度";
+"lng_nagram_web_app_height" = "網頁應用程式視窗高度";
+"lng_nagram_web_app_size_about" = "只影響之後新開啟的視窗，不超過螢幕可用區域。視窗開啟後仍可拖曳調整。";
 "lng_nagram_menu_reading" = "顯示原文 / 轉換後文字";
 "lng_nagram_menu_media_filename" = "檔案名稱";
 "lng_nagram_menu_media_type" = "類型";

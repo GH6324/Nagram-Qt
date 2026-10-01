@@ -123,9 +123,42 @@ void TestLinkBehavior() {
 		"official auto-login switch");
 }
 
+void TestWebAppSize() {
+	using namespace Nagram;
+	using namespace Nagram::Links;
+	auto registry = Registry();
+	RegisterBehaviorOptions(registry);
+	CheckDeviceOption(registry, kWebAppWidthScale, Category::Rules, 150);
+	CheckDeviceOption(registry, kWebAppHeightScale, Category::Rules, 200);
+	for (const auto option : { &kWebAppWidthScale, &kWebAppHeightScale }) {
+		Require(option->fallback == 100
+			&& option->validate(100)
+			&& option->validate(125)
+			&& option->validate(200)
+			&& !option->validate(75)
+			&& !option->validate(110)
+			&& !option->validate(225), "web app scale bounds");
+	}
+
+	const auto base = QSize(384, 694);
+	const auto screen = QSize(1440, 860);
+	Require(ScaledPanelSize(base, 100, 100, screen) == base
+		&& ScaledPanelSize(base, 100, 100, QSize()) == base
+		&& ScaledPanelSize(base, 100, 100, QSize(300, 500)) == base,
+		"default web app size must stay the upstream size");
+	Require(ScaledPanelSize(base, 150, 100, screen) == QSize(576, 694)
+		&& ScaledPanelSize(base, 200, 125, screen) == QSize(768, 860),
+		"web app size must scale and stay inside the available area");
+	Require(ScaledPanelSize(base, 200, 200, QSize()) == QSize(768, 1388),
+		"web app size without a screen must return the scaled size");
+	Require(ScaledPanelSize(base, 200, 200, QSize(300, 500)) == base,
+		"web app size must not shrink below the upstream size");
+}
+
 } // namespace
 
 void TestP3Misc() {
 	TestLinkBehavior();
+	TestWebAppSize();
 	std::cout << "PASS: Nagram P3-09 options" << std::endl;
 }

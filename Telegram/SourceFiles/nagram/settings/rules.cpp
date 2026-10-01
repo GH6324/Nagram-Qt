@@ -179,6 +179,45 @@ const auto kMeta = BuildHelper({
 	addHashtagPage(&Links::kHashtagSearchPageChat,
 		&tr::lng_nagram_hashtag_page_chat,
 		u"nagram/rules/hashtag-page-chat"_q);
+	builder.addSubsectionTitle({
+		.id = u"nagram/rules/web-app"_q,
+		.title = tr::lng_nagram_web_app_group(),
+		.keywords = { u"web app"_q, u"mini app"_q },
+	});
+	const auto addWebAppScale = [&](
+			const Option<int> *option,
+			const tr::phrase<> *title,
+			QString id) {
+		builder.addButton({
+			.id = std::move(id),
+			.title = (*title)(),
+			.st = &st::settingsButtonNoIcon,
+			.label = ForDevice().Value(*option) | rpl::map([](int value) {
+				return QString::number(value) + '%';
+			}),
+			.onClick = [=] {
+				const auto values = std::vector<int>{ 100, 125, 150, 175, 200 };
+				auto labels = std::vector<QString>();
+				for (const auto &value : values) {
+					labels.push_back(QString::number(value) + '%');
+				}
+				controller->show(Box(
+					ChoiceBox,
+					option,
+					title,
+					values,
+					std::move(labels)));
+			},
+			.keywords = { u"web app"_q, u"mini app"_q, u"size"_q },
+		});
+	};
+	addWebAppScale(&Links::kWebAppWidthScale,
+		&tr::lng_nagram_web_app_width,
+		u"nagram/rules/web-app-width"_q);
+	addWebAppScale(&Links::kWebAppHeightScale,
+		&tr::lng_nagram_web_app_height,
+		u"nagram/rules/web-app-height"_q);
+	builder.addDividerText(tr::lng_nagram_web_app_size_about());
 });
 
 const SectionBuildMethod RulesSection::kBuild = kMeta.build;

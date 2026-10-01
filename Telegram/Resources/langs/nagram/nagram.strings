@@ -296,6 +296,10 @@ Telegram/cmake/td_lang.cmake. Every key uses the lng_nagram_ prefix.
 "lng_nagram_hashtag_page_chat" = "When clicking a hashtag in other chats";
 "lng_nagram_hashtag_page_this_chat" = "Search in this chat";
 "lng_nagram_hashtag_page_my_messages" = "Search in my messages";
+"lng_nagram_web_app_group" = "Web apps";
+"lng_nagram_web_app_width" = "Web app window width";
+"lng_nagram_web_app_height" = "Web app window height";
+"lng_nagram_web_app_size_about" = "Applies to web app windows opened afterwards and never exceeds the available screen area. An open window can still be resized by dragging.";
 "lng_nagram_menu_reading" = "Show original / converted text";
 "lng_nagram_menu_media_filename" = "File name";
 "lng_nagram_menu_media_type" = "Type";

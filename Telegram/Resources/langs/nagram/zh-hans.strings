@@ -292,6 +292,10 @@
 "lng_nagram_hashtag_page_chat" = "在其他对话中点击话题标签时";
 "lng_nagram_hashtag_page_this_chat" = "在本对话中搜索";
 "lng_nagram_hashtag_page_my_messages" = "在我的消息中搜索";
+"lng_nagram_web_app_group" = "网页应用";
+"lng_nagram_web_app_width" = "网页应用窗口宽度";
+"lng_nagram_web_app_height" = "网页应用窗口高度";
+"lng_nagram_web_app_size_about" = "只影响之后新打开的窗口，不超过屏幕可用区域。窗口打开后仍可拖动调整。";
 "lng_nagram_menu_reading" = "显示原文 / 转换后文字";
 "lng_nagram_menu_media_filename" = "文件名";
 "lng_nagram_menu_media_type" = "类型";

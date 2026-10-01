@@ -172,6 +172,7 @@
 | I02 | `core/ui_integration.cpp`（外部链接打开） | 打开链接前按规则改写并确认 | 拦截 |
 | I11 | `core/ui_integration.cpp` | `UrlWithAutoLoginToken` 的提前返回条件加入 `Nagram::Links::AutoLoginDisabled()`；`url_auth_domains` 的 `BotAutoLogin` 确认框不动 | 读取 |
 | I12、I13 | `core/click_handler_types.cpp`、`mainwidget.cpp` | `SearchByHashtag` 开头建立 `Nagram::Links::HashtagClickScope`（记录点击所在的对话；`#标签@用户名` 不建立有效标记）；`MainWidget::searchMessages` 在 `state.tab = state.defaultTabForMe()` 之后调用 `Nagram::Links::ApplyHashtagSearchPage(state)`，只在标记有效时改写 `inChat` 与页面 | 替换 |
+| I14、I15 | `ui/chat/attach/attach_bot_webview.cpp` | `Panel::Panel` 的 `setInnerSize` 与 `Panel::createWebview` 中 Linux 外部壳的 `initialSize` 改用 `Nagram::Links::WebAppPanelSize(st::botWebViewPanelSize)`；两个比例都是 100% 时原样返回 | 替换 |
 
 E21 截图在 `history_view_element.h/.cpp`、`history_view_message.cpp`、`history_view_text_helper.cpp` 和 `history_view_media.cpp` 增加绘制代理挂钩，预览与导出逻辑留在 `nagram/snapshot/`。E23 通过既有两条消息菜单路径的 `Apply` 插入，作者列表只写入本机账号偏好。
 

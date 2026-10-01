@@ -6,6 +6,7 @@ For license and copyright information please follow this link:
 https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 #include "ui/chat/attach/attach_bot_webview.h"
+#include "nagram/links/behavior.h"
 
 #include "ui/chat/attach/attach_bot_downloads.h"
 #include "ui/chat/attach/attach_bot_webview_linux_shell.h"
@@ -1244,7 +1245,9 @@ Panel::Panel(Args &&args)
 		}, _widget->lifetime());
 	}
 	_widget->setWindowFlag(Qt::WindowStaysOnTopHint, false);
-	_widget->setInnerSize(st::botWebViewPanelSize, true);
+	_widget->setInnerSize(
+		Nagram::Links::WebAppPanelSize(st::botWebViewPanelSize),
+		true);
 
 	const auto panel = _widget.get();
 	rpl::duplicate(
@@ -2183,7 +2186,8 @@ bool Panel::createWebview(const Webview::ThemeParams &params) {
 				? LinuxShell::Unscaled(st::botWebViewShellShadowPadding)
 				: QMargins(),
 			.initialSize = _externalShell
-				? LinuxShell::WindowSize(st::botWebViewPanelSize)
+				? LinuxShell::WindowSize(
+					Nagram::Links::WebAppPanelSize(st::botWebViewPanelSize))
 				: QSize(),
 			.shellMessageToken = _externalShell
 				? _externalShellToken

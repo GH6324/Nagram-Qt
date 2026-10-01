@@ -1,6 +1,7 @@
 #pragma once
 
 class PeerData;
+class QSize;
 class QString;
 struct ClickContext;
 
@@ -24,5 +25,7 @@ private:
 };
 
 void ApplyHashtagSearchPage(Dialogs::SearchState &state);
+
+[[nodiscard]] QSize WebAppPanelSize(QSize base);
 
 } // namespace Nagram::Links
