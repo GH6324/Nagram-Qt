@@ -51,6 +51,9 @@ on:
       ref:
         type: string
         default: ""
+      archs:
+        type: string
+        default: '["x64","arm64"]'
 
 jobs:
 
@@ -68,7 +71,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        arch: [x64, arm64]
+        arch: ${{ fromJSON(inputs.archs || '["x64","arm64"]') }}
         qt: [qt6]
         generator: [""]
 
@@ -121,6 +124,16 @@ jobs:
             }
           }
           Get-PSDrive -PSProvider FileSystem | Format-Table Name, Used, Free
+
+      # Release compilation on the x64 runner runs out of memory otherwise
+      # (C1060, compiler is out of heap space).
+      - name: Enlarge the page file.
+        if: matrix.arch == 'x64' && env.CONFIG == 'Release'
+        uses: al-cheb/configure-pagefile-action@v1.4
+        with:
+          minimum-size: 16GB
+          maximum-size: 48GB
+          disk-root: "D:"
 
       - name: Get repository name.
         shell: bash
@@ -235,6 +248,36 @@ jobs:
         run: |
           %TBUILD%\%REPO_NAME%\Telegram\build\prepare\win.bat ${{ env.CONFIG == 'Debug' && 'skip-release' || '' }} silent ${{ matrix.qt }}
 
+      # The combined cache steps save only when the whole job succeeds, which
+      # would lose hours of release libraries to a later failure.
+      - name: Save ThirdParty cache.
+        if: env.CONFIG == 'Release' && steps.cache-third-party.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v6
+        with:
+          path: ${{ env.TBUILD }}\ThirdParty
+          key: ${{ steps.cache-third-party.outputs.cache-primary-key }}
+
+      - name: Save Libraries cache.
+        if: env.CONFIG == 'Release' && steps.cache-libs.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v6
+        with:
+          path: |
+            ${{ env.LibrariesPath }}\*
+            !${{ env.LibrariesPath }}\cache_keys
+            !${{ env.LibrariesPath }}\[qQ]t[_-]*
+            ${{ env.LibrariesPath }}\cache_keys\*
+            !${{ env.LibrariesPath }}\cache_keys\[qQ]t[_-]*
+          key: ${{ steps.cache-libs.outputs.cache-primary-key }}
+
+      - name: Save Qt cache.
+        if: env.CONFIG == 'Release' && steps.cache-qt.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v6
+        with:
+          path: |
+            ${{ env.LibrariesPath }}\[qQ]t[_-]*
+            ${{ env.LibrariesPath }}\cache_keys\[qQ]t[_-]*
+          key: ${{ steps.cache-qt.outputs.cache-primary-key }}
+
       - name: Read configuration matrix.
         shell: bash
         env:
@@ -309,6 +352,7 @@ jobs:
           %TDESKTOP_BUILD_DEFINE%
 
           cmake --build ..\out --config %CONFIG% --parallel
+          if errorlevel 1 exit /b 1
           ..\out\nagram-tests\%CONFIG%\test_nagram.exe
 
       - name: Move artifact.

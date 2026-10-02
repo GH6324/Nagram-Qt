@@ -15,6 +15,11 @@ on:
         type: choice
         default: all
         options: [all, macos, windows, linux]
+      windows_arch:
+        description: Windows architecture to build, for trial runs.
+        type: choice
+        default: all
+        options: [all, x64, arm64]
 
 jobs:
 
@@ -32,6 +37,7 @@ jobs:
     with:
       config: Release
       ref: ${{ inputs.tag || github.ref_name }}
+      archs: ${{ inputs.windows_arch == 'x64' && '["x64"]' || inputs.windows_arch == 'arm64' && '["arm64"]' || '["x64","arm64"]' }}
     secrets: inherit
 
   linux:
