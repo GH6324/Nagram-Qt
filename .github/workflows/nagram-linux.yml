@@ -55,6 +55,13 @@ on:
 jobs:
 
   linux:
+    # A push whose commit message has a marker such as [linux-only] builds
+    # only the named platforms; several markers may be combined.
+    if: >-
+      inputs.config == 'Release'
+      || github.event_name != 'push'
+      || !contains(github.event.head_commit.message, '-only]')
+      || contains(github.event.head_commit.message, '[linux-only]')
     name: Rocky Linux 8
     runs-on: ubuntu-latest
 

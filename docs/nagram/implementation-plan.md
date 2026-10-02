@@ -38,6 +38,8 @@
 | V2 里程碑 | 每个里程碑最后一个提交后 | rebase 到最新上游 `dev`；本地完整构建；三平台 CI（`nagram-mac/win/linux.yml`）通过；隔离数据目录启动冒烟（登录页、设置页、打开一个聊天）；在 `design.md` 更新里程碑状态 |
 | V0 首次 | S10 | 第一次完整构建，同时验证已提交但尚未编译的文案管线（S01）、品牌（S02）与构建配置（S04）；发现的问题并入对应提交 |
 
+提交信息里写 `[macos-only]`、`[windows-only]` 或 `[linux-only]` 时，推送只触发对应平台的 CI，可同时写多个；判断只看一次推送中最后一个提交的信息，没有标记时三个平台都构建。发布构建不受标记影响。
+
 构建目录使用仓库外或 `out/` 下的独立目录；本地登录测试的 API 凭据来自环境变量 `NAGRAM_API_ID` / `NAGRAM_API_HASH` 或忽略提交的 `Telegram/build/api_credentials.local.cmake`（见该目录下的 `.example`），并设置 `-D TDESKTOP_API_TEST=OFF`。公开测试凭据 `17349` 不用于本地登录测试。
 
 ## 4. 步骤

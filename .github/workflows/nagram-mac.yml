@@ -51,6 +51,13 @@ on:
 jobs:
 
   macos:
+    # A push whose commit message has a marker such as [macos-only] builds
+    # only the named platforms; several markers may be combined.
+    if: >-
+      inputs.config == 'Release'
+      || github.event_name != 'push'
+      || !contains(github.event.head_commit.message, '-only]')
+      || contains(github.event.head_commit.message, '[macos-only]')
     name: MacOS
     runs-on: macos-latest
 
