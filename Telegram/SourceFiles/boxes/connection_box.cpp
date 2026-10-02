@@ -52,6 +52,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "ui/vertical_list.h"
 #include "ui/ui_utility.h"
 #include "boxes/abstract_box.h" // Ui::show().
+#include "window/main_window.h"
 #include "window/window_session_controller.h"
 #include "styles/style_boxes.h"
 #include "styles/style_chat_helpers.h"
@@ -166,10 +167,6 @@ using ProxyData = MTP::ProxyData;
 	return domain + queryPath;
 }
 
-[[nodiscard]] QColor ProxyQrActiveColor() {
-	return QColor(0x40, 0xA7, 0xE3);
-}
-
 [[nodiscard]] QImage ProxyQr(const Qr::Data &data, int pixel, int max = 0) {
 	Expects(data.size > 0);
 
@@ -191,15 +188,17 @@ using ProxyData = MTP::ProxyData;
 	auto result = QImage(
 		size * style::DevicePixelRatio(),
 		QImage::Format_ARGB32_Premultiplied);
-	result.fill(Qt::transparent);
+	result.fill(Qt::white);
 	result.setDevicePixelRatio(style::DevicePixelRatio());
 	{
 		auto p = QPainter(&result);
 		auto hq = PainterHighQualityEnabler(p);
-		p.setBrush(ProxyQrActiveColor());
-		p.setPen(Qt::NoPen);
-		p.drawEllipse(QRect(QPoint(), size));
-		st::introQrPlane.paintInCenter(p, QRect(QPoint(), size));
+		p.drawImage(
+			QRect(QPoint(), size),
+			Window::LogoNoMargin().scaled(
+				size * style::DevicePixelRatio(),
+				Qt::IgnoreAspectRatio,
+				Qt::SmoothTransformation));
 	}
 	return result;
 }
