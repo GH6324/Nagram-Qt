@@ -106,7 +106,7 @@ inline constexpr auto kHideStories = Option<bool>{
 1. 上游文件允许新增 `#include "nagram/..."`、在已有判断表达式中增加条件、加入单行 `Nagram::` 调用。功能逻辑放在 `nagram/`；需要调用上游类私有方法时，允许保留约 10 行以内的短逻辑块，并在对应提交正文中说明原因。
 2. 优先使用上游已有扩展点：`rpl` 事件、`Data::Session` 通知、样式常量、`Window::SessionController` 生命周期、设置页的 `Settings::Section` 注册。
 3. 两套消息列表实现（`HistoryInner` 与 `HistoryView::ListWidget`）只能通过同一个 `nagram/` 入口挂钩，不在两处重复写逻辑。
-4. 每个里程碑结束时统计上游文件数、新增行数和挂钩数，写入第 5 节；集中或超过预期的改动须说明原因，不设每个文件只能改一行的目标。
+4. 每个里程碑结束时统计上游文件数、新增行数和挂钩数，写入第 5 节；集中或超过预期的改动须说明原因，不设每个文件只能改一行的目标。`tools/nagram/upstream_budget.py` 按 `tools/nagram/upstream.json` 记录的上游基线统计被修改的上游原有文件数、新增行数和 `nagram/` 引用的上游头文件数，CI（`nagram-guards.yml`）在超出预算时失败；`--list` 按新增行数列出文件。预算只降不升：确需增加时在同一提交中调高并在正文说明原因，降低后同步调低。每次同步上游后把 `base` 改为新的 `dev` 提交。
 5. 品牌相关改动（应用名、图标、平台标识）集中在一个 change 中，不与功能混合。
 
 **消息菜单（E01–E23）方案**：旧实现在两个菜单填充函数中插入了约 270 处调用。当前方案分两步：

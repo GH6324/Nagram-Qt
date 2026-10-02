@@ -1,0 +1,40 @@
+name: Nagram guards.
+
+on:
+  push:
+    branches:
+      - nagram-next
+      - main
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+
+  guards:
+    name: Guards
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Clone.
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Fetch the upstream base.
+        run: |
+          base=$(python3 -c "import json; print(json.load(open('tools/nagram/upstream.json'))['base'])")
+          git fetch --no-tags --depth=1 origin "$base"
+
+      - name: Tool tests.
+        run: |
+          python3 tools/nagram/test_smoke_test.py
+          python3 tools/nagram/test_upstream_budget.py
+
+      - name: Upstream budget.
+        run: python3 tools/nagram/upstream_budget.py
