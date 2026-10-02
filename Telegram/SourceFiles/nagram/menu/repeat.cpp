@@ -40,6 +40,14 @@ bool Available(HistoryItem *item) {
 	return Data::CanSendAnything(target);
 }
 
+void ShowLatest(
+		not_null<Window::SessionController*> controller,
+		not_null<Data::Thread*> target) {
+	if (ForDevice().Get(kScrollAfterRepeat)) {
+		controller->showThread(target, ShowAtTheEndMsgId);
+	}
+}
+
 void SendRepeat(
 		not_null<Window::SessionController*> controller,
 		FullMsgId itemId,
@@ -69,7 +77,10 @@ void SendRepeat(
 			Api::SendExistingDocument(std::move(message), document);
 		} else if (!original.text.isEmpty()) {
 			history->session().api().sendMessage(std::move(message));
+		} else {
+			return;
 		}
+		ShowLatest(controller, target);
 		return;
 	}
 	auto draft = Data::ForwardDraft{
@@ -87,6 +98,7 @@ void SendRepeat(
 	action.generateLocal = false;
 	history->session().api().forwardMessages(
 		std::move(resolved), action);
+	ShowLatest(controller, target);
 }
 
 void ShowForwardWithoutQuote(

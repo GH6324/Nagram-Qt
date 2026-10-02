@@ -301,6 +301,7 @@
 "lng_nagram_menu_compact" = "緊湊訊息選單";
 "lng_nagram_menu_repeat_without_quote" = "複讀時傳送不含原傳送者的副本";
 "lng_nagram_menu_no_repeat_channels" = "頻道中不提供複讀";
+"lng_nagram_menu_scroll_after_repeat" = "複讀後捲動到最新訊息";
 "lng_nagram_hidden_messages" = "已隱藏的訊息";
 "lng_nagram_hidden_messages_clear" = "重新顯示所有在本機隱藏的訊息？";
 "lng_nagram_links_search_group" = "連結與搜尋";

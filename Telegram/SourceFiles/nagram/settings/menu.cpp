@@ -210,6 +210,9 @@ const auto kMeta = BuildHelper({
 	addMenuToggle(&Menu::kNoRepeatInChannels,
 		tr::lng_nagram_menu_no_repeat_channels(),
 		u"nagram/menu/no-repeat-channels"_q);
+	addMenuToggle(&Menu::kScrollAfterRepeat,
+		tr::lng_nagram_menu_scroll_after_repeat(),
+		u"nagram/menu/scroll-after-repeat"_q);
 	const auto addRating = [&](
 			const Option<QString> *option,
 			const tr::phrase<> *title,

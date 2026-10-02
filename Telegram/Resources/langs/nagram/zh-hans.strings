@@ -301,6 +301,7 @@
 "lng_nagram_menu_compact" = "紧凑消息菜单";
 "lng_nagram_menu_repeat_without_quote" = "复读时发送不带原发送者的副本";
 "lng_nagram_menu_no_repeat_channels" = "频道中不提供复读";
+"lng_nagram_menu_scroll_after_repeat" = "复读后滚动到最新消息";
 "lng_nagram_hidden_messages" = "已隐藏的消息";
 "lng_nagram_hidden_messages_clear" = "重新显示所有在本地隐藏的消息？";
 "lng_nagram_links_search_group" = "链接与搜索";

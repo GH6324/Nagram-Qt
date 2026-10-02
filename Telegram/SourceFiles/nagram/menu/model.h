@@ -128,6 +128,10 @@ inline constexpr auto kNoRepeatInChannels = Option<bool>{
 	"nagram.noRepeatInChannels", Scope::Device, false,
 	Category::Menu, "lng_nagram_menu_no_repeat_channels",
 	static_cast<unsigned>(Flag::Exportable) };
+inline constexpr auto kScrollAfterRepeat = Option<bool>{
+	"nagram.scrollAfterRepeat", Scope::Device, false,
+	Category::Menu, "lng_nagram_menu_scroll_after_repeat",
+	static_cast<unsigned>(Flag::Exportable) };
 
 inline void RegisterOptions(Registry &registry) {
 	Expects(registry.Add(kMenuConfig));
@@ -137,6 +141,7 @@ inline void RegisterOptions(Registry &registry) {
 	Expects(registry.Add(kCompactMenu));
 	Expects(registry.Add(kRepeatWithoutQuote));
 	Expects(registry.Add(kNoRepeatInChannels));
+	Expects(registry.Add(kScrollAfterRepeat));
 }
 
 } // namespace Nagram::Menu

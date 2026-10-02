@@ -305,6 +305,7 @@ Telegram/cmake/td_lang.cmake. Every key uses the lng_nagram_ prefix.
 "lng_nagram_menu_compact" = "Compact message menu";
 "lng_nagram_menu_repeat_without_quote" = "Repeat sends a copy without the original sender";
 "lng_nagram_menu_no_repeat_channels" = "Do not offer repeat in channels";
+"lng_nagram_menu_scroll_after_repeat" = "Scroll to the latest message after repeating";
 "lng_nagram_hidden_messages" = "Hidden messages";
 "lng_nagram_hidden_messages_clear" = "Show all locally hidden messages again?";
 "lng_nagram_links_search_group" = "Links and search";
