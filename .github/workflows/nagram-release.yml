@@ -10,10 +10,16 @@ on:
         description: Existing tag to build and publish.
         required: true
         type: string
+      only:
+        description: Platform to build, for trial runs.
+        type: choice
+        default: all
+        options: [all, macos, windows, linux]
 
 jobs:
 
   macos:
+    if: ${{ !inputs.only || inputs.only == 'all' || inputs.only == 'macos' }}
     uses: ./.github/workflows/nagram-mac.yml
     with:
       config: Release
@@ -21,6 +27,7 @@ jobs:
     secrets: inherit
 
   windows:
+    if: ${{ !inputs.only || inputs.only == 'all' || inputs.only == 'windows' }}
     uses: ./.github/workflows/nagram-win.yml
     with:
       config: Release
@@ -28,6 +35,7 @@ jobs:
     secrets: inherit
 
   linux:
+    if: ${{ !inputs.only || inputs.only == 'all' || inputs.only == 'linux' }}
     uses: ./.github/workflows/nagram-linux.yml
     with:
       config: Release

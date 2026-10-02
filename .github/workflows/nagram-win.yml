@@ -129,8 +129,26 @@ jobs:
             '--quiet','--wait','--norestart','--nocache', `
             '--add','Microsoft.VisualStudio.Workload.VCTools', `
             '--add','Microsoft.VisualStudio.Component.VC.Tools.ARM64', `
+            '--add','Microsoft.VisualStudio.Component.VC.ATL', `
             '--add','Microsoft.VisualStudio.Component.VC.ATL.ARM64'
           Remove-Item $exe -Force -ErrorAction SilentlyContinue
+          if ($p.ExitCode -ne 0 -and $p.ExitCode -ne 3010) { exit $p.ExitCode }
+
+      # The release part of the libraries builds breakpad's dump_syms, which
+      # needs ATL for the pinned x64 toolset.
+      - name: Install ATL.
+        if: matrix.arch == 'x64' && env.CONFIG == 'Release'
+        shell: pwsh
+        run: |
+          $installer = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer\setup.exe'
+          $path = & (Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer\vswhere.exe') -latest -products * -property installationPath
+          $p = Start-Process -FilePath $installer -Wait -PassThru -ArgumentList `
+            'modify','--installPath',"`"$path`"",'--quiet','--norestart','--nocache', `
+            '--add','Microsoft.VisualStudio.Component.VC.14.44.17.14.ATL', `
+            '--add','Microsoft.VisualStudio.Component.VC.ATL'
+          Get-ChildItem (Join-Path $path 'VC\Tools\MSVC') | ForEach-Object {
+            "$($_.Name): atlmfc=$(Test-Path (Join-Path $_.FullName 'atlmfc\include\atlbase.h'))"
+          }
           if ($p.ExitCode -ne 0 -and $p.ExitCode -ne 3010) { exit $p.ExitCode }
 
       - uses: Eden-CI/msvc-dev-cmd@master
