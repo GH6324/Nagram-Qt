@@ -91,6 +91,37 @@ jobs:
           echo TBUILD=%GITHUB_WORKSPACE%\TBuild>>%GITHUB_ENV%
           echo LibrariesPath=%GITHUB_WORKSPACE%\TBuild\Libraries${{ matrix.arch == 'x64' && '\win64' || '' }}>>%GITHUB_ENV%
 
+      # Building Qt in both configurations for a release fills the system
+      # drive of the hosted runner.
+      - name: Free up disk space for release libraries.
+        if: env.CONFIG == 'Release'
+        shell: pwsh
+        run: |
+          Get-PSDrive -PSProvider FileSystem | Format-Table Name, Used, Free
+          $paths = @(
+            'C:\Android',
+            'C:\Program Files (x86)\Android',
+            'C:\ghcup',
+            'C:\Miniconda',
+            'C:\Julia',
+            'C:\rtools45',
+            'C:\SeleniumWebDrivers',
+            'C:\vcpkg',
+            'C:\Program Files\MongoDB',
+            'C:\Program Files\PostgreSQL',
+            'C:\hostedtoolcache\windows\CodeQL',
+            'C:\hostedtoolcache\windows\go',
+            'C:\hostedtoolcache\windows\Ruby',
+            'C:\hostedtoolcache\windows\PyPy',
+            'C:\hostedtoolcache\windows\Java_Temurin-Hotspot_jdk'
+          )
+          foreach ($path in $paths) {
+            if (Test-Path $path) {
+              cmd /c rmdir /s /q "$path"
+            }
+          }
+          Get-PSDrive -PSProvider FileSystem | Format-Table Name, Used, Free
+
       - name: Get repository name.
         shell: bash
         run: echo "REPO_NAME=${GITHUB_REPOSITORY##*/}" >> $GITHUB_ENV
