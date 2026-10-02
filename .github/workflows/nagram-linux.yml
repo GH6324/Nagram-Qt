@@ -65,6 +65,11 @@ jobs:
     name: Rocky Linux 8
     runs-on: ubuntu-latest
 
+    # Dropping superseded caches needs to delete them.
+    permissions:
+      contents: read
+      actions: write
+
     strategy:
       matrix:
         defines:
@@ -168,6 +173,7 @@ jobs:
           fi
 
           ccache -z
+          echo "CCACHE_BUILD_START=$(date +%s)" >> $GITHUB_ENV
 
           docker run --rm \
           -u $(id -u) \
@@ -207,7 +213,8 @@ jobs:
           env.ONLY_CACHE == 'false'
             && github.ref_name == github.event.repository.default_branch
             && fromJSON(steps.ccache-stats.outputs.misses) > 300
-        run: ccache --evict-older-than 1d
+        # Keeps only what this build used: a day of builds is twice the size.
+        run: ccache --evict-older-than $(( $(date +%s) - CCACHE_BUILD_START ))s
 
       - name: Save Telegram Desktop cache.
         if: >
@@ -218,6 +225,16 @@ jobs:
         with:
           path: ${{ env.CCACHE_DIR }}
           key: ${{ steps.cache-tdesktop.outputs.cache-primary-key }}
+
+      # Old caches would push the libraries out of the repository quota.
+      - name: Drop superseded caches.
+        if: github.ref_name == github.event.repository.default_branch
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          LIBS_KEY: ${{ runner.OS }}-libs-${{ hashFiles('Telegram/build/docker/centos_env/**') }}
+          TDESKTOP_KEY: ${{ steps.cache-tdesktop.outputs.cache-primary-key }}
+        run: bash tools/nagram/drop_superseded_caches.sh "$LIBS_KEY" "$TDESKTOP_KEY"
 
       - name: Check.
         if: env.ONLY_CACHE == 'false'

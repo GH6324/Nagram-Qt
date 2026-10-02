@@ -26,6 +26,9 @@ jobs:
   macos:
     if: ${{ !inputs.only || inputs.only == 'all' || inputs.only == 'macos' }}
     uses: ./.github/workflows/nagram-mac.yml
+    permissions:
+      contents: read
+      actions: write
     with:
       config: Release
       ref: ${{ inputs.tag || github.ref_name }}
@@ -34,6 +37,9 @@ jobs:
   windows:
     if: ${{ !inputs.only || inputs.only == 'all' || inputs.only == 'windows' }}
     uses: ./.github/workflows/nagram-win.yml
+    permissions:
+      contents: read
+      actions: write
     with:
       config: Release
       ref: ${{ inputs.tag || github.ref_name }}
@@ -43,6 +49,9 @@ jobs:
   linux:
     if: ${{ !inputs.only || inputs.only == 'all' || inputs.only == 'linux' }}
     uses: ./.github/workflows/nagram-linux.yml
+    permissions:
+      contents: read
+      actions: write
     with:
       config: Release
       ref: ${{ inputs.tag || github.ref_name }}
