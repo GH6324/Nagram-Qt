@@ -39,6 +39,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include <QtGui/QSessionManager>
 #include <QtGui/QScreen>
 #include <QtGui/qpa/qplatformscreen.h>
+#include <private/qapplication_p.h>
 
 namespace Core {
 namespace {
@@ -754,6 +755,13 @@ bool Sandbox::notify(QObject *receiver, QEvent *e) {
 		if (!weak) {
 			return true;
 		}
+	} else if (e->type() == QEvent::Wheel
+		&& e->spontaneous()
+		&& (static_cast<QWheelEvent*>(e)->phase() == Qt::NoScrollPhase)) {
+		// WHY: a phased gesture that lost its ScrollEnd leaves the wheel
+		// grabbed, and Qt then routes plain mouse wheel events to that
+		// stale widget instead of the one under the cursor.
+		QApplicationPrivate::wheel_widget = nullptr;
 	}
 	return QApplication::notify(receiver, e);
 }
