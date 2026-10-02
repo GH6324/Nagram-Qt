@@ -1,6 +1,5 @@
 #include "nagram/interface/options.h"
 
-#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <map>
@@ -212,7 +211,7 @@ int main() {
 			}
 			for (const auto suffix : { ".png", "_dark.png" }) {
 				const auto path = root + "/../nagram/icons/" + name + suffix;
-				if (!std::filesystem::exists(path)) {
+				if (!std::ifstream(path).good()) {
 					throw std::runtime_error("Missing app icon: " + path);
 				}
 			}

@@ -488,11 +488,12 @@ void TestExportPlan() {
 		"unchanged sets must give an empty plan");
 
 	const auto fresh = PlanExport(ExportManifest(), current, 0);
-	Require(fresh.removed.empty()
-		&& fresh.sets == std::vector<ExportPlanSet>{
-			{ 1, u"cats"_q, QString(), true },
-			{ 2, u"dogs"_q, QString(), true },
-			{ 3, u"birds"_q, QString(), true } },
+	const auto freshSets = std::vector<ExportPlanSet>{
+		{ 1, u"cats"_q, QString(), true },
+		{ 2, u"dogs"_q, QString(), true },
+		{ 3, u"birds"_q, QString(), true },
+	};
+	Require(fresh.removed.empty() && fresh.sets == freshSets,
 		"first export writes every set");
 
 	const auto changed = ExportManifest{ {
@@ -502,18 +503,21 @@ void TestExportPlan() {
 		{ 4, u"fish"_q, 400, 40 },
 	} };
 	const auto update = PlanExport(changed, current, 0);
-	Require(update.sets == std::vector<ExportPlanSet>{
-			{ 1, u"cats"_q, QString(), true },
-			{ 2, u"dogs"_q, QString(), true } }
-		&& update.removed == std::vector<quint64>{ 4 },
+	const auto updateSets = std::vector<ExportPlanSet>{
+		{ 1, u"cats"_q, QString(), true },
+		{ 2, u"dogs"_q, QString(), true },
+	};
+	const auto updateRemoved = std::vector<quint64>{ 4 };
+	Require(update.sets == updateSets && update.removed == updateRemoved,
 		"changed hash or count rewrites a set, a removed set is dropped");
 
 	const auto renamed = PlanExport(same, current, 1);
-	Require(renamed.removed.empty()
-		&& renamed.sets == std::vector<ExportPlanSet>{
-			{ 1, u"Cats"_q, u"cats"_q, false },
-			{ 2, u"Dogs"_q, u"dogs"_q, false },
-			{ 3, u"Birds"_q, u"birds"_q, false } },
+	const auto renamedSets = std::vector<ExportPlanSet>{
+		{ 1, u"Cats"_q, u"cats"_q, false },
+		{ 2, u"Dogs"_q, u"dogs"_q, false },
+		{ 3, u"Birds"_q, u"birds"_q, false },
+	};
+	Require(renamed.removed.empty() && renamed.sets == renamedSets,
 		"a new naming renames folders without rewriting them");
 	Require(PlanExport(same, current, 9).empty(),
 		"unknown naming must fall back to short names");
