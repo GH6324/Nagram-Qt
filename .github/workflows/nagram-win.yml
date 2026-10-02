@@ -355,6 +355,12 @@ jobs:
           if errorlevel 1 exit /b 1
           ..\out\nagram-tests\%CONFIG%\test_nagram.exe
 
+      - name: Smoke test.
+        if: env.ONLY_CACHE == 'false'
+        run: |
+          cd %TBUILD%\%REPO_NAME%
+          python tools\nagram\smoke_test.py out\%CONFIG%\Nagram.exe
+
       - name: Move artifact.
         if: env.UPLOAD_ARTIFACT == 'true'
         run: |

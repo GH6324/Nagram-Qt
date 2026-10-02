@@ -150,6 +150,12 @@ jobs:
           cmake --build ../out --config $CONFIG --parallel
           ../out/nagram-tests/$CONFIG/test_nagram
 
+      - name: Smoke test.
+        if: env.ONLY_CACHE == 'false'
+        run: |
+          python3 "$REPO_NAME/tools/nagram/smoke_test.py" \
+            "$REPO_NAME/out/$CONFIG/Nagram.app/Contents/MacOS/Nagram"
+
       - name: Move artifact.
         if: env.UPLOAD_ARTIFACT == 'true'
         run: |

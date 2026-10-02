@@ -233,6 +233,12 @@ jobs:
             exit 1
           fi
 
+      - name: Smoke test.
+        if: env.ONLY_CACHE == 'false'
+        run: |
+          sudo apt-get install -y xvfb
+          xvfb-run -a python3 tools/nagram/smoke_test.py "out/$CONFIG/Nagram"
+
       - name: Move artifact.
         if: env.UPLOAD_ARTIFACT == 'true'
         run: |
