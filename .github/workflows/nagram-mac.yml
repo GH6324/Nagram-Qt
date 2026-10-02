@@ -39,6 +39,15 @@ on:
       - 'Telegram/SourceFiles/platform/linux/**'
       - 'Telegram/configure.bat'
 
+  workflow_call:
+    inputs:
+      config:
+        type: string
+        default: Debug
+      ref:
+        type: string
+        default: ""
+
 jobs:
 
   macos:
@@ -53,6 +62,7 @@ jobs:
       UPLOAD_ARTIFACT: "true"
       ONLY_CACHE: "false"
       PREPARE_PATH: "Telegram/build/prepare/prepare.py"
+      CONFIG: ${{ inputs.config || 'Debug' }}
 
     steps:
       - name: Get repository name.
@@ -63,6 +73,7 @@ jobs:
         with:
           submodules: recursive
           path: ${{ env.REPO_NAME }}
+          ref: ${{ inputs.ref }}
 
       - name: First set up.
         run: |
@@ -86,12 +97,14 @@ jobs:
           path: |
             Libraries
             ThirdParty
-          key: ${{ runner.OS }}-libs-${{ hashFiles(format('{0}/{1}', env.REPO_NAME, env.PREPARE_PATH)) }}
-          restore-keys: ${{ runner.OS }}-libs-
+          key: ${{ runner.OS }}-libs${{ env.CONFIG == 'Release' && '-release' || '' }}-${{ hashFiles(format('{0}/{1}', env.REPO_NAME, env.PREPARE_PATH)) }}
+          restore-keys: |
+            ${{ runner.OS }}-libs${{ env.CONFIG == 'Release' && '-release' || '' }}-
+            ${{ runner.OS }}-libs-
 
       - name: Libraries.
         run: |
-          ./$REPO_NAME/Telegram/build/prepare/mac.sh skip-release silent
+          ./$REPO_NAME/Telegram/build/prepare/mac.sh ${{ env.CONFIG == 'Debug' && 'skip-release' || '' }} silent
 
       - name: Free up some disk space.
         run: find Libraries '(' '(' ! '(' -name '*.a' -o -name '*.h' -o -name '*.hpp' -o -name '*.inc' -o -name '*.cmake' -o -name '*.pc' -o -path '*/include/*' -o -path '*/objects-*' -o -path '*/cache_keys/*' -o -path '*/patches/*' -o -perm +111 ')' -type f ')' -o -empty ')' -delete
@@ -120,26 +133,32 @@ jobs:
           fi
 
           ./configure.sh \
-          -D CMAKE_CONFIGURATION_TYPES=Debug \
+          -D CMAKE_CONFIGURATION_TYPES=$CONFIG \
           -D DESKTOP_APP_TEST_APPS=ON \
-          -D CMAKE_COMPILE_WARNING_AS_ERROR=ON \
+          -D CMAKE_COMPILE_WARNING_AS_ERROR=${{ env.CONFIG == 'Debug' && 'ON' || 'OFF' }} \
           -D CMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED=NO \
           $API \
           $DEFINE
 
-          cmake --build ../out --config Debug --parallel
-          ../out/nagram-tests/Debug/test_nagram
+          cmake --build ../out --config $CONFIG --parallel
+          ../out/nagram-tests/$CONFIG/test_nagram
 
       - name: Move artifact.
         if: env.UPLOAD_ARTIFACT == 'true'
         run: |
-          cd $REPO_NAME/out/Debug
+          cd $REPO_NAME/out/$CONFIG
           mkdir artifact
-          mv Nagram.app artifact/
+          if [ "$CONFIG" = "Release" ]; then
+            codesign --force --deep --sign - Nagram.app
+            ditto -c -k --keepParent Nagram.app artifact/Nagram-macos.zip
+            echo "ARTIFACT_NAME=release-macos" >> $GITHUB_ENV
+          else
+            mv Nagram.app artifact/
+          fi
       - uses: actions/upload-artifact@v7
         if: env.UPLOAD_ARTIFACT == 'true'
         name: Upload artifact.
         with:
           name: ${{ env.ARTIFACT_NAME }}
-          path: ${{ env.REPO_NAME }}/out/Debug/artifact/
+          path: ${{ env.REPO_NAME }}/out/${{ env.CONFIG }}/artifact/
           retention-days: 1

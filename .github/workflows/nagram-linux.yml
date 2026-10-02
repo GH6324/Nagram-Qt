@@ -43,6 +43,15 @@ on:
       - 'Telegram/configure.bat'
       - 'Telegram/Telegram.plist'
 
+  workflow_call:
+    inputs:
+      config:
+        type: string
+        default: Debug
+      ref:
+        type: string
+        default: ""
+
 jobs:
 
   linux:
@@ -58,12 +67,14 @@ jobs:
       UPLOAD_ARTIFACT: "true"
       ONLY_CACHE: "false"
       IMAGE_TAG: tdesktop:centos_env
+      CONFIG: ${{ inputs.config || 'Debug' }}
 
     steps:
       - name: Clone.
         uses: actions/checkout@v7
         with:
           submodules: recursive
+          ref: ${{ inputs.ref }}
 
       - name: First set up.
         run: |
@@ -125,8 +136,8 @@ jobs:
         uses: actions/cache/restore@v6
         with:
           path: ${{ env.CCACHE_DIR }}
-          key: ${{ runner.OS }}-tdesktop-${{ matrix.defines || 'null' }}-${{ github.run_id }}
-          restore-keys: ${{ runner.OS }}-tdesktop-${{ matrix.defines || 'null' }}-
+          key: ${{ runner.OS }}-tdesktop-${{ env.CONFIG == 'Release' && 'release-' || '' }}${{ matrix.defines || 'null' }}-${{ github.run_id }}
+          restore-keys: ${{ runner.OS }}-tdesktop-${{ env.CONFIG == 'Release' && 'release-' || '' }}${{ matrix.defines || 'null' }}-
 
       - name: Nagram build.
         if: env.ONLY_CACHE == 'false'
@@ -155,17 +166,17 @@ jobs:
           -u $(id -u) \
           -v $PWD:/usr/src/tdesktop \
           -v ${{ env.CCACHE_DIR }}:/var/cache/ccache \
-          -e CONFIG=Debug \
+          -e CONFIG \
           -e NAGRAM_API_ID \
           -e NAGRAM_API_HASH \
           -e CCACHE_SLOPPINESS=pch_defines,time_macros \
           $IMAGE_TAG \
           env -u CCACHE_DISABLE /usr/src/tdesktop/Telegram/build/docker/centos_env/build.sh \
-          -D CMAKE_CONFIGURATION_TYPES=Debug \
+          -D CMAKE_CONFIGURATION_TYPES=$CONFIG \
           -D DESKTOP_APP_TEST_APPS=ON \
           -D CMAKE_C_FLAGS_DEBUG="-O0 -fpch-preprocess" \
           -D CMAKE_CXX_FLAGS_DEBUG="-O0 -fpch-preprocess" \
-          -D CMAKE_COMPILE_WARNING_AS_ERROR=ON \
+          -D CMAKE_COMPILE_WARNING_AS_ERROR=${{ env.CONFIG == 'Debug' && 'ON' || 'OFF' }} \
           $API \
           $DEFINE
 
@@ -173,7 +184,7 @@ jobs:
           -u $(id -u) \
           -v $PWD:/usr/src/tdesktop \
           $IMAGE_TAG \
-          /usr/src/tdesktop/out/nagram-tests/Debug/test_nagram
+          /usr/src/tdesktop/out/nagram-tests/$CONFIG/test_nagram
 
       - name: Count ccache misses.
         id: ccache-stats
@@ -204,7 +215,7 @@ jobs:
       - name: Check.
         if: env.ONLY_CACHE == 'false'
         run: |
-          filePath="out/Debug/Nagram"
+          filePath="out/$CONFIG/Nagram"
           if test -f "$filePath"; then
             echo "Build successfully done! :)"
 
@@ -218,13 +229,21 @@ jobs:
       - name: Move artifact.
         if: env.UPLOAD_ARTIFACT == 'true'
         run: |
-          cd out/Debug
+          cd out/$CONFIG
           mkdir artifact
-          mv Nagram artifact/
+          if [ "$CONFIG" = "Release" ]; then
+            mkdir Nagram-linux
+            cp Nagram Nagram-linux/Nagram
+            strip Nagram-linux/Nagram
+            tar -cJf artifact/Nagram-linux-x86_64.tar.xz -C Nagram-linux Nagram
+            echo "ARTIFACT_NAME=release-linux" >> $GITHUB_ENV
+          else
+            mv Nagram artifact/
+          fi
       - uses: actions/upload-artifact@v7
         if: env.UPLOAD_ARTIFACT == 'true'
         name: Upload artifact.
         with:
           name: ${{ env.ARTIFACT_NAME }}
-          path: out/Debug/artifact/
+          path: out/${{ env.CONFIG }}/artifact/
           retention-days: 1

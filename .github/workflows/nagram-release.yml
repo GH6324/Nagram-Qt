@@ -1,0 +1,89 @@
+name: Nagram Release.
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing tag to build and publish.
+        required: true
+        type: string
+
+jobs:
+
+  macos:
+    uses: ./.github/workflows/nagram-mac.yml
+    with:
+      config: Release
+      ref: ${{ inputs.tag || github.ref_name }}
+    secrets: inherit
+
+  windows:
+    uses: ./.github/workflows/nagram-win.yml
+    with:
+      config: Release
+      ref: ${{ inputs.tag || github.ref_name }}
+    secrets: inherit
+
+  linux:
+    uses: ./.github/workflows/nagram-linux.yml
+    with:
+      config: Release
+      ref: ${{ inputs.tag || github.ref_name }}
+    secrets: inherit
+
+  publish:
+    name: Publish
+    needs: [macos, windows, linux]
+    # A platform that fails must not block the packages that were built.
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      TAG: ${{ inputs.tag || github.ref_name }}
+      GH_TOKEN: ${{ github.token }}
+
+    steps:
+      - name: Clone.
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ env.TAG }}
+          sparse-checkout: docs/nagram/releases
+
+      - name: Download packages.
+        uses: actions/download-artifact@v7
+        with:
+          pattern: release-*
+          path: packages
+          merge-multiple: true
+
+      - name: Publish.
+        run: |
+          VERSION="${TAG#v}"
+          mkdir upload
+          for file in packages/*; do
+            name="$(basename "$file")"
+            mv "$file" "upload/${name/Nagram-/Nagram-$VERSION-}"
+          done
+          ls -l upload
+          test -n "$(ls upload)"
+
+          NOTES="docs/nagram/releases/$TAG.md"
+          test -f "$NOTES"
+
+          PRERELEASE=""
+          case "$TAG" in (*-*) PRERELEASE="--prerelease";; esac
+
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+            gh release upload "$TAG" upload/* --clobber --repo "$GITHUB_REPOSITORY"
+          else
+            gh release create "$TAG" upload/* \
+              --repo "$GITHUB_REPOSITORY" \
+              --verify-tag \
+              --title "Nagram Desktop $VERSION" \
+              --notes-file "$NOTES" \
+              $PRERELEASE
+          fi

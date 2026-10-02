@@ -43,6 +43,15 @@ on:
       - 'Telegram/configure.sh'
       - 'Telegram/Telegram.plist'
 
+  workflow_call:
+    inputs:
+      config:
+        type: string
+        default: Debug
+      ref:
+        type: string
+        default: ""
+
 jobs:
 
   windows:
@@ -50,6 +59,7 @@ jobs:
     runs-on: ${{ matrix.arch == 'arm64' && 'windows-11-arm' || 'windows-latest' }}
 
     strategy:
+      fail-fast: false
       matrix:
         arch: [x64, arm64]
         qt: [qt6]
@@ -59,6 +69,8 @@ jobs:
       UPLOAD_ARTIFACT: "true"
       ONLY_CACHE: "false"
       PREPARE_PATH: "Telegram/build/prepare/prepare.py"
+      CONFIG: ${{ inputs.config || 'Debug' }}
+      CACHE_SUFFIX: ${{ inputs.config == 'Release' && '-release' || '' }}
 
     defaults:
       run:
@@ -81,6 +93,7 @@ jobs:
         with:
           submodules: recursive
           path: ${{ env.TBUILD }}\${{ env.REPO_NAME }}
+          ref: ${{ inputs.ref }}
 
       - name: First set up.
         shell: bash
@@ -130,8 +143,10 @@ jobs:
         uses: actions/cache@v6
         with:
           path: ${{ env.TBUILD }}\ThirdParty
-          key: ${{ runner.OS }}-${{ runner.arch }}-third-party-${{ env.CACHE_KEY }}
-          restore-keys: ${{ runner.OS }}-${{ runner.arch }}-third-party-
+          key: ${{ runner.OS }}-${{ runner.arch }}-third-party${{ env.CACHE_SUFFIX }}-${{ env.CACHE_KEY }}
+          restore-keys: |
+            ${{ runner.OS }}-${{ runner.arch }}-third-party${{ env.CACHE_SUFFIX }}-
+            ${{ runner.OS }}-${{ runner.arch }}-third-party-
 
       - name: Libraries cache.
         id: cache-libs
@@ -143,8 +158,10 @@ jobs:
             !${{ env.LibrariesPath }}\[qQ]t[_-]*
             ${{ env.LibrariesPath }}\cache_keys\*
             !${{ env.LibrariesPath }}\cache_keys\[qQ]t[_-]*
-          key: ${{ runner.OS }}-${{ matrix.arch }}-libs-v2-${{ env.CACHE_KEY }}
-          restore-keys: ${{ runner.OS }}-${{ matrix.arch }}-libs-v2-
+          key: ${{ runner.OS }}-${{ matrix.arch }}-libs-v2${{ env.CACHE_SUFFIX }}-${{ env.CACHE_KEY }}
+          restore-keys: |
+            ${{ runner.OS }}-${{ matrix.arch }}-libs-v2${{ env.CACHE_SUFFIX }}-
+            ${{ runner.OS }}-${{ matrix.arch }}-libs-v2-
 
       - name: Qt cache.
         id: cache-qt
@@ -153,12 +170,14 @@ jobs:
           path: |
             ${{ env.LibrariesPath }}\[qQ]t[_-]*
             ${{ env.LibrariesPath }}\cache_keys\[qQ]t[_-]*
-          key: ${{ runner.OS }}-${{ matrix.arch }}-${{ matrix.qt || 'qt' }}-${{ env.CACHE_KEY }}
-          restore-keys: ${{ runner.OS }}-${{ matrix.arch }}-${{ matrix.qt || 'qt' }}-
+          key: ${{ runner.OS }}-${{ matrix.arch }}-${{ matrix.qt || 'qt' }}${{ env.CACHE_SUFFIX }}-${{ env.CACHE_KEY }}
+          restore-keys: |
+            ${{ runner.OS }}-${{ matrix.arch }}-${{ matrix.qt || 'qt' }}${{ env.CACHE_SUFFIX }}-
+            ${{ runner.OS }}-${{ matrix.arch }}-${{ matrix.qt || 'qt' }}-
 
       - name: Libraries.
         run: |
-          %TBUILD%\%REPO_NAME%\Telegram\build\prepare\win.bat skip-release silent ${{ matrix.qt }}
+          %TBUILD%\%REPO_NAME%\Telegram\build\prepare\win.bat ${{ env.CONFIG == 'Debug' && 'skip-release' || '' }} silent ${{ matrix.qt }}
 
       - name: Read configuration matrix.
         shell: bash
@@ -227,21 +246,26 @@ jobs:
           %TDESKTOP_BUILD_ARCH% ^
           ${{ matrix.qt }} ^
           %TDESKTOP_BUILD_API% ^
-          -D CMAKE_CONFIGURATION_TYPES=Debug ^
+          -D CMAKE_CONFIGURATION_TYPES=%CONFIG% ^
           -D DESKTOP_APP_TEST_APPS=ON ^
-          -D CMAKE_COMPILE_WARNING_AS_ERROR=ON ^
+          -D CMAKE_COMPILE_WARNING_AS_ERROR=${{ env.CONFIG == 'Debug' && 'ON' || 'OFF' }} ^
           -D CMAKE_MSVC_DEBUG_INFORMATION_FORMAT= ^
           %TDESKTOP_BUILD_DEFINE%
 
-          cmake --build ..\out --config Debug --parallel
-          ..\out\nagram-tests\Debug\test_nagram.exe
+          cmake --build ..\out --config %CONFIG% --parallel
+          ..\out\nagram-tests\%CONFIG%\test_nagram.exe
 
       - name: Move artifact.
         if: env.UPLOAD_ARTIFACT == 'true'
         run: |
-          set OUT=%TBUILD%\%REPO_NAME%\out\Debug
+          set OUT=%TBUILD%\%REPO_NAME%\out\%CONFIG%
           mkdir artifact
-          move %OUT%\Nagram.exe artifact/
+          if "%CONFIG%"=="Release" (
+            powershell -Command "Compress-Archive -Path '%OUT%\Nagram.exe' -DestinationPath 'artifact\Nagram-windows-${{ matrix.arch }}.zip'"
+            echo ARTIFACT_NAME=release-windows-${{ matrix.arch }}>>%GITHUB_ENV%
+          ) else (
+            move %OUT%\Nagram.exe artifact/
+          )
       - uses: actions/upload-artifact@v7
         name: Upload artifact.
         if: env.UPLOAD_ARTIFACT == 'true'
