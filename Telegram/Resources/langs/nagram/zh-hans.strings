@@ -13,7 +13,6 @@
 "lng_nagram_bubble_roundness" = "消息气泡圆角";
 "lng_nagram_avatar_roundness" = "头像圆角";
 "lng_nagram_uniform_avatar_shapes" = "论坛和频道私信也使用头像圆角";
-"lng_nagram_roundness_hint" = "10–100%；留空则跟随 Telegram";
 "lng_nagram_restart_required" = "重启后生效";
 "lng_nagram_message_style" = "消息样式";
 "lng_nagram_text_message_width" = "文字消息宽度";

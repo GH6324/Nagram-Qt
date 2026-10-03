@@ -7,11 +7,13 @@
 #include "nagram/settings/restart.h"
 #include "lang/lang_keys.h"
 #include "settings/settings_builder.h"
+#include "settings/settings_common.h"
 #include "settings/settings_common_session.h"
 #include "ui/layers/generic_box.h"
 #include "ui/vertical_list.h"
 #include "ui/widgets/buttons.h"
 #include "ui/widgets/checkbox.h"
+#include "ui/widgets/continuous_sliders.h"
 #include "ui/widgets/fields/input_field.h"
 #include "ui/widgets/labels.h"
 #include "window/window_session_controller.h"
@@ -45,6 +47,9 @@ public:
 	static const SectionBuildMethod kBuild;
 };
 
+constexpr auto kMinRoundness = 10;
+constexpr auto kMaxRoundness = 100;
+
 QString RoundnessLabel(int value) {
 	return (value
 		? QString::number(value) + u"%"_q
@@ -57,33 +62,50 @@ void RoundnessBox(
 		const Option<int> &option,
 		QString title,
 		not_null<Window::SessionController*> controller) {
-	box->setTitle(std::move(title));
+	box->setTitle(title);
 	const auto current = ForDevice().Get(option);
-	const auto field = box->addRow(object_ptr<Ui::InputField>(
+	const auto follow = box->addRow(object_ptr<Ui::Checkbox>(
 		box,
-		st::defaultInputField,
-		tr::lng_nagram_roundness_hint(),
-		current ? QString::number(current) : QString()));
-	field->setInputMethodHints(Qt::ImhDigitsOnly);
-	box->setFocusCallback([=] { field->setFocusFast(); });
-	const auto submit = [=] {
-		const auto text = field->getLastText().trimmed();
-		auto valid = false;
-		const auto value = text.isEmpty() ? 0 : text.toInt(&valid);
-		if ((!text.isEmpty() && !valid)
-			|| (value != 0 && (value < 10 || value > 100))) {
-			field->showError();
-			return;
-		}
-		if (value != current) {
-			Expects(ForDevice().Set(option, value));
+		tr::lng_nagram_preview_follow(tr::now),
+		!current,
+		st::defaultBoxCheckbox));
+	auto row = MakeSliderWithLabel(
+		box,
+		st::settingsScale,
+		st::settingsScaleLabel,
+		st::normalFont->spacew * 2,
+		st::settingsScaleLabel.style.font->width(u"100%"_q),
+		true);
+	const auto slider = row.slider;
+	const auto label = row.label;
+	box->addRow(std::move(row.widget), st::settingsBigScalePadding);
+	slider->setAccessibleName(title);
+
+	const auto value = box->lifetime().make_state<int>(
+		current ? current : kMaxRoundness);
+	const auto show = [=](int percent) {
+		*value = percent;
+		label->setText(QString::number(percent) + u"%"_q);
+	};
+	slider->setPseudoDiscrete(
+		kMaxRoundness - kMinRoundness + 1,
+		[](int index) { return kMinRoundness + index; },
+		*value,
+		show);
+	show(*value);
+	follow->checkedValue(
+	) | rpl::on_next([=](bool checked) {
+		slider->setDisabled(checked);
+	}, slider->lifetime());
+
+	box->addButton(tr::lng_settings_save(), [=] {
+		const auto chosen = follow->checked() ? 0 : *value;
+		if (chosen != current) {
+			Expects(ForDevice().Set(option, chosen));
 			ShowRestartPrompt(controller);
 		}
 		box->closeBox();
-	};
-	field->submits(
-	) | rpl::on_next([=](auto) { submit(); }, field->lifetime());
-	box->addButton(tr::lng_settings_save(), submit);
+	});
 	box->addButton(tr::lng_cancel(), [=] { box->closeBox(); });
 }
 
