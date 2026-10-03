@@ -197,9 +197,9 @@
 "lng_nagram_edited_mark" = "“已编辑”标记文字";
 "lng_nagram_reactions" = "反应";
 "lng_nagram_hide_reactions" = "隐藏消息反应";
-"lng_nagram_hide_private_reactions" = "私聊";
-"lng_nagram_hide_group_reactions" = "群组";
-"lng_nagram_hide_channel_reactions" = "频道";
+"lng_nagram_hide_private_reactions" = "隐藏私聊中的反应";
+"lng_nagram_hide_group_reactions" = "隐藏群组中的反应";
+"lng_nagram_hide_channel_reactions" = "隐藏频道中的反应";
 "lng_nagram_hide_reaction_menu" = "隐藏右键菜单中的反应面板";
 "lng_nagram_hide_reaction_menu_when_selecting" = "选择消息时隐藏反应面板";
 "lng_nagram_effects" = "特效";
