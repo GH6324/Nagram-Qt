@@ -84,7 +84,9 @@ jobs:
       UPLOAD_ARTIFACT: "true"
       ONLY_CACHE: "false"
       PREPARE_PATH: "Telegram/build/prepare/prepare.py"
-      CONFIG: ${{ inputs.config || 'Debug' }}
+      # Not CONFIG: pacman-key in the msys2 setup reads that variable as the
+      # path of its configuration file.
+      BUILD_CONFIG: ${{ inputs.config || 'Debug' }}
       CACHE_SUFFIX: ${{ inputs.config == 'Release' && '-release' || '' }}
 
     defaults:
@@ -102,7 +104,7 @@ jobs:
       # Building Qt in both configurations for a release fills the system
       # drive of the hosted runner.
       - name: Free up disk space for release libraries.
-        if: env.CONFIG == 'Release'
+        if: env.BUILD_CONFIG == 'Release'
         shell: pwsh
         run: |
           Get-PSDrive -PSProvider FileSystem | Format-Table Name, Used, Free
@@ -133,7 +135,7 @@ jobs:
       # Release compilation on the x64 runner runs out of memory otherwise
       # (C1060, compiler is out of heap space).
       - name: Enlarge the page file.
-        if: matrix.arch == 'x64' && env.CONFIG == 'Release'
+        if: matrix.arch == 'x64' && env.BUILD_CONFIG == 'Release'
         uses: al-cheb/configure-pagefile-action@v1.4
         with:
           minimum-size: 16GB
@@ -186,7 +188,7 @@ jobs:
       # The release part of the libraries builds breakpad's dump_syms, which
       # needs ATL for the pinned x64 toolset.
       - name: Install ATL.
-        if: matrix.arch == 'x64' && env.CONFIG == 'Release'
+        if: matrix.arch == 'x64' && env.BUILD_CONFIG == 'Release'
         shell: pwsh
         run: |
           $installer = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer\setup.exe'
@@ -249,19 +251,19 @@ jobs:
 
       - name: Libraries.
         run: |
-          %TBUILD%\%REPO_NAME%\Telegram\build\prepare\win.bat ${{ env.CONFIG == 'Debug' && 'skip-release' || '' }} silent ${{ matrix.qt }}
+          %TBUILD%\%REPO_NAME%\Telegram\build\prepare\win.bat ${{ env.BUILD_CONFIG == 'Debug' && 'skip-release' || '' }} silent ${{ matrix.qt }}
 
       # The combined cache steps save only when the whole job succeeds, which
       # would lose hours of release libraries to a later failure.
       - name: Save ThirdParty cache.
-        if: env.CONFIG == 'Release' && steps.cache-third-party.outputs.cache-hit != 'true'
+        if: env.BUILD_CONFIG == 'Release' && steps.cache-third-party.outputs.cache-hit != 'true'
         uses: actions/cache/save@v6
         with:
           path: ${{ env.TBUILD }}\ThirdParty
           key: ${{ runner.OS }}-${{ runner.arch }}-third-party-${{ env.CACHE_KEY }}
 
       - name: Save Libraries cache.
-        if: env.CONFIG == 'Release' && steps.cache-libs.outputs.cache-hit != 'true'
+        if: env.BUILD_CONFIG == 'Release' && steps.cache-libs.outputs.cache-hit != 'true'
         uses: actions/cache/save@v6
         with:
           path: |
@@ -273,7 +275,7 @@ jobs:
           key: ${{ runner.OS }}-${{ matrix.arch }}-libs-v2${{ env.CACHE_SUFFIX }}-${{ env.CACHE_KEY }}
 
       - name: Save Qt cache.
-        if: env.CONFIG == 'Release' && steps.cache-qt.outputs.cache-hit != 'true'
+        if: env.BUILD_CONFIG == 'Release' && steps.cache-qt.outputs.cache-hit != 'true'
         uses: actions/cache/save@v6
         with:
           path: |
@@ -362,28 +364,28 @@ jobs:
           %TDESKTOP_BUILD_ARCH% ^
           ${{ matrix.qt }} ^
           %TDESKTOP_BUILD_API% ^
-          -D CMAKE_CONFIGURATION_TYPES=%CONFIG% ^
+          -D CMAKE_CONFIGURATION_TYPES=%BUILD_CONFIG% ^
           -D DESKTOP_APP_TEST_APPS=ON ^
-          -D CMAKE_COMPILE_WARNING_AS_ERROR=${{ env.CONFIG == 'Debug' && 'ON' || 'OFF' }} ^
+          -D CMAKE_COMPILE_WARNING_AS_ERROR=${{ env.BUILD_CONFIG == 'Debug' && 'ON' || 'OFF' }} ^
           -D CMAKE_MSVC_DEBUG_INFORMATION_FORMAT= ^
           %TDESKTOP_BUILD_DEFINE%
 
-          cmake --build ..\out --config %CONFIG% --parallel
+          cmake --build ..\out --config %BUILD_CONFIG% --parallel
           if errorlevel 1 exit /b 1
-          ..\out\nagram-tests\%CONFIG%\test_nagram.exe
+          ..\out\nagram-tests\%BUILD_CONFIG%\test_nagram.exe
 
       - name: Smoke test.
         if: env.ONLY_CACHE == 'false'
         run: |
           cd %TBUILD%\%REPO_NAME%
-          python tools\nagram\smoke_test.py out\%CONFIG%\Nagram.exe
+          python tools\nagram\smoke_test.py out\%BUILD_CONFIG%\Nagram.exe
 
       - name: Move artifact.
         if: env.UPLOAD_ARTIFACT == 'true'
         run: |
-          set OUT=%TBUILD%\%REPO_NAME%\out\%CONFIG%
+          set OUT=%TBUILD%\%REPO_NAME%\out\%BUILD_CONFIG%
           mkdir artifact
-          if "%CONFIG%"=="Release" (
+          if "%BUILD_CONFIG%"=="Release" (
             powershell -Command "Compress-Archive -Path '%OUT%\Nagram.exe' -DestinationPath 'artifact\Nagram-windows-${{ matrix.arch }}.zip'"
             echo ARTIFACT_NAME=release-windows-${{ matrix.arch }}>>%GITHUB_ENV%
           ) else (
