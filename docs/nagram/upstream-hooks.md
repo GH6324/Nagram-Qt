@@ -56,8 +56,8 @@
 | B03 | `dialogs/ui/dialogs_layout.cpp`、`dialogs/dialogs_inner_widget_accessibility.cpp` | 收藏夹与归档行不绘制预览文字，读屏文本同步脱敏 | 读取 |
 | B04 | `dialogs/dialogs_widget.cpp` | 即时隐藏动态条并收起已展开区域，保留内部对象（用户在 S30 确认沿用旧版行为） | 读取 |
 | B05 | `window/window_session_controller.cpp`（初始文件夹） | 账号启动时选择文件夹；记录上次打开的文件夹 | 替换 |
-| B06 | `data/data_chat_filters.cpp`、`ui/widgets/chat_filters_tabs_strip.cpp`、`window/window_filters_menu.cpp` | 至少有一个可用的其他文件夹时，从显示列表去掉“全部会话”；保存排序时保持其原位置 | 过滤 |
-| B07 | `dialogs/dialogs_inner_widget.cpp` | 自定义文件夹列表顶部加入归档入口行 | 读取 |
+| B06 | `data/data_chat_filters.cpp`、`ui/widgets/chat_filters_tabs_strip.cpp`、`window/window_filters_menu.cpp` | 至少有一个可用的其他文件夹时，从显示列表去掉“全部会话”；保存排序时保持其原位置。文件夹变为“全部会话”时跳到第一个显示的文件夹，判断统一走 `Nagram::Chats::RedirectFromAllChats`：正在打开或已打开归档时不跳转 | 过滤 |
+| B07 | `dialogs/dialogs_inner_widget.cpp`、`window/window_session_controller.cpp` | 自定义文件夹列表顶部加入归档入口行。`SessionController::openFolder` 重置文件夹的 `setActiveChatsFilter(0)` 改为 `Nagram::Chats::ResetFilterForFolder(this)`；构造时的 `Nagram::Chats::WatchFolders(this)` 记录来源文件夹，归档关闭且仍停在“全部会话”时回到来源文件夹（已不存在则在隐藏“全部会话”时回到第一个显示的文件夹） | 读取 |
 | B08 | `ui/widgets/chat_filters_tabs_strip.cpp`、`window/window_filters_menu.cpp` | 不绘制文件夹未读数，读屏文本同步 | 读取 |
 | B09 | `dialogs/dialogs_entry.cpp`、`history/history.cpp`、`window/window_session_controller.cpp` | 会话排序键加入 Nagram 优先级（置顶之后、时间之前）；状态变化时更新该会话的位置 | 替换 |
 | B10 | `data/components/sponsored_messages.cpp`、`dialogs/dialogs_inner_widget.cpp` | 不请求、注入赞助消息，切换时清除已显示的赞助消息；过滤搜索结果中的广告 | 读取 |

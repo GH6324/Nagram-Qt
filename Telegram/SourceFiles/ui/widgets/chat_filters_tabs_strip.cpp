@@ -472,7 +472,7 @@ not_null<Ui::RpWidget*> AddChatFiltersTabsStrip(
 		if (trackActiveFilterAndUnreadAndReorder) {
 			controller->activeChatsFilter(
 			) | rpl::on_next([=](FilterId id) {
-				if (!id && session->data().chatsFilters().allChatsHidden()) {
+				if (!id && Nagram::Chats::RedirectFromAllChats(controller)) {
 					controller->setActiveChatsFilter(
 						session->data().chatsFilters().displayList().front().id());
 					return;

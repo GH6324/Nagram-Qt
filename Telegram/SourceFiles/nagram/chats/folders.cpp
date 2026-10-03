@@ -72,18 +72,10 @@ void ChooseFoldersBox(
 	box->addButton(tr::lng_cancel(), [=] { box->closeBox(); });
 }
 
-} // namespace
-
-const style::SettingsSlider &FiltersTabsStyle(
-		const style::SettingsSlider &fallback) {
-	return ForDevice().Get(kCompactFolderTabs)
-		? st::nagramCompactFiltersTabs
-		: fallback;
-}
-
-bool GlobalSearchDisabled() {
-	return ForDevice().Get(kDisableGlobalSearch);
-}
+// WHY: openFolder resets the filter to "All chats" before it marks the
+// folder opened, so the redirect away from a hidden "All chats" has to
+// be told that this reset is on purpose.
+Window::SessionController *EnteringFolder = nullptr;
 
 void WatchJoinedChats(not_null<Window::SessionController*> controller) {
 	const auto session = &controller->session();
@@ -100,6 +92,66 @@ void WatchJoinedChats(not_null<Window::SessionController*> controller) {
 		const auto history = session->data().history(update.peer);
 		controller->show(Box(ChooseFoldersBox, controller, history));
 	}, controller->lifetime());
+}
+
+void WatchFolderReturn(not_null<Window::SessionController*> controller) {
+	const auto origin = controller->lifetime().make_state<FilterId>(0);
+	controller->activeChatsFilter(
+	) | rpl::combine_previous(
+	) | rpl::on_next([=](FilterId was, FilterId now) {
+		*origin = (EnteringFolder == controller && !now) ? was : FilterId();
+	}, controller->lifetime());
+
+	controller->openedFolder().changes(
+	) | rpl::filter([=](Data::Folder *folder) {
+		return !folder && !controller->activeChatsFilterCurrent();
+	}) | rpl::on_next([=] {
+		const auto filters = &controller->session().data().chatsFilters();
+		const auto wanted = base::take(*origin);
+		const auto exists = wanted
+			&& ranges::contains(
+				filters->list(),
+				wanted,
+				&Data::ChatFilter::id);
+		const auto id = exists
+			? wanted
+			: filters->allChatsHidden()
+			? filters->displayList().front().id()
+			: FilterId();
+		if (id) {
+			controller->setActiveChatsFilter(id);
+		}
+	}, controller->lifetime());
+}
+
+} // namespace
+
+const style::SettingsSlider &FiltersTabsStyle(
+		const style::SettingsSlider &fallback) {
+	return ForDevice().Get(kCompactFolderTabs)
+		? st::nagramCompactFiltersTabs
+		: fallback;
+}
+
+bool GlobalSearchDisabled() {
+	return ForDevice().Get(kDisableGlobalSearch);
+}
+
+void WatchFolders(not_null<Window::SessionController*> controller) {
+	WatchJoinedChats(controller);
+	WatchFolderReturn(controller);
+}
+
+void ResetFilterForFolder(not_null<Window::SessionController*> controller) {
+	const auto was = std::exchange(EnteringFolder, controller.get());
+	const auto guard = gsl::finally([=] { EnteringFolder = was; });
+	controller->setActiveChatsFilter(0);
+}
+
+bool RedirectFromAllChats(not_null<Window::SessionController*> controller) {
+	return (EnteringFolder != controller)
+		&& !controller->openedFolder().current()
+		&& controller->session().data().chatsFilters().allChatsHidden();
 }
 
 } // namespace Nagram::Chats

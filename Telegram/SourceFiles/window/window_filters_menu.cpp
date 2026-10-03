@@ -6,6 +6,7 @@ For license and copyright information please follow this link:
 https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 #include "window/window_filters_menu.h"
+#include "nagram/chats/folders.h"
 #include "nagram/chats/managed_folders.h"
 #include "nagram/chats/options.h"
 #include "nagram/core/options.h"
@@ -171,7 +172,7 @@ void FiltersMenu::setup() {
 	) | rpl::filter([=](FilterId id) {
 		return (id != _activeFilterId);
 	}) | rpl::on_next([=](FilterId id) {
-		if (!id && filters->allChatsHidden()) {
+		if (!id && Nagram::Chats::RedirectFromAllChats(_session)) {
 			_session->setActiveChatsFilter(filters->displayList().front().id());
 			return;
 		}
@@ -389,7 +390,8 @@ void FiltersMenu::refresh() {
 	}
 
 	auto now = base::flat_map<int, base::unique_qptr<Ui::SideBarButton>>();
-	if (filters->allChatsHidden() && !_session->activeChatsFilterCurrent()) {
+	if (!_session->activeChatsFilterCurrent()
+		&& Nagram::Chats::RedirectFromAllChats(_session)) {
 		_session->setActiveChatsFilter(filters->displayList().front().id());
 	}
 	const auto &currentFilter = _session->activeChatsFilterCurrent();

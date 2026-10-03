@@ -1592,7 +1592,7 @@ SessionController::SessionController(
 	if (_isPrimary) Nagram::Chats::WatchSorting(session, lifetime());
 	Nagram::Chats::WatchRecentChats(this);
 	Nagram::Chats::WatchReadingPositions(this);
-	Nagram::Chats::WatchJoinedChats(this);
+	Nagram::Chats::WatchFolders(this);
 	Nagram::Privacy::WatchRestrictions(this);
 
 	_chatStyleTheme = _defaultChatTheme;
@@ -2108,7 +2108,7 @@ void SessionController::openFolder(not_null<Data::Folder*> folder) {
 		resetFakeUnreadWhileOpened();
 	}
 	if (activeChatsFilterCurrent() != 0) {
-		setActiveChatsFilter(0);
+		Nagram::Chats::ResetFilterForFolder(this);
 	} else if (adaptive().isOneColumn()) {
 		clearSectionStack(SectionShow::Way::ClearStack);
 	}

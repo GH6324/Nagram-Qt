@@ -12,6 +12,9 @@ namespace Nagram::Chats {
 [[nodiscard]] const style::SettingsSlider &FiltersTabsStyle(
 	const style::SettingsSlider &fallback);
 [[nodiscard]] bool GlobalSearchDisabled();
-void WatchJoinedChats(not_null<Window::SessionController*> controller);
+void WatchFolders(not_null<Window::SessionController*> controller);
+void ResetFilterForFolder(not_null<Window::SessionController*> controller);
+[[nodiscard]] bool RedirectFromAllChats(
+	not_null<Window::SessionController*> controller);
 
 } // namespace Nagram::Chats
