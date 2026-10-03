@@ -105,6 +105,9 @@ jobs:
       # Debug and Release share one copy of the libraries, built with their
       # release variants: a release cache saved from a tag run is visible only
       # to that tag, and a second copy does not fit the repository quota.
+      # The key names the repository because the libraries record their
+      # absolute paths: after a rename every one of them is rebuilt, and a hit
+      # on the old key would keep that rebuild from being saved.
       - name: Libraries cache.
         id: cache-libs
         uses: actions/cache@v6
@@ -112,10 +115,8 @@ jobs:
           path: |
             Libraries
             ThirdParty
-          key: ${{ runner.OS }}-libs-v2-${{ hashFiles(format('{0}/{1}', env.REPO_NAME, env.PREPARE_PATH)) }}
-          restore-keys: |
-            ${{ runner.OS }}-libs-v2-
-            ${{ runner.OS }}-libs-
+          key: ${{ runner.OS }}-libs-v2-${{ env.REPO_NAME }}-${{ hashFiles(format('{0}/{1}', env.REPO_NAME, env.PREPARE_PATH)) }}
+          restore-keys: ${{ runner.OS }}-libs-v2-${{ env.REPO_NAME }}-
 
       - name: Libraries.
         run: |
@@ -127,7 +128,7 @@ jobs:
         continue-on-error: true
         env:
           GH_TOKEN: ${{ github.token }}
-          LIBS_KEY: ${{ runner.OS }}-libs-v2-${{ hashFiles(format('{0}/{1}', env.REPO_NAME, env.PREPARE_PATH)) }}
+          LIBS_KEY: ${{ runner.OS }}-libs-v2-${{ env.REPO_NAME }}-${{ hashFiles(format('{0}/{1}', env.REPO_NAME, env.PREPARE_PATH)) }}
         run: |
           bash "$REPO_NAME/tools/nagram/drop_superseded_caches.sh" "$LIBS_KEY"
 
@@ -143,7 +144,7 @@ jobs:
           path: |
             Libraries
             ThirdParty
-          key: ${{ runner.OS }}-libs-v2-${{ hashFiles(format('{0}/{1}', env.REPO_NAME, env.PREPARE_PATH)) }}
+          key: ${{ runner.OS }}-libs-v2-${{ env.REPO_NAME }}-${{ hashFiles(format('{0}/{1}', env.REPO_NAME, env.PREPARE_PATH)) }}
 
       - name: Nagram build.
         if: env.ONLY_CACHE == 'false'
