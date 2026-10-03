@@ -28,6 +28,9 @@ inline constexpr auto kShowArchiveInFolders = Option<bool>{
 	"nagram.showArchiveInFolders", Scope::Device, false,
 	Category::Chats, "lng_nagram_show_archive_in_folders",
 	kRefreshDialogList };
+inline constexpr auto kArchiveInFolderList = Option<bool>{
+	"nagram.archiveInFolderList", Scope::Device, false,
+	Category::Chats, "lng_nagram_archive_in_folder_list" };
 inline constexpr auto kSavedInFolderList = Option<bool>{
 	"nagram.savedInFolderList", Scope::Device, false,
 	Category::Chats, "lng_nagram_saved_in_folder_list" };
@@ -192,6 +195,7 @@ inline void RegisterOptions(Registry &registry) {
 	Expects(registry.Add(kHideStories));
 	Expects(registry.Add(kHideAllChatsFolder));
 	Expects(registry.Add(kShowArchiveInFolders));
+	Expects(registry.Add(kArchiveInFolderList));
 	Expects(registry.Add(kSavedInFolderList));
 	Expects(registry.Add(kHideFolderUnreadCounters));
 	Expects(registry.Add(kStartupFolderMode));

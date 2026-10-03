@@ -8,13 +8,18 @@
 #include "data/data_changes.h"
 #include "data/data_channel.h"
 #include "data/data_chat_filters.h"
+#include "data/data_folder.h"
 #include "data/data_session.h"
+#include "data/data_unread_value.h"
 #include "dialogs/dialogs_key.h"
+#include "dialogs/dialogs_main_list.h"
 #include "history/history.h"
 #include "lang/lang_keys.h"
 #include "main/main_session.h"
+#include "menu/menu_mark_as_read.h"
 #include "ui/layers/generic_box.h"
 #include "ui/widgets/chat_filters_tabs_mode.h"
+#include "ui/widgets/chat_filters_tabs_slider.h"
 #include "ui/widgets/checkbox.h"
 #include "ui/widgets/labels.h"
 #include "ui/widgets/menu/menu_add_action_callback.h"
@@ -84,6 +89,7 @@ void ChooseFoldersBox(
 	box->addButton(tr::lng_cancel(), [=] { box->closeBox(); });
 }
 
+constexpr auto kArchiveTabId = FilterId(-2);
 constexpr auto kSavedTabId = FilterId(-1);
 
 // WHY: openFolder resets the filter to "All chats" before it marks the
@@ -168,55 +174,34 @@ bool RedirectFromAllChats(not_null<Window::SessionController*> controller) {
 		&& controller->session().data().chatsFilters().allChatsHidden();
 }
 
-rpl::producer<bool> SavedInFolderListValue() {
-	return ForDevice().Value(kSavedInFolderList);
+namespace {
+
+struct ArchiveUnread {
+	int count = 0;
+	bool muted = false;
+};
+
+[[nodiscard]] rpl::producer<ArchiveUnread> ArchiveUnreadValue(
+		not_null<Main::Session*> session) {
+	const auto list = session->data().folder(Data::Folder::kId)->chatsList();
+	return rpl::combine(
+		rpl::single(rpl::empty) | rpl::then(
+			list->unreadStateChanges() | rpl::to_empty),
+		Data::IncludeMutedCounterFoldersValue(),
+		ForDevice().Value(kHideFolderUnreadCounters)
+	) | rpl::map([=](rpl::empty_value, bool includeMuted, bool hidden) {
+		const auto state = list->unreadState();
+		const auto muted = state.chatsMuted + state.marksMuted;
+		const auto count = (state.chats + state.marks)
+			- (includeMuted ? 0 : muted);
+		return ArchiveUnread{
+			.count = hidden ? 0 : count,
+			.muted = includeMuted && (count == muted),
+		};
+	});
 }
 
-std::vector<Data::ChatFilter> FolderTabs(
-		std::vector<Data::ChatFilter> list,
-		bool main) {
-	if (main && ForDevice().Get(kSavedInFolderList)) {
-		list.push_back(Data::ChatFilter(
-			kSavedTabId,
-			{ TextWithEntities{ tr::lng_saved_messages(tr::now) } },
-			QString(),
-			std::nullopt,
-			Data::ChatFilter::Flags(),
-			{},
-			{},
-			{}));
-	}
-	return list;
-}
-
-std::vector<const style::internal::Icon*> FolderTabIcons(
-		const std::vector<Data::ChatFilter> &tabs,
-		std::vector<const style::internal::Icon*> icons) {
-	for (auto i = 0, count = int(tabs.size()); i != count; ++i) {
-		if (tabs[i].id() == kSavedTabId) {
-			icons[i] = &st::nagramFoldersTabsSaved;
-		}
-	}
-	return icons;
-}
-
-int ActiveFolderTab(
-		not_null<Window::SessionController*> controller,
-		const std::vector<Data::ChatFilter> &list,
-		int fallback) {
-	const auto i = ranges::find(
-		list,
-		controller->activeChatsFilterCurrent(),
-		&Data::ChatFilter::id);
-	return (i != end(list)) ? int(i - begin(list)) : std::max(fallback, 0);
-}
-
-void OpenSavedFromFolderList(
-		not_null<Window::SessionController*> controller) {
-	controller->showPeerHistory(controller->session().userPeerId());
-}
-
-base::unique_qptr<Ui::PopupMenu> SavedFolderMenu(
+[[nodiscard]] base::unique_qptr<Ui::PopupMenu> SavedFolderMenu(
 		not_null<QWidget*> parent,
 		not_null<Window::SessionController*> controller) {
 	auto result = base::make_unique_q<Ui::PopupMenu>(
@@ -239,7 +224,150 @@ base::unique_qptr<Ui::PopupMenu> SavedFolderMenu(
 	return result;
 }
 
-void SetupSavedFolderButton(
+[[nodiscard]] base::unique_qptr<Ui::PopupMenu> ArchiveFolderMenu(
+		not_null<QWidget*> parent,
+		not_null<Window::SessionController*> controller) {
+	auto result = base::make_unique_q<Ui::PopupMenu>(
+		parent,
+		st::popupMenuWithIcons);
+	const auto session = &controller->session();
+	const auto addAction = Ui::Menu::CreateAddActionCallback(result.get());
+	addAction(tr::lng_context_new_window(tr::now), crl::guard(controller, [=] {
+		controller->showInNewWindow(Window::SeparateId(
+			Window::SeparateType::Archive,
+			session));
+	}), &st::menuIconNewWindow);
+	if (const auto folder = session->data().folderLoaded(Data::Folder::kId)) {
+		MarkAsReadMenu::AddChatListAction(
+			controller,
+			MarkAsReadMenu::ChatListKind::Archive,
+			[=] { return folder->chatsList(); },
+			addAction);
+	}
+	addAction(tr::lng_nagram_hide_folder_entry(tr::now), [] {
+		Expects(ForDevice().Set(kArchiveInFolderList, false));
+	}, &st::menuIconCancel);
+	return result;
+}
+
+} // namespace
+
+rpl::producer<> FolderListItemsChanges() {
+	return rpl::merge(
+		ForDevice().Value(kArchiveInFolderList) | rpl::skip(1) | rpl::to_empty,
+		ForDevice().Value(kSavedInFolderList) | rpl::skip(1) | rpl::to_empty);
+}
+
+std::vector<Data::ChatFilter> FolderTabs(
+		std::vector<Data::ChatFilter> list,
+		bool main) {
+	const auto add = [&](FilterId id, const QString &title) {
+		list.push_back(Data::ChatFilter(
+			id,
+			{ TextWithEntities{ title } },
+			QString(),
+			std::nullopt,
+			Data::ChatFilter::Flags(),
+			{},
+			{},
+			{}));
+	};
+	if (main && ForDevice().Get(kArchiveInFolderList)) {
+		add(kArchiveTabId, tr::lng_archived_name(tr::now));
+	}
+	if (main && ForDevice().Get(kSavedInFolderList)) {
+		add(kSavedTabId, tr::lng_saved_messages(tr::now));
+	}
+	return list;
+}
+
+std::vector<const style::internal::Icon*> FolderTabIcons(
+		const std::vector<Data::ChatFilter> &tabs,
+		std::vector<const style::internal::Icon*> icons) {
+	for (auto i = 0, count = int(tabs.size()); i != count; ++i) {
+		if (tabs[i].id() == kArchiveTabId) {
+			icons[i] = &st::nagramFoldersTabsArchive;
+		} else if (tabs[i].id() == kSavedTabId) {
+			icons[i] = &st::nagramFoldersTabsSaved;
+		}
+	}
+	return icons;
+}
+
+int ShownFolderTab(
+		not_null<Window::SessionController*> controller,
+		const std::vector<Data::ChatFilter> &tabs,
+		int fallback) {
+	const auto find = [&](FilterId id) {
+		const auto i = ranges::find(tabs, id, &Data::ChatFilter::id);
+		return (i != end(tabs)) ? int(i - begin(tabs)) : -1;
+	};
+	const auto archive = controller->openedFolder().current()
+		? find(kArchiveTabId)
+		: -1;
+	const auto shown = (archive >= 0)
+		? archive
+		: find(controller->activeChatsFilterCurrent());
+	return (shown >= 0) ? shown : fallback;
+}
+
+void FolderTabChosen(
+		not_null<Window::SessionController*> controller,
+		FilterId id) {
+	const auto session = &controller->session();
+	if (id == kSavedTabId) {
+		controller->showPeerHistory(session->userPeerId());
+	} else if (const auto f = session->data().folderLoaded(Data::Folder::kId)) {
+		controller->openFolder(f);
+	}
+}
+
+base::unique_qptr<Ui::PopupMenu> FolderTabMenu(
+		not_null<QWidget*> parent,
+		not_null<Window::SessionController*> controller,
+		int offset) {
+	const auto tabs = FolderTabs({}, true);
+	if (offset < 0 || offset >= int(tabs.size())) {
+		return nullptr;
+	}
+	return (tabs[offset].id() == kArchiveTabId)
+		? ArchiveFolderMenu(parent, controller)
+		: SavedFolderMenu(parent, controller);
+}
+
+void WatchArchiveTab(
+		not_null<Window::SessionController*> controller,
+		not_null<Ui::ChatsFiltersTabs*> slider,
+		const std::vector<Data::ChatFilter> &tabs,
+		Fn<void(int)> activate,
+		rpl::lifetime &lifetime) {
+	const auto i = ranges::find(tabs, kArchiveTabId, &Data::ChatFilter::id);
+	if (i == end(tabs)) {
+		return;
+	}
+	const auto index = int(i - begin(tabs));
+	ArchiveUnreadValue(
+		&controller->session()
+	) | rpl::on_next([=](ArchiveUnread unread) {
+		slider->setUnreadCount(index, unread.count, unread.muted);
+		slider->fitWidthToSections();
+	}, lifetime);
+	controller->openedFolder().value(
+	) | rpl::on_next([=] {
+		if (const auto shown = ShownFolderTab(controller, tabs, -1)
+			; shown >= 0) {
+			activate(shown);
+		}
+	}, lifetime);
+}
+
+bool FolderButtonActive(not_null<Window::SessionController*> controller) {
+	return !ForDevice().Get(kArchiveInFolderList)
+		|| ((EnteringFolder != controller)
+			&& !controller->openedFolder().current());
+}
+
+void SetupFolderListButtons(
 		not_null<Ui::VerticalLayout*> container,
 		not_null<Window::SessionController*> controller) {
 	const auto holder = container->add(
@@ -247,37 +375,68 @@ void SetupSavedFolderButton(
 	const auto menu = holder->lifetime().make_state<
 		base::unique_qptr<Ui::PopupMenu>>();
 	rpl::combine(
-		SavedInFolderListValue(),
+		ForDevice().Value(kArchiveInFolderList),
+		ForDevice().Value(kSavedInFolderList),
 		Core::App().settings().chatFiltersTabsModeValue()
-	) | rpl::on_next([=](bool shown, Ui::ChatsFiltersTabsMode value) {
+	) | rpl::on_next([=](
+			bool archive,
+			bool saved,
+			Ui::ChatsFiltersTabsMode value) {
 		using Mode = Ui::ChatsFiltersTabsMode;
-		holder->clear();
-		if (shown) {
-			const auto mode = Ui::VerticalChatsFiltersTabsMode(value);
+		const auto mode = Ui::VerticalChatsFiltersTabsMode(value);
+		const auto add = [&](FilterId id) {
+			const auto isArchive = (id == kArchiveTabId);
 			const auto button = holder->add(object_ptr<Ui::SideBarButton>(
 				holder,
-				TextWithEntities{ tr::lng_saved_messages(tr::now) },
+				TextWithEntities{ isArchive
+					? tr::lng_archived_name(tr::now)
+					: tr::lng_saved_messages(tr::now) },
 				((mode == Mode::TextOnly)
 					? st::windowFiltersButtonTextOnly
 					: (mode == Mode::IconsOnly)
 					? st::windowFiltersButtonIconsOnly
 					: st::windowFiltersButton)));
 			button->setIconOverride(
-				&st::nagramFoldersSaved,
-				&st::nagramFoldersSavedActive);
+				isArchive ? &st::nagramFoldersArchive : &st::nagramFoldersSaved,
+				(isArchive
+					? &st::nagramFoldersArchiveActive
+					: &st::nagramFoldersSavedActive));
 			button->setShowIcon(mode != Mode::TextOnly);
 			button->setShowText(mode != Mode::IconsOnly);
 			button->setClickedCallback([=] {
-				OpenSavedFromFolderList(controller);
+				FolderTabChosen(controller, id);
 			});
 			button->events(
 			) | rpl::filter([](not_null<QEvent*> e) {
 				return (e->type() == QEvent::ContextMenu);
 			}) | rpl::on_next([=](not_null<QEvent*> e) {
-				*menu = SavedFolderMenu(button, controller);
+				*menu = isArchive
+					? ArchiveFolderMenu(button, controller)
+					: SavedFolderMenu(button, controller);
 				(*menu)->popup(QCursor::pos());
 				e->accept();
 			}, button->lifetime());
+			return button;
+		};
+		holder->clear();
+		if (archive) {
+			const auto button = add(kArchiveTabId);
+			controller->openedFolder().value(
+			) | rpl::on_next([=](Data::Folder *folder) {
+				button->setActive(folder != nullptr);
+			}, button->lifetime());
+			ArchiveUnreadValue(
+				&controller->session()
+			) | rpl::on_next([=](ArchiveUnread unread) {
+				button->setBadge(!unread.count
+					? QString()
+					: (unread.count > 999)
+					? u"99+"_q
+					: QString::number(unread.count), unread.muted);
+			}, button->lifetime());
+		}
+		if (saved) {
+			add(kSavedTabId);
 		}
 		holder->resizeToWidth(st::windowFiltersWidth);
 	}, holder->lifetime());

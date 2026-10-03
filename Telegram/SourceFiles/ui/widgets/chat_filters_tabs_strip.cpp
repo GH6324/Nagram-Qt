@@ -75,8 +75,11 @@ void ShowMenu(
 	{
 		const auto list = session->data().chatsFilters().displayList();
 		if (index < 0 || index >= list.size()) {
-			if (index == list.size()) {
-				state->menu = Nagram::Chats::SavedFolderMenu(parent, controller);
+			state->menu = Nagram::Chats::FolderTabMenu(
+				parent,
+				controller,
+				index - int(list.size()));
+			if (state->menu) {
 				state->menu->popup(QCursor::pos());
 			}
 			return;
@@ -442,7 +445,7 @@ not_null<Ui::RpWidget*> AddChatFiltersTabsStrip(
 				state->reorder->addPinnedInterval(
 					premiumFrom,
 					std::max(1, int(list.size()) - maxLimit));
-				state->reorder->addPinnedInterval(list.size(), 1);
+				state->reorder->addPinnedInterval(list.size(), 2);
 			}
 		}
 		if (trackActiveFilterAndUnreadAndReorder) {
@@ -505,11 +508,13 @@ not_null<Ui::RpWidget*> AddChatFiltersTabsStrip(
 			if (slider->reordering()) {
 				return;
 			} else if (index >= int(list.size())) {
-				state->ignoreActivation = true;
-				slider->setActiveSectionFast(
-					Nagram::Chats::ActiveFolderTab(controller, list, was));
-				state->ignoreActivation = false;
-				Nagram::Chats::OpenSavedFromFolderList(controller);
+				if (!state->ignoreActivation) {
+					state->ignoreActivation = true;
+					slider->setActiveSectionFast(
+						Nagram::Chats::ShownFolderTab(controller, tabs, was));
+					state->ignoreActivation = false;
+					Nagram::Chats::FolderTabChosen(controller, tabs[index].id());
+				}
 				return;
 			}
 			const auto &filter = filterByIndex(index);
@@ -520,6 +525,11 @@ not_null<Ui::RpWidget*> AddChatFiltersTabsStrip(
 			if (!state->ignoreActivation) {
 				applyFilter(filter);
 			}
+		}, state->rebuildLifetime);
+		Nagram::Chats::WatchArchiveTab(controller, slider, tabs, [=](int index) {
+			state->ignoreActivation = true;
+			slider->setActiveSection(index);
+			state->ignoreActivation = false;
 		}, state->rebuildLifetime);
 		slider->contextMenuRequested() | rpl::on_next([=](int index) {
 			if (trackActiveFilterAndUnreadAndReorder) {
@@ -547,8 +557,8 @@ not_null<Ui::RpWidget*> AddChatFiltersTabsStrip(
 		Nagram::ForDevice().Value(Nagram::Chats::kHideAllChatsFolder)
 			| rpl::to_empty
 	) | rpl::on_next(rebuild, wrap->lifetime());
-	Nagram::Chats::SavedInFolderListValue(
-	) | rpl::skip(1) | rpl::to_empty | rpl::on_next(rebuild, wrap->lifetime());
+	Nagram::Chats::FolderListItemsChanges(
+	) | rpl::on_next(rebuild, wrap->lifetime());
 	Core::App().settings().chatFiltersTabsModeValue(
 	) | rpl::on_next([=](ChatsFiltersTabsMode mode) {
 		slider->setTabsMode(HorizontalChatsFiltersTabsMode(mode));

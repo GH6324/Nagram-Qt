@@ -12,6 +12,7 @@ namespace Data {
 class ChatFilter;
 } // namespace Data
 namespace Ui {
+class ChatsFiltersTabs;
 class PopupMenu;
 class VerticalLayout;
 } // namespace Ui
@@ -29,23 +30,33 @@ void ResetFilterForFolder(not_null<Window::SessionController*> controller);
 [[nodiscard]] bool RedirectFromAllChats(
 	not_null<Window::SessionController*> controller);
 
-[[nodiscard]] rpl::producer<bool> SavedInFolderListValue();
+[[nodiscard]] rpl::producer<> FolderListItemsChanges();
 [[nodiscard]] std::vector<Data::ChatFilter> FolderTabs(
 	std::vector<Data::ChatFilter> list,
 	bool main);
 [[nodiscard]] std::vector<const style::internal::Icon*> FolderTabIcons(
 	const std::vector<Data::ChatFilter> &tabs,
 	std::vector<const style::internal::Icon*> icons);
-[[nodiscard]] int ActiveFolderTab(
+[[nodiscard]] int ShownFolderTab(
 	not_null<Window::SessionController*> controller,
-	const std::vector<Data::ChatFilter> &list,
+	const std::vector<Data::ChatFilter> &tabs,
 	int fallback);
-void OpenSavedFromFolderList(
-	not_null<Window::SessionController*> controller);
-[[nodiscard]] base::unique_qptr<Ui::PopupMenu> SavedFolderMenu(
+void FolderTabChosen(
+	not_null<Window::SessionController*> controller,
+	FilterId id);
+[[nodiscard]] base::unique_qptr<Ui::PopupMenu> FolderTabMenu(
 	not_null<QWidget*> parent,
+	not_null<Window::SessionController*> controller,
+	int offset);
+void WatchArchiveTab(
+	not_null<Window::SessionController*> controller,
+	not_null<Ui::ChatsFiltersTabs*> slider,
+	const std::vector<Data::ChatFilter> &tabs,
+	Fn<void(int)> activate,
+	rpl::lifetime &lifetime);
+[[nodiscard]] bool FolderButtonActive(
 	not_null<Window::SessionController*> controller);
-void SetupSavedFolderButton(
+void SetupFolderListButtons(
 	not_null<Ui::VerticalLayout*> container,
 	not_null<Window::SessionController*> controller);
 

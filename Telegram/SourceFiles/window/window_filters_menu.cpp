@@ -193,6 +193,14 @@ void FiltersMenu::setup() {
 		_reorder->finishReordering();
 	}, _outer.lifetime());
 
+	_session->openedFolder().changes(
+	) | rpl::on_next([=] {
+		const auto i = _filters.find(_activeFilterId);
+		if (i != end(_filters)) {
+			i->second->setActive(Nagram::Chats::FolderButtonActive(_session));
+		}
+	}, _outer.lifetime());
+
 	_menu.setClickedCallback([=] {
 		_session->widget()->showMainMenu();
 	});
@@ -448,7 +456,7 @@ void FiltersMenu::refresh() {
 void FiltersMenu::setupList() {
 	_list = _container->add(object_ptr<TabListLayout>(_container));
 	_list->setAccessibleName(tr::lng_filters_title(tr::now));
-	Nagram::Chats::SetupSavedFolderButton(_container, _session);
+	Nagram::Chats::SetupFolderListButtons(_container, _session);
 	_setup = prepareButton(
 		_container,
 		-1,
@@ -696,7 +704,8 @@ base::unique_qptr<Ui::SideBarButton> FiltersMenu::prepareButton(
 			return base::EventFilterResult::Cancel;
 		});
 	}
-	raw->setActive(_session->activeChatsFilterCurrent() == id);
+	raw->setActive((_session->activeChatsFilterCurrent() == id)
+		&& Nagram::Chats::FolderButtonActive(_session));
 	raw->setClickedCallback([=] {
 		if (_reordering) {
 			return;
