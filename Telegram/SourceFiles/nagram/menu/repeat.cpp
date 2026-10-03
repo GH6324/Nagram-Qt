@@ -53,33 +53,70 @@ bool CopyOnly(HistoryItem *item) {
 		&& HasCopy(item);
 }
 
-bool Available(HistoryItem *item) {
+not_null<Data::Thread*> RepeatTarget(not_null<HistoryItem*> item) {
+	return item->topic()
+		? static_cast<Data::Thread*>(item->topic())
+		: static_cast<Data::Thread*>(item->history());
+}
+
+// WHY: comments are plain messages of the discussion group, so only
+// the opened section tells that a repeat belongs to their thread.
+MsgId OpenedThreadRootId(
+		not_null<Window::SessionController*> controller,
+		not_null<Data::Thread*> target) {
+	const auto state = controller->dialogsEntryStateCurrent();
+	return ((state.section == Dialogs::EntryState::Section::Replies)
+		&& (state.key.history() == target.get()))
+		? state.currentReplyTo.topicRootId
+		: MsgId();
+}
+
+bool Available(
+		not_null<Window::SessionController*> controller,
+		HistoryItem *item) {
 	if (!CanForward(item) && !CopyOnly(item)) {
 		return false;
 	}
-	const auto target = item->topic()
-		? static_cast<Data::Thread*>(item->topic())
-		: static_cast<Data::Thread*>(item->history());
-	return Data::CanSendAnything(target);
+	const auto target = RepeatTarget(item);
+	return Data::CanSendAnything(target)
+		&& (HasCopy(item) || !OpenedThreadRootId(controller, target));
+}
+
+Api::SendAction RepeatAction(not_null<Data::Thread*> target, MsgId rootId) {
+	auto result = Api::SendAction(target);
+	result.clearDraft = false;
+	if (rootId) {
+		result.replyTo = {
+			.messageId = { result.history->peer->id, rootId },
+			.topicRootId = rootId,
+		};
+	}
+	return result;
 }
 
 void ShowLatest(
 		not_null<Window::SessionController*> controller,
-		not_null<Data::Thread*> target) {
-	if (ForDevice().Get(kScrollAfterRepeat)) {
+		not_null<Data::Thread*> target,
+		MsgId rootId) {
+	if (!ForDevice().Get(kScrollAfterRepeat)) {
+		return;
+	} else if (rootId) {
+		controller->showRepliesForMessage(
+			target->owningHistory(),
+			rootId,
+			ShowAtTheEndMsgId);
+	} else {
 		controller->showThread(target, ShowAtTheEndMsgId);
 	}
 }
 
-bool SendCopy(not_null<HistoryItem*> item, not_null<Data::Thread*> target) {
+bool SendCopy(not_null<HistoryItem*> item, Api::SendAction action) {
 	if (!HasCopy(item)) {
 		return false;
 	}
 	const auto media = item->media();
 	const auto plain = !media || media->webpage();
 	const auto &original = item->originalText();
-	auto action = Api::SendAction(target);
-	action.clearDraft = false;
 	auto message = Api::MessageToSend(std::move(action));
 	message.textWithTags = { original.text,
 		TextUtilities::ConvertEntitiesToTextTags(original.entities) };
@@ -93,12 +130,12 @@ bool SendCopy(not_null<HistoryItem*> item, not_null<Data::Thread*> target) {
 	return true;
 }
 
-int SendCopies(not_null<HistoryItem*> item, not_null<Data::Thread*> target) {
+int SendCopies(not_null<HistoryItem*> item, const Api::SendAction &action) {
 	const auto owner = &item->history()->owner();
 	auto sent = 0;
 	for (const auto &id : owner->itemOrItsGroup(item)) {
 		const auto part = owner->message(id);
-		sent += (part && SendCopy(part, target)) ? 1 : 0;
+		sent += (part && SendCopy(part, action)) ? 1 : 0;
 	}
 	return sent;
 }
@@ -108,20 +145,21 @@ void SendRepeat(
 		FullMsgId itemId,
 		ActionId id) {
 	const auto item = controller->session().data().message(itemId);
-	if (!Available(item)) {
+	if (!Available(controller, item)) {
 		return;
 	}
+	const auto target = RepeatTarget(item);
+	const auto history = item->history();
+	const auto rootId = OpenedThreadRootId(controller, target);
+	// A forward cannot reply to the post, so a comment thread gets a copy.
 	if (CopyOnly(item)
+		|| rootId
 		|| (id == ActionId::Repeat && ForDevice().Get(kRepeatWithoutQuote))) {
 		id = ActionId::RepeatAsCopy;
 	}
-	const auto target = item->topic()
-		? static_cast<Data::Thread*>(item->topic())
-		: static_cast<Data::Thread*>(item->history());
-	const auto history = item->history();
 	if (id == ActionId::RepeatAsCopy) {
-		if (SendCopies(item, target)) {
-			ShowLatest(controller, target);
+		if (SendCopies(item, RepeatAction(target, rootId))) {
+			ShowLatest(controller, target, rootId);
 		}
 		return;
 	}
@@ -135,12 +173,11 @@ void SendRepeat(
 	if (resolved.items.empty()) {
 		return;
 	}
-	auto action = Api::SendAction(target);
-	action.clearDraft = false;
+	auto action = RepeatAction(target, rootId);
 	action.generateLocal = false;
 	history->session().api().forwardMessages(
 		std::move(resolved), action);
-	ShowLatest(controller, target);
+	ShowLatest(controller, target, rootId);
 }
 
 void ShowForwardCopy(
@@ -155,7 +192,8 @@ void ShowForwardCopy(
 			return;
 		}
 		const auto item = strong->session().data().message(itemId);
-		if (!CopyOnly(item) || !SendCopies(item, target)) {
+		if (!CopyOnly(item)
+			|| !SendCopies(item, RepeatAction(target, MsgId()))) {
 			strong->showToast(tr::lng_forward_cant(tr::now));
 			return;
 		}
@@ -273,7 +311,7 @@ void InsertRepeatActions(
 	const auto itemId = item->fullId();
 	const auto forward = tr::lng_nagram_menu_forward_without_quote(tr::now);
 	const auto copy = tr::lng_nagram_menu_repeat_as_copy(tr::now);
-	const auto repeat = Available(item)
+	const auto repeat = Available(controller, item)
 		&& (!item->history()->peer->isBroadcast()
 			|| !ForDevice().Get(kNoRepeatInChannels));
 	auto position = InsertPosition(menu);
