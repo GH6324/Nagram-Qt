@@ -189,6 +189,7 @@
 "lng_nagram_message_id" = "訊息 ID：{id}";
 "lng_nagram_marks_and_counts" = "標記與計數";
 "lng_nagram_exact_message_counters" = "顯示精確的瀏覽數和回覆數";
+"lng_nagram_show_forward_count" = "在瀏覽數旁顯示轉傳數";
 "lng_nagram_hide_message_views" = "隱藏瀏覽數";
 "lng_nagram_hide_channel_signature" = "隱藏頻道訊息署名";
 "lng_nagram_hide_edited_badge" = "隱藏「已編輯」標記";

@@ -170,6 +170,7 @@ TextState BottomInfo::textState(
 			- ((_data.flags & Data::Flag::Pinned) ? st::historyPinWidth : 0)
 			- st::historyViewsSpace
 			- st::historyViewsWidth
+			- Nagram::Messages::ForwardsWidth(_nagramForwards)
 			- viewsWidth;
 		const auto inViews = QRect(
 			right,
@@ -325,6 +326,13 @@ void BottomInfo::paint(
 			firstLineBottom + st::historyPinTop,
 			outerWidth);
 	}
+	Nagram::Messages::PaintForwards(
+		p,
+		_nagramForwards,
+		inverted ? st->historyRepliesInvertedIcon() : stm->historyRepliesIcon,
+		right,
+		position.y(),
+		outerWidth);
 	if (!_views.isEmpty()) {
 		const auto viewsWidth = _views.maxWidth();
 		right -= st::historyViewsSpace + viewsWidth;
@@ -545,6 +553,7 @@ void BottomInfo::layoutDateText() {
 }
 
 void BottomInfo::layoutViewsText() {
+	Nagram::Messages::LayoutForwards(_nagramForwards, _data);
 	if (!_data.views || (_data.flags & Data::Flag::Sending)) {
 		_views.clear();
 		return;
@@ -592,6 +601,7 @@ QSize BottomInfo::countOptimalSize() {
 			+ _views.maxWidth()
 			+ st::historyViewsWidth;
 	}
+	width += Nagram::Messages::ForwardsWidth(_nagramForwards);
 	if (!_replies.isEmpty()) {
 		width += st::historyViewsSpace
 			+ _replies.maxWidth()

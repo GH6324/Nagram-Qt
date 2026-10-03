@@ -126,6 +126,7 @@ private:
 	Ui::Text::String _authorEditedDate;
 	Ui::Text::String _views;
 	Ui::Text::String _replies;
+	Ui::Text::String _nagramForwards;
 	std::unique_ptr<Effect> _effect;
 	mutable ClickHandlerPtr _replayLink;
 	int _effectMaxWidth = 0;

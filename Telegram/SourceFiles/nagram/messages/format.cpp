@@ -6,9 +6,12 @@
 #include "history/history_item.h"
 #include "history/history_item_components.h"
 #include "history/view/history_view_element.h"
+#include "ui/painter.h"
 #include "ui/text/format_values.h"
+#include "ui/text/text_options.h"
 #include "lang/lang_keys.h"
 #include "base/unixtime.h"
+#include "styles/style_chat.h"
 
 #include <QtCore/QLocale>
 
@@ -95,6 +98,56 @@ void ApplyInfoOptions(HistoryView::BottomInfo::Data &data) {
 		using Flag = HistoryView::BottomInfo::Data::Flag;
 		data.flags &= ~(Flag::Edited | Flag::EditedPrimary);
 	}
+}
+
+void LayoutForwards(
+		Ui::Text::String &text,
+		const HistoryView::BottomInfo::Data &data) {
+	using Flag = HistoryView::BottomInfo::Data::Flag;
+	if (!data.views
+		|| !data.forwardsCount
+		|| (data.flags & Flag::Sending)
+		|| !ForDevice().Get(kShowForwardCount)) {
+		text.clear();
+		return;
+	}
+	text.setText(
+		st::msgDateTextStyle,
+		FormatCounter(*data.forwardsCount),
+		Ui::NameTextOptions());
+}
+
+int ForwardsWidth(const Ui::Text::String &text) {
+	return text.isEmpty()
+		? 0
+		: (st::historyViewsSpace + text.maxWidth() + st::historyViewsWidth);
+}
+
+void PaintForwards(
+		Painter &p,
+		const Ui::Text::String &text,
+		const style::icon &icon,
+		int &right,
+		int top,
+		int outerWidth) {
+	if (text.isEmpty()) {
+		return;
+	}
+	const auto width = text.maxWidth();
+	right -= st::historyViewsSpace + width;
+	text.drawLeft(p, right, top, width, outerWidth);
+	right -= st::historyViewsWidth;
+	const auto left = style::RightToLeft()
+		? (outerWidth - right - icon.width())
+		: right;
+	// The mirrored reply arrow already has the colors of this bubble.
+	p.save();
+	p.translate(
+		left + icon.width(),
+		top + st::msgDateFont->height + st::historyViewsTop);
+	p.scale(-1., 1.);
+	icon.paint(p, 0, 0, icon.width());
+	p.restore();
 }
 
 void ApplyForwardedDate(

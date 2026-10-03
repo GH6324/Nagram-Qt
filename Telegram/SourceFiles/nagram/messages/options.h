@@ -29,6 +29,9 @@ inline constexpr auto kExactMessageCounters = Option<bool>{
 inline constexpr auto kHideMessageViews = Option<bool>{
 	"nagram.hideMessageViews", Scope::Device, false,
 	Category::Messages, "lng_nagram_hide_message_views", kRefreshMessageView };
+inline constexpr auto kShowForwardCount = Option<bool>{
+	"nagram.showForwardCount", Scope::Device, false,
+	Category::Messages, "lng_nagram_show_forward_count", kRefreshMessageView };
 inline constexpr auto kHideChannelSignature = Option<bool>{
 	"nagram.hideChannelSignature", Scope::Device, false,
 	Category::Messages, "lng_nagram_hide_channel_signature", kRefreshMessageView };
@@ -112,6 +115,7 @@ inline void RegisterOptions(Registry &registry) {
 	Expects(registry.Add(kSenderOnlineStatus));
 	Expects(registry.Add(kExactMessageCounters));
 	Expects(registry.Add(kHideMessageViews));
+	Expects(registry.Add(kShowForwardCount));
 	Expects(registry.Add(kHideChannelSignature));
 	Expects(registry.Add(kHideEditedBadge));
 	Expects(registry.Add(kEditedMark));

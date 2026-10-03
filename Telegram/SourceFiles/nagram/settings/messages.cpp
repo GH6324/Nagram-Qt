@@ -192,6 +192,10 @@ const auto kMeta = BuildHelper({
 		tr::lng_nagram_exact_message_counters(),
 		u"nagram/messages/exact-counters"_q,
 		{ u"exact"_q, u"views"_q, u"replies"_q });
+	AddToggle(builder, Messages::kShowForwardCount,
+		tr::lng_nagram_show_forward_count(),
+		u"nagram/messages/forward-count"_q,
+		{ u"forwards"_q, u"shares"_q, u"count"_q });
 	AddToggle(builder, Messages::kHideMessageViews,
 		tr::lng_nagram_hide_message_views(),
 		u"nagram/messages/hide-views"_q,
