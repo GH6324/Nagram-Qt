@@ -30,7 +30,6 @@ namespace {
 
 constexpr auto kMaximumMessages = 100;
 constexpr auto kMaximumText = 32768;
-constexpr auto kActionIdProperty = "nagramMenuActionId";
 
 bool Available(HistoryItem *item) {
 	return item && item->allowsForward() && !item->isTtlCoveredMedia()
@@ -161,17 +160,6 @@ void BatchBox(
 	}));
 	box->addButton(tr::lng_close(), [=] { box->closeBox(); });
 	rebuild();
-}
-
-int EndPosition(not_null<Ui::PopupMenu*> menu) {
-	for (auto index = 0; index != int(menu->actions().size()); ++index) {
-		const auto value = menu->actions()[index]->property(kActionIdProperty);
-		if (value.isValid()
-			&& value.toInt() == static_cast<int>(ActionId::Delete)) {
-			return index;
-		}
-	}
-	return int(menu->actions().size());
 }
 
 void Insert(

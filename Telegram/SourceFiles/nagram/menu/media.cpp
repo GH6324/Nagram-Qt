@@ -21,8 +21,6 @@
 namespace Nagram::Menu {
 namespace {
 
-constexpr auto kActionIdProperty = "nagramMenuActionId";
-
 QString Details(HistoryItem *item) {
 	const auto media = item ? item->media() : nullptr;
 	if (!media) {
@@ -64,17 +62,6 @@ QString Details(HistoryItem *item) {
 		: lines.join('\n');
 }
 
-int InsertPosition(not_null<Ui::PopupMenu*> menu) {
-	for (auto index = 0; index != int(menu->actions().size()); ++index) {
-		const auto value = menu->actions()[index]->property(kActionIdProperty);
-		if (value.isValid()
-			&& value.toInt() == static_cast<int>(ActionId::Delete)) {
-			return index;
-		}
-	}
-	return int(menu->actions().size());
-}
-
 } // namespace
 
 void InsertMediaInfoAction(
@@ -104,7 +91,7 @@ void InsertMediaInfoAction(
 	auto widget = base::make_unique_q<Ui::Menu::Action>(
 		menu->menu(), menu->menu()->st(), action,
 		&st::menuIconInfo, &st::menuIconInfo);
-	Tag(menu->insertAction(InsertPosition(menu), std::move(widget)),
+	Tag(menu->insertAction(EndPosition(menu), std::move(widget)),
 		ActionId::MediaInfo);
 }
 

@@ -500,16 +500,8 @@ void InsertTranscribeSelectedAction(
 		action,
 		&st::menuIconSoundOn,
 		&st::menuIconSoundOn);
-	auto position = int(menu->actions().size());
-	for (auto index = 0; index != position; ++index) {
-		const auto tag = menu->actions()[index]->property("nagramMenuActionId");
-		if (tag.isValid() && tag.toInt() == int(Menu::ActionId::Delete)) {
-			position = index;
-			break;
-		}
-	}
 	Menu::Tag(
-		menu->insertAction(position, std::move(widget)),
+		menu->insertAction(Menu::EndPosition(menu), std::move(widget)),
 		Menu::ActionId::TranscribeSelected);
 }
 

@@ -24,8 +24,6 @@
 namespace Nagram::Menu {
 namespace {
 
-constexpr auto kActionIdProperty = "nagramMenuActionId";
-
 DocumentData *DownloadedDocument(HistoryItem *item) {
 	const auto media = item ? item->media() : nullptr;
 	const auto document = media ? media->document() : nullptr;
@@ -34,17 +32,6 @@ DocumentData *DownloadedDocument(HistoryItem *item) {
 		return nullptr;
 	}
 	return document;
-}
-
-int InsertPosition(not_null<Ui::PopupMenu*> menu) {
-	for (auto index = 0; index != int(menu->actions().size()); ++index) {
-		const auto value = menu->actions()[index]->property(kActionIdProperty);
-		if (value.isValid()
-			&& value.toInt() == static_cast<int>(ActionId::Delete)) {
-			return index;
-		}
-	}
-	return int(menu->actions().size());
 }
 
 void DeleteDownloaded(
@@ -103,7 +90,7 @@ void InsertDeleteDownloadAction(
 	auto widget = base::make_unique_q<Ui::Menu::Action>(
 		menu->menu(), menu->menu()->st(), action,
 		&st::menuIconClear, &st::menuIconClear);
-	Tag(menu->insertAction(InsertPosition(menu), std::move(widget)),
+	Tag(menu->insertAction(EndPosition(menu), std::move(widget)),
 		ActionId::DeleteDownload);
 }
 

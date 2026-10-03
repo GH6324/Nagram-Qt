@@ -3,6 +3,8 @@
 #include "nagram/core/options.h"
 
 #include <array>
+#include <optional>
+#include <vector>
 
 namespace Nagram::Menu {
 
@@ -47,6 +49,11 @@ enum class Visibility { Show, Hide, WithOption };
 struct Entry {
 	ActionId id;
 	const char *titleKey;
+};
+
+struct Slot {
+	std::optional<ActionId> id;
+	bool separator = false;
 };
 
 inline constexpr auto kEntries = std::array<Entry, 33>({{
@@ -94,6 +101,7 @@ inline constexpr auto kEntries = std::array<Entry, 33>({{
 	ActionId id,
 	Visibility visibility);
 [[nodiscard]] bool Visible(Visibility visibility, bool optionHeld);
+[[nodiscard]] int EndPosition(const std::vector<Slot> &slots);
 
 inline const auto kMenuConfig = Option<QByteArray>{
 	"nagram.messageMenu", Scope::Device, QByteArray(),

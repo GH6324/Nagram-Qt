@@ -39,6 +39,21 @@ void Tag(QAction *action, ActionId id) {
 	action->setProperty(kActionIdProperty, static_cast<int>(id));
 }
 
+int EndPosition(not_null<Ui::PopupMenu*> menu) {
+	auto slots = std::vector<Slot>();
+	slots.reserve(menu->actions().size());
+	for (const auto &action : menu->actions()) {
+		const auto value = action->property(kActionIdProperty);
+		slots.push_back({
+			.id = value.isValid()
+				? std::make_optional(ActionId(value.toInt()))
+				: std::nullopt,
+			.separator = action->isSeparator(),
+		});
+	}
+	return EndPosition(slots);
+}
+
 void Apply(
 		Ui::PopupMenu *menu,
 		HistoryItem *item,

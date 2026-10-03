@@ -48,15 +48,8 @@ void InsertReadingAction(
 	auto widget = base::make_unique_q<Ui::Menu::Action>(
 		menu->menu(), menu->menu()->st(), action,
 		&st::menuIconTranslate, &st::menuIconTranslate);
-	auto position = int(menu->actions().size());
-	for (auto i = 0; i < position; ++i) {
-		const auto value = menu->actions()[i]->property("nagramMenuActionId");
-		if (value.isValid() && value.toInt() == int(ActionId::Delete)) {
-			position = i;
-			break;
-		}
-	}
-	Tag(menu->insertAction(position, std::move(widget)), ActionId::Reading);
+	Tag(menu->insertAction(EndPosition(menu), std::move(widget)),
+		ActionId::Reading);
 }
 
 } // namespace Nagram::Menu

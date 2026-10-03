@@ -123,14 +123,7 @@ int InsertPosition(not_null<Ui::PopupMenu*> menu) {
 			return index + 1;
 		}
 	}
-	for (auto index = 0; index != int(menu->actions().size()); ++index) {
-		const auto value = menu->actions()[index]->property(kActionIdProperty);
-		if (value.isValid()
-			&& value.toInt() == static_cast<int>(ActionId::Delete)) {
-			return index;
-		}
-	}
-	return int(menu->actions().size());
+	return EndPosition(menu);
 }
 
 void Insert(

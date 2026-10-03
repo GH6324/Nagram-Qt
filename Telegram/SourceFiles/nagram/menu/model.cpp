@@ -126,4 +126,27 @@ bool Visible(Visibility visibility, bool optionHeld) {
 		|| (visibility == Visibility::WithOption && optionHeld);
 }
 
+int EndPosition(const std::vector<Slot> &slots) {
+	const auto count = int(slots.size());
+	for (auto index = 0; index != count; ++index) {
+		if (slots[index].id == ActionId::Delete) {
+			return index;
+		}
+	}
+	// WHY: upstream closes the menu with separated info rows (seen by,
+	// edited or forwarded time, author), all untagged except SeenBy, so
+	// the first separator below the last tagged action starts that footer.
+	auto footer = count;
+	for (auto index = count; index != 0;) {
+		--index;
+		const auto &slot = slots[index];
+		if (slot.separator) {
+			footer = index;
+		} else if (slot.id && slot.id != ActionId::SeenBy) {
+			return footer;
+		}
+	}
+	return count;
+}
+
 } // namespace Nagram::Menu

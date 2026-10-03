@@ -104,6 +104,20 @@ void TestOptions() {
 	Require(Menu::ReadVisibility({}, ActionId::MessageDetails) == Visibility::Hide
 		&& Menu::ReadVisibility({}, ActionId::SelectAll) == Visibility::Hide,
 		"message tool actions default");
+	const auto bar = Menu::Slot{ .separator = true };
+	const auto info = Menu::Slot();
+	const auto at = [](ActionId id) { return Menu::Slot{ .id = id }; };
+	Require(Menu::EndPosition({ at(ActionId::Reply), at(ActionId::Delete),
+		at(ActionId::Select), bar, info }) == 1, "menu end before delete");
+	Require(Menu::EndPosition({ at(ActionId::Reply), at(ActionId::Select),
+		bar, at(ActionId::SeenBy), bar, info }) == 2,
+		"menu end above the info footer");
+	Require(Menu::EndPosition({ at(ActionId::Reply),
+		at(ActionId::SaveToSaved), bar, info }) == 2,
+		"menu end after an inserted action");
+	Require(Menu::EndPosition({ at(ActionId::Reply), info }) == 2
+		&& Menu::EndPosition({ info, bar, info }) == 3,
+		"menu end without a footer");
 	Require(Filters::ValidHiddenMessages(QString::fromLatin1("5:10,6:2"))
 		&& !Filters::ValidHiddenMessages(QString::fromLatin1("5:-1"))
 		&& !Filters::ValidHiddenMessages(QString::fromLatin1("x:1")),
