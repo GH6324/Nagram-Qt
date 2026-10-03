@@ -39,7 +39,7 @@ bool HasEnoughLinesForAi(
 		not_null<Ui::InputField*> field) {
 	if (HideAiButtonOption.value()
 		|| (session->data().aiComposeTones().list().empty()
-			&& !Nagram::ForDevice().Get(Nagram::kPreferSystemAi))) {
+			&& !Nagram::PrefersSystemAi())) {
 		return false;
 	}
 	const auto &style = field->st().style;

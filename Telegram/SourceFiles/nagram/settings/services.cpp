@@ -715,6 +715,7 @@ const auto kMeta = BuildHelper({
 		rpl::single(QString::number(kContextEach)),
 		lt_total,
 		rpl::single(QString::number(kContextTotal))));
+#ifdef Q_OS_MAC
 	const auto aiStatus = SystemAiAvailability();
 	const auto aiButton = builder.addButton({
 		.id = u"nagram/services/system-ai"_q,
@@ -735,6 +736,7 @@ const auto kMeta = BuildHelper({
 	if (aiStatus != 0) {
 		builder.addDividerText(rpl::single(SystemAiStatusText(aiStatus)));
 	}
+#endif // Q_OS_MAC
 	builder.addButton({
 		.id = u"nagram/services/instances"_q,
 		.title = tr::lng_nagram_services(),

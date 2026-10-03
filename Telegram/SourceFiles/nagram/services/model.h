@@ -67,6 +67,7 @@ struct ServiceDefinition {
 [[nodiscard]] bool ValidServices(const QJsonObject &value);
 [[nodiscard]] std::optional<QJsonObject> Services();
 [[nodiscard]] bool SetServices(const QJsonObject &value);
+[[nodiscard]] bool PrefersSystemAi();
 [[nodiscard]] std::optional<ServiceDefinition> FindService(
 	const QJsonObject &settings,
 	const QString &id);

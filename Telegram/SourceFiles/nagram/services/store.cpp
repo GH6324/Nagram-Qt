@@ -28,4 +28,12 @@ bool SetServices(const QJsonObject &stored) {
 			: QJsonDocument(value).toJson(QJsonDocument::Compact));
 }
 
+bool PrefersSystemAi() {
+#ifdef Q_OS_MAC
+	return ForDevice().Get(kPreferSystemAi);
+#else // Q_OS_MAC
+	return false; // an imported or synced value must not break the AI button
+#endif // Q_OS_MAC
+}
+
 } // namespace Nagram
