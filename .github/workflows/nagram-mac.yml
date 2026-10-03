@@ -102,6 +102,9 @@ jobs:
 
           sudo sed -i '' '/CMAKE_${lang}_FLAGS_DEBUG_INIT/s/ -g//' /opt/homebrew/share/cmake/Modules/Compiler/GNU.cmake
 
+      # Debug and Release share one copy of the libraries, built with their
+      # release variants: a release cache saved from a tag run is visible only
+      # to that tag, and a second copy does not fit the repository quota.
       - name: Libraries cache.
         id: cache-libs
         uses: actions/cache@v6
@@ -109,14 +112,14 @@ jobs:
           path: |
             Libraries
             ThirdParty
-          key: ${{ runner.OS }}-libs${{ env.CONFIG == 'Release' && '-release' || '' }}-${{ hashFiles(format('{0}/{1}', env.REPO_NAME, env.PREPARE_PATH)) }}
+          key: ${{ runner.OS }}-libs-v2-${{ hashFiles(format('{0}/{1}', env.REPO_NAME, env.PREPARE_PATH)) }}
           restore-keys: |
-            ${{ runner.OS }}-libs${{ env.CONFIG == 'Release' && '-release' || '' }}-
+            ${{ runner.OS }}-libs-v2-
             ${{ runner.OS }}-libs-
 
       - name: Libraries.
         run: |
-          ./$REPO_NAME/Telegram/build/prepare/mac.sh ${{ env.CONFIG == 'Debug' && 'skip-release' || '' }} silent
+          ./$REPO_NAME/Telegram/build/prepare/mac.sh silent
 
       # Old caches would push the libraries out of the repository quota.
       - name: Drop superseded caches.
@@ -124,12 +127,23 @@ jobs:
         continue-on-error: true
         env:
           GH_TOKEN: ${{ github.token }}
-          LIBS_KEY: ${{ runner.OS }}-libs${{ env.CONFIG == 'Release' && '-release' || '' }}-${{ hashFiles(format('{0}/{1}', env.REPO_NAME, env.PREPARE_PATH)) }}
+          LIBS_KEY: ${{ runner.OS }}-libs-v2-${{ hashFiles(format('{0}/{1}', env.REPO_NAME, env.PREPARE_PATH)) }}
         run: |
           bash "$REPO_NAME/tools/nagram/drop_superseded_caches.sh" "$LIBS_KEY"
 
       - name: Free up some disk space.
         run: find Libraries '(' '(' ! '(' -name '*.a' -o -name '*.h' -o -name '*.hpp' -o -name '*.inc' -o -name '*.cmake' -o -name '*.pc' -o -path '*/include/*' -o -path '*/objects-*' -o -path '*/cache_keys/*' -o -path '*/patches/*' -o -perm +111 ')' -type f ')' -o -empty ')' -delete
+
+      # The combined cache step saves only when the whole job succeeds, which
+      # would lose hours of libraries to a later failure.
+      - name: Save Libraries cache.
+        if: steps.cache-libs.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v6
+        with:
+          path: |
+            Libraries
+            ThirdParty
+          key: ${{ steps.cache-libs.outputs.cache-primary-key }}
 
       - name: Nagram build.
         if: env.ONLY_CACHE == 'false'
