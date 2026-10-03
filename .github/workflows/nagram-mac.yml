@@ -143,7 +143,7 @@ jobs:
           path: |
             Libraries
             ThirdParty
-          key: ${{ steps.cache-libs.outputs.cache-primary-key }}
+          key: ${{ runner.OS }}-libs-v2-${{ hashFiles(format('{0}/{1}', env.REPO_NAME, env.PREPARE_PATH)) }}
 
       - name: Nagram build.
         if: env.ONLY_CACHE == 'false'

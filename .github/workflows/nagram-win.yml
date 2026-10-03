@@ -258,7 +258,7 @@ jobs:
         uses: actions/cache/save@v6
         with:
           path: ${{ env.TBUILD }}\ThirdParty
-          key: ${{ steps.cache-third-party.outputs.cache-primary-key }}
+          key: ${{ runner.OS }}-${{ runner.arch }}-third-party-${{ env.CACHE_KEY }}
 
       - name: Save Libraries cache.
         if: env.CONFIG == 'Release' && steps.cache-libs.outputs.cache-hit != 'true'
@@ -270,7 +270,7 @@ jobs:
             !${{ env.LibrariesPath }}\[qQ]t[_-]*
             ${{ env.LibrariesPath }}\cache_keys\*
             !${{ env.LibrariesPath }}\cache_keys\[qQ]t[_-]*
-          key: ${{ steps.cache-libs.outputs.cache-primary-key }}
+          key: ${{ runner.OS }}-${{ matrix.arch }}-libs-v2${{ env.CACHE_SUFFIX }}-${{ env.CACHE_KEY }}
 
       - name: Save Qt cache.
         if: env.CONFIG == 'Release' && steps.cache-qt.outputs.cache-hit != 'true'
@@ -279,7 +279,7 @@ jobs:
           path: |
             ${{ env.LibrariesPath }}\[qQ]t[_-]*
             ${{ env.LibrariesPath }}\cache_keys\[qQ]t[_-]*
-          key: ${{ steps.cache-qt.outputs.cache-primary-key }}
+          key: ${{ runner.OS }}-${{ matrix.arch }}-${{ matrix.qt || 'qt' }}${{ env.CACHE_SUFFIX }}-${{ env.CACHE_KEY }}
 
       # Old caches would push the libraries out of the repository quota.
       - name: Drop superseded caches.
