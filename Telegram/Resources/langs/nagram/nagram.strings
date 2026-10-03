@@ -46,6 +46,8 @@ Telegram/cmake/td_lang.cmake. Every key uses the lng_nagram_ prefix.
 "lng_nagram_folders" = "Folders";
 "lng_nagram_hide_all_chats_folder" = "Hide All Chats folder";
 "lng_nagram_show_archive_in_folders" = "Show Archive in folders";
+"lng_nagram_saved_in_folder_list" = "Show Saved Messages in the folder list";
+"lng_nagram_hide_folder_entry" = "Hide this entry";
 "lng_nagram_hide_folder_unread_counters" = "Hide folder unread counts";
 "lng_nagram_compact_folder_tabs" = "Compact folder tabs";
 "lng_nagram_choose_folder_after_join" = "Choose folders after joining a group or channel";

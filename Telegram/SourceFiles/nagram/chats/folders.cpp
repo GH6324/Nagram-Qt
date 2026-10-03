@@ -2,6 +2,9 @@
 
 #include "nagram/chats/options.h"
 #include "boxes/choose_filter_box.h"
+#include "core/application.h"
+#include "core/core_settings.h"
+#include "core/ui_integration.h"
 #include "data/data_changes.h"
 #include "data/data_channel.h"
 #include "data/data_chat_filters.h"
@@ -11,11 +14,20 @@
 #include "lang/lang_keys.h"
 #include "main/main_session.h"
 #include "ui/layers/generic_box.h"
+#include "ui/widgets/chat_filters_tabs_mode.h"
 #include "ui/widgets/checkbox.h"
 #include "ui/widgets/labels.h"
+#include "ui/widgets/menu/menu_add_action_callback.h"
+#include "ui/widgets/menu/menu_add_action_callback_factory.h"
+#include "ui/widgets/popup_menu.h"
+#include "ui/widgets/side_bar_button.h"
+#include "ui/wrap/vertical_layout.h"
+#include "window/window_separate_id.h"
 #include "window/window_session_controller.h"
 #include "styles/style_layers.h"
+#include "styles/style_menu_icons.h"
 #include "styles/style_nagram_compose.h"
+#include "styles/style_window.h"
 
 namespace Nagram::Chats {
 namespace {
@@ -71,6 +83,8 @@ void ChooseFoldersBox(
 	});
 	box->addButton(tr::lng_cancel(), [=] { box->closeBox(); });
 }
+
+constexpr auto kSavedTabId = FilterId(-1);
 
 // WHY: openFolder resets the filter to "All chats" before it marks the
 // folder opened, so the redirect away from a hidden "All chats" has to
@@ -152,6 +166,121 @@ bool RedirectFromAllChats(not_null<Window::SessionController*> controller) {
 	return (EnteringFolder != controller)
 		&& !controller->openedFolder().current()
 		&& controller->session().data().chatsFilters().allChatsHidden();
+}
+
+rpl::producer<bool> SavedInFolderListValue() {
+	return ForDevice().Value(kSavedInFolderList);
+}
+
+std::vector<Data::ChatFilter> FolderTabs(
+		std::vector<Data::ChatFilter> list,
+		bool main) {
+	if (main && ForDevice().Get(kSavedInFolderList)) {
+		list.push_back(Data::ChatFilter(
+			kSavedTabId,
+			{ TextWithEntities{ tr::lng_saved_messages(tr::now) } },
+			QString(),
+			std::nullopt,
+			Data::ChatFilter::Flags(),
+			{},
+			{},
+			{}));
+	}
+	return list;
+}
+
+std::vector<const style::internal::Icon*> FolderTabIcons(
+		const std::vector<Data::ChatFilter> &tabs,
+		std::vector<const style::internal::Icon*> icons) {
+	for (auto i = 0, count = int(tabs.size()); i != count; ++i) {
+		if (tabs[i].id() == kSavedTabId) {
+			icons[i] = &st::nagramFoldersTabsSaved;
+		}
+	}
+	return icons;
+}
+
+int ActiveFolderTab(
+		not_null<Window::SessionController*> controller,
+		const std::vector<Data::ChatFilter> &list,
+		int fallback) {
+	const auto i = ranges::find(
+		list,
+		controller->activeChatsFilterCurrent(),
+		&Data::ChatFilter::id);
+	return (i != end(list)) ? int(i - begin(list)) : std::max(fallback, 0);
+}
+
+void OpenSavedFromFolderList(
+		not_null<Window::SessionController*> controller) {
+	controller->showPeerHistory(controller->session().userPeerId());
+}
+
+base::unique_qptr<Ui::PopupMenu> SavedFolderMenu(
+		not_null<QWidget*> parent,
+		not_null<Window::SessionController*> controller) {
+	auto result = base::make_unique_q<Ui::PopupMenu>(
+		parent,
+		st::popupMenuWithIcons);
+	const auto history = controller->session().data().history(
+		controller->session().userPeerId());
+	const auto addAction = Ui::Menu::CreateAddActionCallback(result.get());
+	addAction(tr::lng_context_new_window(tr::now), crl::guard(controller, [=] {
+		controller->showInNewWindow(Window::SeparateId(
+			Window::SeparateType::Chat,
+			history));
+	}), &st::menuIconNewWindow);
+	addAction(tr::lng_dlg_filter(tr::now), crl::guard(controller, [=] {
+		controller->searchInChat(history);
+	}), &st::menuIconSearch);
+	addAction(tr::lng_nagram_hide_folder_entry(tr::now), [] {
+		Expects(ForDevice().Set(kSavedInFolderList, false));
+	}, &st::menuIconCancel);
+	return result;
+}
+
+void SetupSavedFolderButton(
+		not_null<Ui::VerticalLayout*> container,
+		not_null<Window::SessionController*> controller) {
+	const auto holder = container->add(
+		object_ptr<Ui::VerticalLayout>(container));
+	const auto menu = holder->lifetime().make_state<
+		base::unique_qptr<Ui::PopupMenu>>();
+	rpl::combine(
+		SavedInFolderListValue(),
+		Core::App().settings().chatFiltersTabsModeValue()
+	) | rpl::on_next([=](bool shown, Ui::ChatsFiltersTabsMode value) {
+		using Mode = Ui::ChatsFiltersTabsMode;
+		holder->clear();
+		if (shown) {
+			const auto mode = Ui::VerticalChatsFiltersTabsMode(value);
+			const auto button = holder->add(object_ptr<Ui::SideBarButton>(
+				holder,
+				TextWithEntities{ tr::lng_saved_messages(tr::now) },
+				((mode == Mode::TextOnly)
+					? st::windowFiltersButtonTextOnly
+					: (mode == Mode::IconsOnly)
+					? st::windowFiltersButtonIconsOnly
+					: st::windowFiltersButton)));
+			button->setIconOverride(
+				&st::nagramFoldersSaved,
+				&st::nagramFoldersSavedActive);
+			button->setShowIcon(mode != Mode::TextOnly);
+			button->setShowText(mode != Mode::IconsOnly);
+			button->setClickedCallback([=] {
+				OpenSavedFromFolderList(controller);
+			});
+			button->events(
+			) | rpl::filter([](not_null<QEvent*> e) {
+				return (e->type() == QEvent::ContextMenu);
+			}) | rpl::on_next([=](not_null<QEvent*> e) {
+				*menu = SavedFolderMenu(button, controller);
+				(*menu)->popup(QCursor::pos());
+				e->accept();
+			}, button->lifetime());
+		}
+		holder->resizeToWidth(st::windowFiltersWidth);
+	}, holder->lifetime());
 }
 
 } // namespace Nagram::Chats

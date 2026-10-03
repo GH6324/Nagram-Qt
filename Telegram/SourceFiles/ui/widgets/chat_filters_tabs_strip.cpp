@@ -75,6 +75,10 @@ void ShowMenu(
 	{
 		const auto list = session->data().chatsFilters().displayList();
 		if (index < 0 || index >= list.size()) {
+			if (index == list.size()) {
+				state->menu = Nagram::Chats::SavedFolderMenu(parent, controller);
+				state->menu->popup(QCursor::pos());
+			}
 			return;
 		}
 		id = list[index].id();
@@ -391,9 +395,12 @@ not_null<Ui::RpWidget*> AddChatFiltersTabsStrip(
 			return On(PowerSaving::kEmojiChat)
 				|| controller->isGifPausedAtLeastFor(pauseLevel);
 		};
+		const auto tabs = Nagram::Chats::FolderTabs(
+			list,
+			trackActiveFilterAndUnreadAndReorder);
 		const auto sectionsChanged = slider->setSectionsAndCheckChanged(
 			ranges::views::all(
-				list
+				tabs
 			) | ranges::views::transform([](const Data::ChatFilter &filter) {
 				auto title = filter.title();
 				return title.text.empty()
@@ -402,13 +409,13 @@ not_null<Ui::RpWidget*> AddChatFiltersTabsStrip(
 					? Data::ForceCustomEmojiStatic(title.text)
 					: title.text;
 			}) | ranges::to_vector, context, paused);
-		slider->setSectionIcons(ranges::views::all(
-			list
+		slider->setSectionIcons(Nagram::Chats::FolderTabIcons(tabs, ranges::views::all(
+			tabs
 		) | ranges::views::transform([](const Data::ChatFilter &filter) {
 			return LookupFilterIcon(filter.id()
 				? ComputeFilterIcon(filter)
 				: FilterIcon::All).tabs.get();
-		}) | ranges::to_vector);
+		}) | ranges::to_vector));
 		if (!sectionsChanged) {
 			return;
 		}
@@ -435,6 +442,7 @@ not_null<Ui::RpWidget*> AddChatFiltersTabsStrip(
 				state->reorder->addPinnedInterval(
 					premiumFrom,
 					std::max(1, int(list.size()) - maxLimit));
+				state->reorder->addPinnedInterval(list.size(), 1);
 			}
 		}
 		if (trackActiveFilterAndUnreadAndReorder) {
@@ -496,6 +504,13 @@ not_null<Ui::RpWidget*> AddChatFiltersTabsStrip(
 		) | rpl::on_next([=](int was, int index) {
 			if (slider->reordering()) {
 				return;
+			} else if (index >= int(list.size())) {
+				state->ignoreActivation = true;
+				slider->setActiveSectionFast(
+					Nagram::Chats::ActiveFolderTab(controller, list, was));
+				state->ignoreActivation = false;
+				Nagram::Chats::OpenSavedFromFolderList(controller);
+				return;
 			}
 			const auto &filter = filterByIndex(index);
 			if (was != index) {
@@ -532,6 +547,8 @@ not_null<Ui::RpWidget*> AddChatFiltersTabsStrip(
 		Nagram::ForDevice().Value(Nagram::Chats::kHideAllChatsFolder)
 			| rpl::to_empty
 	) | rpl::on_next(rebuild, wrap->lifetime());
+	Nagram::Chats::SavedInFolderListValue(
+	) | rpl::skip(1) | rpl::to_empty | rpl::on_next(rebuild, wrap->lifetime());
 	Core::App().settings().chatFiltersTabsModeValue(
 	) | rpl::on_next([=](ChatsFiltersTabsMode mode) {
 		slider->setTabsMode(HorizontalChatsFiltersTabsMode(mode));
@@ -568,7 +585,9 @@ not_null<Ui::RpWidget*> AddChatFiltersTabsStrip(
 				&& ((request.action == Qt::Key_Tab)
 					|| (request.action == Qt::Key_Backtab));
 		}) | rpl::on_next([=](const Shortcuts::ChatSwitchRequest &request) {
-			const auto count = slider->sectionsCount();
+			const auto count = std::min(
+				slider->sectionsCount(),
+				int(session->data().chatsFilters().displayList().size()));
 			const auto locked = slider->lockedFrom();
 			const auto limit = locked ? locked : count;
 			if (limit <= 1) {

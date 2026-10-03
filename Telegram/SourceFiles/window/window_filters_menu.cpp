@@ -448,6 +448,7 @@ void FiltersMenu::refresh() {
 void FiltersMenu::setupList() {
 	_list = _container->add(object_ptr<TabListLayout>(_container));
 	_list->setAccessibleName(tr::lng_filters_title(tr::now));
+	Nagram::Chats::SetupSavedFolderButton(_container, _session);
 	_setup = prepareButton(
 		_container,
 		-1,

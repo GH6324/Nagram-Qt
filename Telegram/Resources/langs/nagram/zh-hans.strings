@@ -42,6 +42,8 @@
 "lng_nagram_folders" = "文件夹";
 "lng_nagram_hide_all_chats_folder" = "隐藏“全部会话”文件夹";
 "lng_nagram_show_archive_in_folders" = "在文件夹中显示归档入口";
+"lng_nagram_saved_in_folder_list" = "在文件夹列表中显示收藏夹";
+"lng_nagram_hide_folder_entry" = "隐藏此入口";
 "lng_nagram_hide_folder_unread_counters" = "隐藏文件夹未读数";
 "lng_nagram_compact_folder_tabs" = "紧凑文件夹标签";
 "lng_nagram_choose_folder_after_join" = "加入群组或频道后选择文件夹";

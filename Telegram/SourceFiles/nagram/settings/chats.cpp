@@ -237,6 +237,10 @@ const auto kMeta = BuildHelper({
 		tr::lng_nagram_show_archive_in_folders(),
 		u"nagram/chats/archive-in-folders"_q,
 		{ u"archive"_q, u"folders"_q });
+	AddToggle(builder, Chats::kSavedInFolderList,
+		tr::lng_nagram_saved_in_folder_list(),
+		u"nagram/chats/saved-in-folder-list"_q,
+		{ u"saved messages"_q, u"folders"_q });
 	AddToggle(builder, Chats::kHideFolderUnreadCounters,
 		tr::lng_nagram_hide_folder_unread_counters(),
 		u"nagram/chats/hide-folder-unread"_q,

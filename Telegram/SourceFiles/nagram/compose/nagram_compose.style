@@ -2,6 +2,9 @@ using "ui/basic.style";
 using "ui/widgets/widgets.style";
 
 nagramFilterTypeRecent: icon {{ "folders/folders_type_recent", historyPeerUserpicFg }};
+nagramFoldersSaved: icon {{ "folders/svg/folders_saved-36x36", sideBarIconFg }};
+nagramFoldersSavedActive: icon {{ "folders/svg/folders_saved-36x36", sideBarIconFgActive }};
+nagramFoldersTabsSaved: icon {{ "folders/svg/folders_saved-18x18", windowSubTextFg }};
 
 nagramFormatButtonSize: 32px;
 nagramFormatButton: IconButton(defaultIconButton) {
