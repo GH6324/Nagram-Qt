@@ -48,7 +48,7 @@ void AddRecentChatsMenuItem(
 	}
 	addAction(
 		tr::lng_nagram_recent_chats(),
-		{ &st::menuIconTimer },
+		{ &st::menuIconRestore },
 		u"recentChats"_q
 	)->setClickedCallback([=] {
 		ShowRecentChats(controller);
