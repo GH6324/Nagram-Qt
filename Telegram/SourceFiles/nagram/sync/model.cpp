@@ -4,6 +4,8 @@
 
 #include <QtCore/QCryptographicHash>
 
+#include <algorithm>
+
 namespace Nagram::Sync {
 namespace {
 
@@ -202,6 +204,20 @@ QByteArray SerializeState(const State &state) {
 
 bool ValidState(const QByteArray &raw) {
 	return raw.isEmpty() || ParseState(raw).has_value();
+}
+
+std::vector<quint64> SupersededBackups(
+		std::vector<quint64> remote,
+		quint64 known,
+		quint64 uploaded) {
+	if (known) {
+		remote.push_back(known);
+	}
+	std::erase(remote, uploaded);
+	// Deleting one message twice in a request destroys its item twice.
+	std::sort(begin(remote), end(remote));
+	remote.erase(std::unique(begin(remote), end(remote)), end(remote));
+	return remote;
 }
 
 AutoPlan PlanAuto(

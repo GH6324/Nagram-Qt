@@ -265,11 +265,11 @@ void Service::upload(Fn<void(Error)> done) {
 			done(FromBackend(uploaded.error));
 			return;
 		}
-		auto old = base::take(_remoteIds);
-		if (const auto known = state(); known && known->messageId) {
-			old.push_back(known->messageId);
-		}
-		std::erase(old, uploaded.id);
+		const auto known = state();
+		const auto old = SupersededBackups(
+			base::take(_remoteIds),
+			known ? known->messageId : 0,
+			uploaded.id);
 		save(uploaded.id, hash, now);
 		_remoteId = uploaded.id;
 		_backend->remove(old);

@@ -308,6 +308,20 @@ void TestDecision() {
 		"both sides changed or never synced");
 }
 
+void TestSupersededBackups() {
+	using namespace Nagram::Sync;
+	using Ids = std::vector<quint64>;
+
+	Require(SupersededBackups({ 5, 7 }, 7, 9) == Ids{ 5, 7 },
+		"the known backup found in the cloud must be removed once");
+	Require(SupersededBackups({}, 7, 9) == Ids{ 7 },
+		"the known backup must be removed without a cloud listing");
+	Require(SupersededBackups({ 5, 9 }, 0, 9) == Ids{ 5 },
+		"the uploaded backup must stay");
+	Require(SupersededBackups({ 9 }, 9, 9).empty(),
+		"replacing a backup in place must remove nothing");
+}
+
 void TestState() {
 	using namespace Nagram;
 	using namespace Nagram::Sync;
@@ -669,6 +683,7 @@ void TestSync() {
 	std::cout << "PASS: Nagram screenshot cloud theme reference" << std::endl;
 	TestEnvelope();
 	TestDecision();
+	TestSupersededBackups();
 	TestState();
 	TestAllowlist();
 	TestLocalOnlyList();

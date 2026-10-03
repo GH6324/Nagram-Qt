@@ -3,6 +3,7 @@
 #include "nagram/core/options.h"
 
 #include <optional>
+#include <vector>
 
 namespace Nagram::Sync {
 
@@ -61,6 +62,11 @@ struct State {
 [[nodiscard]] std::optional<State> ParseState(const QByteArray &raw);
 [[nodiscard]] QByteArray SerializeState(const State &state);
 [[nodiscard]] bool ValidState(const QByteArray &raw);
+
+[[nodiscard]] std::vector<quint64> SupersededBackups(
+	std::vector<quint64> remote,
+	quint64 known,
+	quint64 uploaded);
 
 [[nodiscard]] QStringList LocalOnlyKeys(const Registry &registry);
 
