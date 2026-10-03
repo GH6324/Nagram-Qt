@@ -15,6 +15,7 @@ set(nagram_sources
     nagram/core/diagnostics.cpp
     nagram/core/relaunch.cpp
     nagram/display/view_refresher.cpp
+    nagram/export/range_model.cpp
     nagram/interface/main_menu.cpp
     nagram/interface/main_menu_model.cpp
     nagram/interface/notifications.cpp
@@ -238,9 +239,11 @@ if (DESKTOP_APP_TEST_APPS)
         nagram/tests/test_network.cpp
         nagram/tests/test_media.cpp
         nagram/tests/test_sync.cpp
+        nagram/tests/test_export.cpp
         nagram/compose/spacing.cpp
         nagram/core/exchange.cpp
         nagram/core/regex.cpp
+        nagram/export/range_model.cpp
         nagram/interface/main_menu_model.cpp
         nagram/menu/model.cpp
         nagram/services/auto_translate_model.cpp
