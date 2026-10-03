@@ -34,7 +34,16 @@ nagramFormatCodeActive: icon {{ "menu/rich/code-24x24", windowActiveTextFg }};
 nagramFormatSpoilerActive: icon {{ "menu/rich/spoiler-24x24", windowActiveTextFg }};
 nagramFormatQuoteActive: icon {{ "menu/rich/blockquote-24x24", windowActiveTextFg }};
 
-nagramChatToolsStart: icon {{ "history_down_arrow-flip_vertical", menuIconColor }};
+nagramChatToolsPhoto: icon {{ "menu/image", menuIconFg }};
+nagramChatToolsPhotoOver: icon {{ "menu/image", menuIconFgOver }};
+nagramChatToolsPin: icon {{ "menu/pin", menuIconFg }};
+nagramChatToolsPinOver: icon {{ "menu/pin", menuIconFgOver }};
+nagramChatToolsStart: icon {{ "history_down_arrow-flip_vertical", menuIconFg }};
+nagramChatToolsStartOver: icon {{ "history_down_arrow-flip_vertical", menuIconFgOver }};
+nagramChatToolsMute: icon {{ "menu/mute", menuIconFg }};
+nagramChatToolsMuteOver: icon {{ "menu/mute", menuIconFgOver }};
+nagramChatToolsUnmute: icon {{ "menu/unmute", menuIconFg }};
+nagramChatToolsUnmuteOver: icon {{ "menu/unmute", menuIconFgOver }};
 nagramChatToolsButton: IconButton(defaultIconButton) {
 	width: 36px;
 	height: 54px;

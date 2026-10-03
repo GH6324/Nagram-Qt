@@ -18,7 +18,6 @@
 #include "ui/rp_widget.h"
 #include "ui/widgets/buttons.h"
 #include "window/window_session_controller.h"
-#include "styles/style_menu_icons.h"
 #include "styles/style_nagram_compose.h"
 
 #include <QtCore/QCoreApplication>
@@ -28,6 +27,11 @@ namespace Nagram::Chats {
 namespace {
 
 constexpr auto kObjectName = "nagramChatTools";
+
+struct ToolIcon {
+	const style::icon *normal = nullptr;
+	const style::icon *over = nullptr;
+};
 
 class ChatTools final : public Ui::RpWidget {
 public:
@@ -45,7 +49,7 @@ private:
 	void layoutButtons();
 	void relayoutBar();
 	Ui::IconButton *addButton(
-		const style::icon *icon,
+		ToolIcon icon,
 		const QString &name,
 		Fn<void()> callback);
 
@@ -71,13 +75,13 @@ ChatTools::ChatTools(
 }
 
 Ui::IconButton *ChatTools::addButton(
-		const style::icon *icon,
+		ToolIcon icon,
 		const QString &name,
 		Fn<void()> callback) {
 	auto button = base::make_unique_q<Ui::IconButton>(
 		this,
 		st::nagramChatToolsButton);
-	button->setIconOverride(icon, icon);
+	button->setIconOverride(icon.normal, icon.over);
 	button->setAccessibleName(name);
 	button->setClickedCallback(std::move(callback));
 	button->show();
@@ -122,14 +126,17 @@ void ChatTools::rebuild() {
 	const auto peer = history->peer;
 	const auto controller = _controller;
 	if (peer->sharedMediaInfo()) {
-		addButton(&st::menuIconPhoto, tr::lng_media_type_photos(tr::now), [=] {
+		addButton({
+			&st::nagramChatToolsPhoto,
+			&st::nagramChatToolsPhotoOver,
+		}, tr::lng_media_type_photos(tr::now), [=] {
 			controller->showSection(std::make_shared<Info::Memento>(
 				peer,
 				Info::Section(Storage::SharedMediaType::Photo)));
 		});
 	}
 	const auto pinned = addButton(
-		&st::menuIconPin,
+		{ &st::nagramChatToolsPin, &st::nagramChatToolsPinOver },
 		tr::lng_pinned_message(tr::now),
 		[=] {
 			controller->showSection(
@@ -138,7 +145,10 @@ void ChatTools::rebuild() {
 	pinned->setVisible(history->hasPinnedMessages());
 	const auto weak = base::make_weak(controller);
 	const auto start = tr::lng_nagram_chat_tools_start(tr::now);
-	addButton(&st::nagramChatToolsStart, start, [=] {
+	addButton({
+		&st::nagramChatToolsStart,
+		&st::nagramChatToolsStartOver,
+	}, start, [=] {
 		peer->session().api().resolveJumpToDate(
 			Dialogs::Key(history),
 			QDate(2013, 8, 1),
@@ -151,7 +161,10 @@ void ChatTools::rebuild() {
 				}
 			});
 	});
-	const auto mute = addButton(&st::menuIconMute, QString(), [=] {
+	const auto mute = addButton({
+		&st::nagramChatToolsMute,
+		&st::nagramChatToolsMuteOver,
+	}, QString(), [=] {
 		auto &settings = peer->owner().notifySettings();
 		settings.update(history, settings.isMuted(history)
 			? Data::MuteValue{ .unmute = true }
@@ -160,8 +173,11 @@ void ChatTools::rebuild() {
 	Info::Profile::NotificationsEnabledValue(
 		history
 	) | rpl::on_next([=](bool enabled) {
-		const auto icon = enabled ? &st::menuIconMute : &st::menuIconUnmute;
-		mute->setIconOverride(icon, icon);
+		mute->setIconOverride(
+			enabled ? &st::nagramChatToolsMute : &st::nagramChatToolsUnmute,
+			(enabled
+				? &st::nagramChatToolsMuteOver
+				: &st::nagramChatToolsUnmuteOver));
 		mute->setAccessibleName((enabled
 			? tr::lng_context_mute
 			: tr::lng_context_unmute)(tr::now));
