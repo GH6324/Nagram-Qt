@@ -87,7 +87,6 @@ jobs:
       # Not CONFIG: pacman-key in the msys2 setup reads that variable as the
       # path of its configuration file.
       BUILD_CONFIG: ${{ inputs.config || 'Debug' }}
-      CACHE_SUFFIX: ${{ inputs.config == 'Release' && '-release' || '' }}
 
     defaults:
       run:
@@ -101,10 +100,9 @@ jobs:
           echo TBUILD=%GITHUB_WORKSPACE%\TBuild>>%GITHUB_ENV%
           echo LibrariesPath=%GITHUB_WORKSPACE%\TBuild\Libraries${{ matrix.arch == 'x64' && '\win64' || '' }}>>%GITHUB_ENV%
 
-      # Building Qt in both configurations for a release fills the system
-      # drive of the hosted runner.
-      - name: Free up disk space for release libraries.
-        if: env.BUILD_CONFIG == 'Release'
+      # Building Qt in both configurations fills the system drive of the
+      # hosted runner.
+      - name: Free up disk space for the libraries.
         shell: pwsh
         run: |
           Get-PSDrive -PSProvider FileSystem | Format-Table Name, Used, Free
@@ -188,7 +186,7 @@ jobs:
       # The release part of the libraries builds breakpad's dump_syms, which
       # needs ATL for the pinned x64 toolset.
       - name: Install ATL.
-        if: matrix.arch == 'x64' && env.BUILD_CONFIG == 'Release'
+        if: matrix.arch == 'x64'
         shell: pwsh
         run: |
           $installer = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer\setup.exe'
@@ -214,6 +212,9 @@ jobs:
           nuget sources Disable -Name "Microsoft Visual Studio Offline Packages"
           nuget sources Add -Source https://api.nuget.org/v3/index.json & exit 0
 
+      # Debug and Release share one copy of the libraries, built with their
+      # release variants: caches saved by a tag run are visible only to that
+      # tag, and a second copy does not fit the repository quota.
       - name: ThirdParty cache.
         id: cache-third-party
         uses: actions/cache@v6
@@ -232,9 +233,9 @@ jobs:
             !${{ env.LibrariesPath }}\[qQ]t[_-]*
             ${{ env.LibrariesPath }}\cache_keys\*
             !${{ env.LibrariesPath }}\cache_keys\[qQ]t[_-]*
-          key: ${{ runner.OS }}-${{ matrix.arch }}-libs-v2${{ env.CACHE_SUFFIX }}-${{ env.CACHE_KEY }}
+          key: ${{ runner.OS }}-${{ matrix.arch }}-libs-v3-${{ env.CACHE_KEY }}
           restore-keys: |
-            ${{ runner.OS }}-${{ matrix.arch }}-libs-v2${{ env.CACHE_SUFFIX }}-
+            ${{ runner.OS }}-${{ matrix.arch }}-libs-v3-
             ${{ runner.OS }}-${{ matrix.arch }}-libs-v2-
 
       - name: Qt cache.
@@ -244,26 +245,29 @@ jobs:
           path: |
             ${{ env.LibrariesPath }}\[qQ]t[_-]*
             ${{ env.LibrariesPath }}\cache_keys\[qQ]t[_-]*
-          key: ${{ runner.OS }}-${{ matrix.arch }}-${{ matrix.qt || 'qt' }}${{ env.CACHE_SUFFIX }}-${{ env.CACHE_KEY }}
-          restore-keys: |
-            ${{ runner.OS }}-${{ matrix.arch }}-${{ matrix.qt || 'qt' }}${{ env.CACHE_SUFFIX }}-
-            ${{ runner.OS }}-${{ matrix.arch }}-${{ matrix.qt || 'qt' }}-
+          key: ${{ runner.OS }}-${{ matrix.arch }}-${{ matrix.qt || 'qt' }}-v2-${{ env.CACHE_KEY }}
+          restore-keys: ${{ runner.OS }}-${{ matrix.arch }}-${{ matrix.qt || 'qt' }}-v2-
 
       - name: Libraries.
         run: |
-          %TBUILD%\%REPO_NAME%\Telegram\build\prepare\win.bat ${{ env.BUILD_CONFIG == 'Debug' && 'skip-release' || '' }} silent ${{ matrix.qt }}
+          %TBUILD%\%REPO_NAME%\Telegram\build\prepare\win.bat silent ${{ matrix.qt }}
+
+      # Before the caches are saved, so they hold only what the build needs.
+      - name: Free up some disk space.
+        shell: bash
+        run: find $LibrariesPath '(' '(' ! '(' -name '*.lib' -o -name '*.a' -o -name '*.exe' -o -name '*.h' -o -name '*.hpp' -o -name '*.inc' -o -name '*.cmake' -o -name '*.pc' -o -path '*/include/*' -o -path '*/objects-*' -o -path '*/cache_keys/*' -o -path '*/patches/*' -o -path '*/nv-codec-headers/*' ')' -type f ')' -o -empty ')' -delete
 
       # The combined cache steps save only when the whole job succeeds, which
-      # would lose hours of release libraries to a later failure.
+      # would lose hours of libraries to a later failure.
       - name: Save ThirdParty cache.
-        if: env.BUILD_CONFIG == 'Release' && steps.cache-third-party.outputs.cache-hit != 'true'
+        if: steps.cache-third-party.outputs.cache-hit != 'true'
         uses: actions/cache/save@v6
         with:
           path: ${{ env.TBUILD }}\ThirdParty
           key: ${{ runner.OS }}-${{ runner.arch }}-third-party-${{ env.CACHE_KEY }}
 
       - name: Save Libraries cache.
-        if: env.BUILD_CONFIG == 'Release' && steps.cache-libs.outputs.cache-hit != 'true'
+        if: steps.cache-libs.outputs.cache-hit != 'true'
         uses: actions/cache/save@v6
         with:
           path: |
@@ -272,16 +276,16 @@ jobs:
             !${{ env.LibrariesPath }}\[qQ]t[_-]*
             ${{ env.LibrariesPath }}\cache_keys\*
             !${{ env.LibrariesPath }}\cache_keys\[qQ]t[_-]*
-          key: ${{ runner.OS }}-${{ matrix.arch }}-libs-v2${{ env.CACHE_SUFFIX }}-${{ env.CACHE_KEY }}
+          key: ${{ runner.OS }}-${{ matrix.arch }}-libs-v3-${{ env.CACHE_KEY }}
 
       - name: Save Qt cache.
-        if: env.BUILD_CONFIG == 'Release' && steps.cache-qt.outputs.cache-hit != 'true'
+        if: steps.cache-qt.outputs.cache-hit != 'true'
         uses: actions/cache/save@v6
         with:
           path: |
             ${{ env.LibrariesPath }}\[qQ]t[_-]*
             ${{ env.LibrariesPath }}\cache_keys\[qQ]t[_-]*
-          key: ${{ runner.OS }}-${{ matrix.arch }}-${{ matrix.qt || 'qt' }}${{ env.CACHE_SUFFIX }}-${{ env.CACHE_KEY }}
+          key: ${{ runner.OS }}-${{ matrix.arch }}-${{ matrix.qt || 'qt' }}-v2-${{ env.CACHE_KEY }}
 
       # Old caches would push the libraries out of the repository quota.
       - name: Drop superseded caches.
@@ -291,8 +295,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           THIRD_PARTY_KEY: ${{ runner.OS }}-${{ runner.arch }}-third-party-${{ env.CACHE_KEY }}
-          LIBS_KEY: ${{ runner.OS }}-${{ matrix.arch }}-libs-v2${{ env.CACHE_SUFFIX }}-${{ env.CACHE_KEY }}
-          QT_KEY: ${{ runner.OS }}-${{ matrix.arch }}-${{ matrix.qt || 'qt' }}${{ env.CACHE_SUFFIX }}-${{ env.CACHE_KEY }}
+          LIBS_KEY: ${{ runner.OS }}-${{ matrix.arch }}-libs-v3-${{ env.CACHE_KEY }}
+          QT_KEY: ${{ runner.OS }}-${{ matrix.arch }}-${{ matrix.qt || 'qt' }}-v2-${{ env.CACHE_KEY }}
         run: |
           bash "$TBUILD/$REPO_NAME/tools/nagram/drop_superseded_caches.sh" \
             "$THIRD_PARTY_KEY" "$LIBS_KEY" "$QT_KEY"
@@ -346,10 +350,6 @@ jobs:
             API="-D TDESKTOP_API_TEST=ON"
           fi
           echo "TDESKTOP_BUILD_API=$API" >> $GITHUB_ENV
-
-      - name: Free up some disk space.
-        shell: bash
-        run: find $LibrariesPath '(' '(' ! '(' -name '*.lib' -o -name '*.a' -o -name '*.exe' -o -name '*.h' -o -name '*.hpp' -o -name '*.inc' -o -name '*.cmake' -o -name '*.pc' -o -path '*/include/*' -o -path '*/objects-*' -o -path '*/cache_keys/*' -o -path '*/patches/*' -o -path '*/nv-codec-headers/*' ')' -type f ')' -o -empty ')' -delete
 
       - name: Nagram build.
         if: env.ONLY_CACHE == 'false'
