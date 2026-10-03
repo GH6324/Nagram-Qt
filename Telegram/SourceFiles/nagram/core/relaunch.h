@@ -9,4 +9,6 @@ namespace Nagram {
 	const QString &bundlePath,
 	const QStringList &arguments);
 
+[[nodiscard]] bool RunsFromPath(const QString &name);
+
 } // namespace Nagram

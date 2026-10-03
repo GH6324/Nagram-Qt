@@ -3,7 +3,9 @@
 #include <QtCore/QCoreApplication>
 #include <QtCore/QDir>
 #include <QtCore/QFile>
+#include <QtCore/QFileInfo>
 #include <QtCore/QProcess>
+#include <QtCore/QStandardPaths>
 
 namespace Nagram {
 
@@ -28,6 +30,14 @@ bool RelaunchWithoutUpdater(
 	};
 	full.append(arguments);
 	return QProcess::startDetached(u"/bin/sh"_q, full);
+}
+
+bool RunsFromPath(const QString &name) {
+	const auto found = QStandardPaths::findExecutable(name);
+	const auto self = QCoreApplication::applicationFilePath();
+	return !found.isEmpty()
+		&& (QFileInfo(found).canonicalFilePath()
+			== QFileInfo(self).canonicalFilePath());
 }
 
 } // namespace Nagram

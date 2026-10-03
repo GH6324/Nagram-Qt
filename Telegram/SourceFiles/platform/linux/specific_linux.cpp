@@ -22,6 +22,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "core/update_checker.h"
 #include "core/version.h"
 #include "data/data_location.h"
+#include "nagram/core/relaunch.h"
 #include "window/window_controller.h"
 #include "webview/platform/linux/webview_linux_webkitgtk.h"
 
@@ -674,11 +675,10 @@ QString ExecutablePathForShortcuts() {
 		const auto &arguments = Core::Launcher::Instance().arguments();
 		if (!arguments.isEmpty()) {
 			const auto result = QFileInfo(arguments.first()).fileName();
-			if (!result.isEmpty()) {
+			if (Nagram::RunsFromPath(result)) {
 				return result;
 			}
 		}
-		return cExeName();
 	}
 	return cExeDir() + cExeName();
 }
