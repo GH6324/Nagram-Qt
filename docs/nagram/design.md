@@ -471,6 +471,7 @@ Debug 包缺少 `Contents/Frameworks/Updater`，点击“重启”会退出，�
 | 编译验证 | 计划中设置阶段性编译验证点 |
 | 推送 | 暂不推送 |
 | A01 自选等宽字体 | 放弃；不维护 `lib_ui` fork，不注册该设置（维护者决定，2026-09-26） |
+| `lib_ui` 在 Windows + Qt 6 下的缺陷 | 不改子模块指针。上游只放在 `lib_ui` 的 `win7-qt6` 分支上的修复，以补丁形式存在 `tools/nagram/patches/lib_ui/`（文件名以上游提交号开头），`nagram-win.yml` 检出后用 `git apply` 套用；本地 Windows 构建需手动执行同一条命令。补丁套不上说明上游已合入固定的提交，删除该补丁（维护者决定，2026-10-03） |
 
 ## 7. 待决事项
 
