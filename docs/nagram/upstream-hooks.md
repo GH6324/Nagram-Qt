@@ -42,7 +42,7 @@
 | A08 | `history/view/history_view_reply.cpp`、`ui/chat/chat_style.cpp`、`media/stories/media_stories_repost_view.cpp` | 回复与引用块使用主题色，不使用发送者自定义颜色与背景图案 | 读取 |
 | A09 | `history/view/history_view_reply.cpp` | 不加载、不绘制回复缩略图，并回收其宽度 | 读取 |
 | A10 | `window/section_widget.cpp`（对话主题与壁纸解析） | 解析对话主题时返回空，使用全局主题 | 读取 |
-| A11 | `window/window_main_menu.cpp`（`setupMenu`） | 标题替换账号名；菜单项按配置重排与隐藏；节日装饰条件（`CheckSpecialEvent`）增加开关 | 过滤 |
+| A11 | `window/window_main_menu.cpp`（`setupMenu`） | 标题替换账号名；菜单项按配置重排与隐藏；页脚高度随菜单高度重算；节日装饰条件（`CheckSpecialEvent`）增加开关 | 过滤 |
 | A12 | `platform/mac/main_window_mac.mm`、`platform/win/main_window_win.cpp`、`platform/linux/main_window_linux.cpp`、`window/main_window.cpp` | 应用图标角标按设置隐藏，托盘和窗口标题计数不变 | 替换 |
 | A13、A14 | `window/notifications_manager.cpp`（通知调度等待时间） | 等待时间改为配置值，保留合并消息所需的最短等待 | 替换 |
 | A15 | `lang/lang_instance.cpp`（取值出口） | 取出界面字符串时把全角 ASCII 与标点投影为半角 | 替换 |

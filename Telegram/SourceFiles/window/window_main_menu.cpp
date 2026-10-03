@@ -381,7 +381,8 @@ MainMenu::MainMenu(
 
 	rpl::combine(
 		heightValue(),
-		_inner->heightValue()
+		_inner->heightValue(),
+		_menu->heightValue()
 	) | rpl::on_next([=] {
 		updateInnerControlsGeometry();
 	}, _inner->lifetime());
