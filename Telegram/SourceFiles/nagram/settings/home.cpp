@@ -65,7 +65,7 @@ const auto kMeta = BuildHelper({
 	builder.addSectionButton({
 		.title = tr::lng_nagram_interface(),
 		.targetSection = InterfaceId(),
-		.icon = { &st::menuIconChatBubble },
+		.icon = { &st::menuIconPalette },
 		.keywords = { u"interface"_q, u"appearance"_q },
 	});
 	builder.addSectionButton({
@@ -77,25 +77,25 @@ const auto kMeta = BuildHelper({
 	builder.addSectionButton({
 		.title = tr::lng_nagram_chats(),
 		.targetSection = ChatsId(),
-		.icon = { &st::menuIconChatBubble },
+		.icon = { &st::menuIconChats },
 		.keywords = { u"chats"_q, u"list"_q },
 	});
 	builder.addSectionButton({
 		.title = tr::lng_nagram_compose(),
 		.targetSection = ComposeId(),
-		.icon = { &st::menuIconChatBubble },
+		.icon = { &st::menuIconShortcut },
 		.keywords = { u"compose"_q, u"send"_q },
 	});
 	builder.addSectionButton({
 		.title = tr::lng_nagram_media(),
 		.targetSection = MediaId(),
-		.icon = { &st::menuIconChatBubble },
+		.icon = { &st::menuIconStickers },
 		.keywords = { u"media"_q, u"sticker"_q, u"emoji"_q },
 	});
 	builder.addSectionButton({
 		.title = tr::lng_nagram_menu(),
 		.targetSection = MenuId(),
-		.icon = { &st::menuIconChatBubble },
+		.icon = { &st::menuIconShowAll },
 		.keywords = { u"menu"_q, u"actions"_q },
 	});
 	builder.addSectionButton({
@@ -113,7 +113,7 @@ const auto kMeta = BuildHelper({
 	builder.addSectionButton({
 		.title = tr::lng_nagram_rules(),
 		.targetSection = RulesId(),
-		.icon = { &st::menuIconChatBubble },
+		.icon = { &st::menuIconTagFilter },
 		.keywords = { u"filter"_q, u"link"_q },
 	});
 	builder.addSectionButton({
@@ -125,7 +125,7 @@ const auto kMeta = BuildHelper({
 	builder.addSectionButton({
 		.title = tr::lng_nagram_config_title(),
 		.targetSection = ConfigId(),
-		.icon = { &st::menuIconChatBubble },
+		.icon = { &st::menuIconStorage },
 		.keywords = { u"backup"_q, u"import"_q, u"export"_q },
 	});
 	builder.addDividerText(tr::lng_nagram_settings_note());
