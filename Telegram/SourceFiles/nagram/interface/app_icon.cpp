@@ -171,6 +171,13 @@ int AppIconGeneration() {
 	return Generation;
 }
 
+QRectF TrayUnreadDot(QSize size) {
+	// The dot of tray_monochrome_attention.svg, on its 16 unit grid.
+	const auto x = size.width() / 16.;
+	const auto y = size.height() / 16.;
+	return QRectF(12.1 * x, 12.2 * y, 3.4 * x, 3.4 * y);
+}
+
 void StartAppIcon(rpl::lifetime &lifetime) {
 	if (const auto icon = CustomAppIcon(); !icon.isNull()) {
 		Platform::SetApplicationIcon(icon);

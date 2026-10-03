@@ -18,6 +18,7 @@ struct AppIconChoice {
 [[nodiscard]] const QImage *CustomLogo();
 [[nodiscard]] QIcon CustomAppIcon();
 [[nodiscard]] int AppIconGeneration();
+[[nodiscard]] QRectF TrayUnreadDot(QSize size);
 void StartAppIcon(rpl::lifetime &lifetime);
 
 } // namespace Nagram::Interface

@@ -90,15 +90,9 @@ bool DarkTasbarValueValid/* = false*/;
 [[nodiscard]] QImage MonochromeWithDot(QImage image, style::color color) {
 	auto p = QPainter(&image);
 	auto hq = PainterHighQualityEnabler(p);
-	const auto xm = image.width() / 16.;
-	const auto ym = image.height() / 16.;
 	p.setBrush(color);
 	p.setPen(Qt::NoPen);
-	p.drawEllipse(QRectF( // cx=3.9, cy=12.7, r=2.2
-		1.7 * xm,
-		10.5 * ym,
-		4.4 * xm,
-		4.4 * ym));
+	p.drawEllipse(Nagram::Interface::TrayUnreadDot(image.size()));
 	return image;
 }
 
