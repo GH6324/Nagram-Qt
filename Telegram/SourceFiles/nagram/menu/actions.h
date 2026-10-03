@@ -21,6 +21,7 @@ namespace Nagram::Menu {
 [[nodiscard]] const style::PopupMenu &MessageMenuStyle();
 void Tag(QAction *action, ActionId id);
 [[nodiscard]] int EndPosition(not_null<Ui::PopupMenu*> menu);
+[[nodiscard]] bool Shown(ActionId id);
 void Apply(
 	Ui::PopupMenu *menu,
 	HistoryItem *item,

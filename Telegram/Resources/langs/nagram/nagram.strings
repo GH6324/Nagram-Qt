@@ -155,7 +155,7 @@ Telegram/cmake/td_lang.cmake. Every key uses the lng_nagram_ prefix.
 "lng_nagram_do_not_share_phone" = "Do not share my phone number by default when adding contacts";
 "lng_nagram_do_not_share_phone_about" = "Only changes the initial state of “Share my phone number”. You can still tick it when adding a contact.";
 "lng_nagram_force_copy" = "Allow copying and saving protected content";
-"lng_nagram_force_copy_about" = "Applies only to messages and media already received on this device. Forwarding is still restricted by Telegram. Self-destructing and paid media are not affected.";
+"lng_nagram_force_copy_about" = "Applies only to messages and media already received on this device. Forwarding is still restricted by Telegram, so Repeat and Forward send a copy without attribution instead. Self-destructing and paid media are not affected.";
 "lng_nagram_ignore_restrictions" = "Ignore content restrictions";
 "lng_nagram_ignore_restrictions_about" = "Show chats and messages marked as unavailable on this platform. Content that Telegram does not deliver cannot be shown.";
 "lng_nagram_skip_sensitive_warning" = "Show sensitive media automatically";
@@ -255,6 +255,7 @@ Telegram/cmake/td_lang.cmake. Every key uses the lng_nagram_ prefix.
 "lng_nagram_menu_forward_without_quote" = "Forward without attribution";
 "lng_nagram_menu_confirm_repeat" = "Confirm before repeating";
 "lng_nagram_menu_repeat_confirm_text" = "Repeat this message in the current chat?";
+"lng_nagram_menu_copy_confirm" = "Send a copy without attribution to {recipient}?";
 "lng_nagram_menu_batch" = "Merge and batch actions";
 "lng_nagram_menu_select_sender" = "Select this sender's messages";
 "lng_nagram_menu_batch_reverse" = "Reverse order";

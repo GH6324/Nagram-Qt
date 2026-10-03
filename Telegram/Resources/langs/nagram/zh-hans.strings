@@ -151,7 +151,7 @@
 "lng_nagram_do_not_share_phone" = "添加联系人时默认不分享我的手机号";
 "lng_nagram_do_not_share_phone_about" = "只改变“分享我的手机号”的初始勾选，仍可在添加时手动勾选。";
 "lng_nagram_force_copy" = "允许复制和保存受保护的内容";
-"lng_nagram_force_copy_about" = "只作用于本机已收到的消息和已下载的媒体。转发仍由 Telegram 限制，限时和付费媒体不受影响。";
+"lng_nagram_force_copy_about" = "只作用于本机已收到的消息和已下载的媒体。转发仍由 Telegram 限制，复读和转发会改为发送不带原发送者的副本。限时和付费媒体不受影响。";
 "lng_nagram_ignore_restrictions" = "忽略内容限制";
 "lng_nagram_ignore_restrictions_about" = "显示被标记为在本平台不可用的会话和消息。Telegram 未下发的内容无法显示。";
 "lng_nagram_skip_sensitive_warning" = "自动显示敏感媒体";
@@ -251,6 +251,7 @@
 "lng_nagram_menu_forward_without_quote" = "无引用转发";
 "lng_nagram_menu_confirm_repeat" = "复读前确认";
 "lng_nagram_menu_repeat_confirm_text" = "在当前聊天中复读这条消息吗？";
+"lng_nagram_menu_copy_confirm" = "向 {recipient} 发送不带原发送者的副本吗？";
 "lng_nagram_menu_batch" = "合并与批量操作";
 "lng_nagram_menu_select_sender" = "选择此人的消息";
 "lng_nagram_menu_batch_reverse" = "反序";

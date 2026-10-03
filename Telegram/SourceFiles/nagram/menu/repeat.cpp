@@ -1,11 +1,14 @@
 #include "nagram/menu/repeat.h"
 
 #include "nagram/menu/actions.h"
+#include "nagram/privacy/protection.h"
 #include "api/api_common.h"
 #include "api/api_sending.h"
 #include "apiwrap.h"
 #include "data/data_chat_participant_status.h"
 #include "data/data_forum_topic.h"
+#include "data/data_media_types.h"
+#include "data/data_peer.h"
 #include "data/data_session.h"
 #include "history/history.h"
 #include "history/history_item.h"
@@ -25,13 +28,33 @@ namespace {
 
 constexpr auto kActionIdProperty = "nagramMenuActionId";
 
+bool Sendable(HistoryItem *item) {
+	return item && !item->isService() && !item->isLocal() && item->id > 0;
+}
+
 bool CanForward(HistoryItem *item) {
-	return item && item->allowsForward() && !item->isService()
-		&& !item->isLocal() && item->id > 0;
+	return Sendable(item) && item->allowsForward();
+}
+
+bool HasCopy(not_null<HistoryItem*> item) {
+	const auto media = item->media();
+	return (media && !media->webpage())
+		? (media->photo() || media->document())
+		: !item->originalText().text.isEmpty();
+}
+
+// WHY: Telegram rejects forwards out of a protected chat, so with the
+// copy bypass on the same actions resend the content as new messages.
+bool CopyOnly(HistoryItem *item) {
+	return Sendable(item)
+		&& item->isRegular()
+		&& !item->allowsForward()
+		&& item->allowsMediaDownloadControls()
+		&& HasCopy(item);
 }
 
 bool Available(HistoryItem *item) {
-	if (!CanForward(item)) {
+	if (!CanForward(item) && !CopyOnly(item)) {
 		return false;
 	}
 	const auto target = item->topic()
@@ -48,6 +71,38 @@ void ShowLatest(
 	}
 }
 
+bool SendCopy(not_null<HistoryItem*> item, not_null<Data::Thread*> target) {
+	if (!HasCopy(item)) {
+		return false;
+	}
+	const auto media = item->media();
+	const auto plain = !media || media->webpage();
+	const auto &original = item->originalText();
+	auto action = Api::SendAction(target);
+	action.clearDraft = false;
+	auto message = Api::MessageToSend(std::move(action));
+	message.textWithTags = { original.text,
+		TextUtilities::ConvertEntitiesToTextTags(original.entities) };
+	if (plain) {
+		item->history()->session().api().sendMessage(std::move(message));
+	} else if (const auto photo = media->photo()) {
+		Api::SendExistingPhoto(std::move(message), photo);
+	} else {
+		Api::SendExistingDocument(std::move(message), media->document());
+	}
+	return true;
+}
+
+int SendCopies(not_null<HistoryItem*> item, not_null<Data::Thread*> target) {
+	const auto owner = &item->history()->owner();
+	auto sent = 0;
+	for (const auto &id : owner->itemOrItsGroup(item)) {
+		const auto part = owner->message(id);
+		sent += (part && SendCopy(part, target)) ? 1 : 0;
+	}
+	return sent;
+}
+
 void SendRepeat(
 		not_null<Window::SessionController*> controller,
 		FullMsgId itemId,
@@ -56,7 +111,8 @@ void SendRepeat(
 	if (!Available(item)) {
 		return;
 	}
-	if (id == ActionId::Repeat && ForDevice().Get(kRepeatWithoutQuote)) {
+	if (CopyOnly(item)
+		|| (id == ActionId::Repeat && ForDevice().Get(kRepeatWithoutQuote))) {
 		id = ActionId::RepeatAsCopy;
 	}
 	const auto target = item->topic()
@@ -64,23 +120,9 @@ void SendRepeat(
 		: static_cast<Data::Thread*>(item->history());
 	const auto history = item->history();
 	if (id == ActionId::RepeatAsCopy) {
-		const auto media = item->media();
-		const auto &original = item->originalText();
-		auto action = Api::SendAction(target);
-		action.clearDraft = false;
-		auto message = Api::MessageToSend(std::move(action));
-		message.textWithTags = { original.text,
-			TextUtilities::ConvertEntitiesToTextTags(original.entities) };
-		if (const auto photo = media ? media->photo() : nullptr) {
-			Api::SendExistingPhoto(std::move(message), photo);
-		} else if (const auto document = media ? media->document() : nullptr) {
-			Api::SendExistingDocument(std::move(message), document);
-		} else if (!original.text.isEmpty()) {
-			history->session().api().sendMessage(std::move(message));
-		} else {
-			return;
+		if (SendCopies(item, target)) {
+			ShowLatest(controller, target);
 		}
-		ShowLatest(controller, target);
 		return;
 	}
 	auto draft = Data::ForwardDraft{
@@ -101,11 +143,59 @@ void SendRepeat(
 	ShowLatest(controller, target);
 }
 
+void ShowForwardCopy(
+		not_null<Window::SessionController*> controller,
+		FullMsgId itemId) {
+	const auto weak = base::make_weak(controller);
+	const auto chooser = std::make_shared<base::weak_qptr<Ui::BoxContent>>();
+	const auto send = [=](base::weak_ptr<Data::Thread> thread) {
+		const auto strong = weak.get();
+		const auto target = thread.get();
+		if (!strong || !target) {
+			return;
+		}
+		const auto item = strong->session().data().message(itemId);
+		if (!CopyOnly(item) || !SendCopies(item, target)) {
+			strong->showToast(tr::lng_forward_cant(tr::now));
+			return;
+		}
+		if (const auto box = chooser->get()) {
+			box->closeBox();
+		}
+		strong->showToast(tr::lng_share_done(tr::now));
+	};
+	auto chosen = [=](not_null<Data::Thread*> thread) {
+		if (!Data::CanSendAnything(thread)
+			|| thread->peer()->starsPerMessageChecked()) {
+			controller->show(Ui::MakeInformBox(tr::lng_forward_cant()));
+			return false;
+		}
+		const auto target = base::make_weak(thread);
+		controller->show(Ui::MakeConfirmBox({
+			.text = tr::lng_nagram_menu_copy_confirm(
+				lt_recipient,
+				rpl::single(thread->chatListName())),
+			.confirmed = [=](Fn<void()> &&close) {
+				close();
+				send(target);
+			},
+		}));
+		return false;
+	};
+	*chooser = Window::ShowChooseRecipientBox(
+		controller,
+		std::move(chosen),
+		tr::lng_nagram_menu_forward_without_quote());
+}
+
 void ShowForwardWithoutQuote(
 		not_null<Window::SessionController*> controller,
 		FullMsgId itemId) {
 	const auto item = controller->session().data().message(itemId);
-	if (!CanForward(item)) {
+	if (CopyOnly(item)) {
+		ShowForwardCopy(controller, itemId);
+		return;
+	} else if (!CanForward(item)) {
 		return;
 	}
 	Window::ShowForwardMessagesBox(controller, Data::ForwardDraft{
@@ -123,6 +213,16 @@ int InsertPosition(not_null<Ui::PopupMenu*> menu) {
 			return index + 1;
 		}
 	}
+	for (auto index = 0; index != int(menu->actions().size()); ++index) {
+		const auto value = menu->actions()[index]->property(kActionIdProperty);
+		const auto id = value.isValid() ? ActionId(value.toInt()) : ActionId();
+		if (id == ActionId::Delete
+			|| id == ActionId::Report
+			|| id == ActionId::Select
+			|| id == ActionId::BlockSender) {
+			return index;
+		}
+	}
 	return EndPosition(menu);
 }
 
@@ -133,8 +233,10 @@ void Insert(
 		FullMsgId itemId,
 		ActionId id,
 		const QString &text) {
+	const auto forward = (id == ActionId::Forward)
+		|| (id == ActionId::ForwardWithoutQuote);
 	const auto callback = crl::guard(controller, [=] {
-		if (id == ActionId::ForwardWithoutQuote) {
+		if (forward) {
 			ShowForwardWithoutQuote(controller, itemId);
 		} else if (ForDevice().Get(kConfirmRepeat)) {
 			const auto weak = base::make_weak(controller);
@@ -152,8 +254,7 @@ void Insert(
 		}
 	});
 	const auto action = Ui::Menu::CreateAction(menu, text, callback);
-	const auto icon = (id == ActionId::ForwardWithoutQuote)
-		? &st::menuIconForward : &st::menuIconRepeat;
+	const auto icon = forward ? &st::menuIconForward : &st::menuIconRepeat;
 	auto widget = base::make_unique_q<Ui::Menu::Action>(
 		menu->menu(), menu->menu()->st(), action, icon, icon);
 	Tag(menu->insertAction(position, std::move(widget)), id);
@@ -165,21 +266,38 @@ void InsertRepeatActions(
 		Ui::PopupMenu *menu,
 		HistoryItem *item,
 		Window::SessionController *controller) {
-	if (!CanForward(item) || !menu || !controller) {
+	const auto copyOnly = CopyOnly(item);
+	if ((!copyOnly && !CanForward(item)) || !menu || !controller) {
 		return;
 	}
 	const auto itemId = item->fullId();
-	auto position = InsertPosition(menu);
-	if (Available(item)
+	const auto forward = tr::lng_nagram_menu_forward_without_quote(tr::now);
+	const auto copy = tr::lng_nagram_menu_repeat_as_copy(tr::now);
+	const auto repeat = Available(item)
 		&& (!item->history()->peer->isBroadcast()
-			|| !ForDevice().Get(kNoRepeatInChannels))) {
+			|| !ForDevice().Get(kNoRepeatInChannels));
+	auto position = InsertPosition(menu);
+	if (copyOnly) {
+		const auto forwardId = Shown(ActionId::Forward)
+			? ActionId::Forward
+			: ActionId::ForwardWithoutQuote;
+		Insert(menu, position++, controller, itemId, forwardId, forward);
+		if (repeat) {
+			const auto repeatId = Shown(ActionId::Repeat)
+				? ActionId::Repeat
+				: ActionId::RepeatAsCopy;
+			Insert(menu, position, controller, itemId, repeatId, copy);
+		}
+		return;
+	}
+	if (repeat) {
 		Insert(menu, position++, controller, itemId, ActionId::Repeat,
 			tr::lng_nagram_menu_repeat(tr::now));
 		Insert(menu, position++, controller, itemId, ActionId::RepeatAsCopy,
-			tr::lng_nagram_menu_repeat_as_copy(tr::now));
+			copy);
 	}
 	Insert(menu, position, controller, itemId, ActionId::ForwardWithoutQuote,
-		tr::lng_nagram_menu_forward_without_quote(tr::now));
+		forward);
 }
 
 } // namespace Nagram::Menu

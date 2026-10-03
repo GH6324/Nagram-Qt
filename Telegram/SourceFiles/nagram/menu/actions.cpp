@@ -54,6 +54,14 @@ int EndPosition(not_null<Ui::PopupMenu*> menu) {
 	return EndPosition(slots);
 }
 
+bool Shown(ActionId id) {
+	const auto optionHeld = (QGuiApplication::keyboardModifiers()
+		& Qt::AltModifier) != 0;
+	return Visible(
+		ReadVisibility(ForDevice().Get(kMenuConfig), id),
+		optionHeld);
+}
+
 void Apply(
 		Ui::PopupMenu *menu,
 		HistoryItem *item,
@@ -82,15 +90,11 @@ void Apply(
 			InsertMessageToolActions(menu, item, controller, select);
 		}
 	}
-	const auto config = ForDevice().Get(kMenuConfig);
-	const auto optionHeld = (QGuiApplication::keyboardModifiers()
-		& Qt::AltModifier) != 0;
 	auto removedUpstreamAction = false;
 	for (auto index = int(menu->actions().size()); index != 0;) {
 		--index;
 		const auto value = menu->actions()[index]->property(kActionIdProperty);
-		if (value.isValid() && !Visible(
-				ReadVisibility(config, ActionId(value.toInt())), optionHeld)) {
+		if (value.isValid() && !Shown(ActionId(value.toInt()))) {
 			removedUpstreamAction |= IsUpstream(ActionId(value.toInt()));
 			menu->removeAction(index);
 		}
