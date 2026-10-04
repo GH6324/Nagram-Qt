@@ -34,9 +34,8 @@ template <typename Document>
 		return false;
 	}
 	const auto history = item->history();
-	const auto &config = Cached(
-		ForAccount(&history->session()).Get(kKeywordAlerts),
-		ParseKeywordAlerts);
+	const auto raw = ForAccount(&history->session()).Get(kKeywordAlerts);
+	const auto &config = Cached(raw, ParseKeywordAlerts);
 	return config.enabled
 		&& !item->from()->isBlocked()
 		&& Matches(
@@ -52,7 +51,8 @@ std::optional<bool> ReviewNotification(
 		not_null<HistoryItem*> item,
 		bool message) {
 	const auto keyword = KeywordMatch(item, message);
-	const auto &quiet = Cached(ForDevice().Get(kQuietHours), ParseQuietHours);
+	const auto raw = ForDevice().Get(kQuietHours);
+	const auto &quiet = Cached(raw, ParseQuietHours);
 	if (quiet.enabled) {
 		const auto history = item->history();
 		const auto user = history->peer->asUser();
