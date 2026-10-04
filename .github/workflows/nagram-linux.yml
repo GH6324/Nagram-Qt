@@ -89,14 +89,23 @@ jobs:
           ref: ${{ inputs.ref }}
 
       - name: First set up.
+        env:
+          CCACHE_SHA256: 508b2a1217dc6e04a23e967c7b95a0fb45d8a7e16fde9e180919698f2e2be060
         run: |
-          sudo apt update
-          curl -sSL https://install.python-poetry.org | python3 -
-          curl -sSL https://github.com/ccache/ccache/releases/download/v4.13.6/ccache-4.13.6-linux-x86_64-glibc.tar.xz \
-          | sudo tar xJ -C /usr/local/bin --strip-components=1 ccache-4.13.6-linux-x86_64-glibc/ccache
+          retry="$GITHUB_WORKSPACE/tools/nagram/retry.sh"
+          download=(curl -fsSL --retry 5 --retry-all-errors --retry-delay 10)
+          "$retry" 3 30 sudo apt-get update -o Acquire::Retries=3
+          # Saved to a file: piped into python3, a failed download went unnoticed.
+          "${download[@]}" -o "$RUNNER_TEMP/install-poetry.py" https://install.python-poetry.org
+          "$retry" 3 30 python3 "$RUNNER_TEMP/install-poetry.py" --version 2.5.1
+          "${download[@]}" -o "$RUNNER_TEMP/ccache.tar.xz" \
+            https://github.com/ccache/ccache/releases/download/v4.13.6/ccache-4.13.6-linux-x86_64-glibc.tar.xz
+          echo "$CCACHE_SHA256  $RUNNER_TEMP/ccache.tar.xz" | sha256sum -c -
+          sudo tar -xJf "$RUNNER_TEMP/ccache.tar.xz" -C /usr/local/bin --strip-components=1 \
+            ccache-4.13.6-linux-x86_64-glibc/ccache
           echo "CCACHE_DIR=$RUNNER_TEMP/.tdesktop-cache" >> $GITHUB_ENV
           cd Telegram/build/docker/centos_env
-          poetry install
+          "$retry" 3 30 poetry install
           DOCKERFILE=$(DEBUG= LTO= poetry run gen_dockerfile)
           echo "$DOCKERFILE" > Dockerfile
           rm -rf __pycache__
@@ -253,7 +262,7 @@ jobs:
       - name: Smoke test.
         if: env.ONLY_CACHE == 'false'
         run: |
-          sudo apt-get install -y xvfb
+          tools/nagram/retry.sh 3 30 sudo apt-get install -y -o Acquire::Retries=3 xvfb
           xvfb-run -a python3 tools/nagram/smoke_test.py "out/$CONFIG/Nagram"
 
       - name: Move artifact.

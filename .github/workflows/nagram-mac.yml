@@ -91,9 +91,10 @@ jobs:
         run: |
           sudo chown -R `whoami`:admin /usr/local/share
 
-          brew update
+          retry="$REPO_NAME/tools/nagram/retry.sh"
+          "$retry" 3 30 brew update
           brew upgrade || true
-          brew install automake libtool meson nasm ninja pkg-config
+          "$retry" 3 30 brew install automake libtool meson nasm ninja pkg-config
 
           # Disable spotlight.
           sudo mdutil -a -i off
