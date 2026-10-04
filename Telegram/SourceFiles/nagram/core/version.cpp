@@ -12,4 +12,8 @@ bool VersionIsBeta() {
 	return kVersionBeta;
 }
 
+quint32 UpdateRevision() {
+	return kVersionRevision;
+}
+
 } // namespace Nagram

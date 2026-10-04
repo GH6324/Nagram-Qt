@@ -159,7 +159,7 @@ S31（配置的 load/save/reset/validate 生命周期）不是独立功能：本
 
 ### 2.4 S18 独立更新服务与发行通道
 
-**结论：信任根已替换（2026-10-04），更新器仍然关闭。** 技术上可以完全基于 GitHub Releases，不需要自建服务器。还缺发行工作流里的更新包签名、feed，以及客户端发现地址的改动。
+**结论：已接入（2026-10-04）。** 完全基于 GitHub Releases，不需要自建服务器。Release 构建启用更新器，其他构建默认关闭。macOS 上做过本机端到端验证，Windows 与 Linux 的安装过程、以及发行工作流的打包和发布步骤还没有实际运行过。
 
 #### 上游更新检查器的要求（已核对）
 
@@ -174,9 +174,9 @@ S31（配置的 load/save/reset/validate 生命周期）不是独立功能：本
 - **打包**：`_other/packer.cpp`（`-channel`、`-keys-loc`、`-local-key`／`-local-key-id`，或 `-emit-signing-input` ＋ `-embed-signatures`），ES256 签名辅助脚本 `Telegram/build/sign_update.py`。
 - **通道**：编译期 `TDESKTOP_UPDATE_CHANNEL`（`cmake/telegram_options.cmake`、`core/update_channel.h`）；运行期“安装测试版”沿用上游 `cInstallBetaVersion()`。
 
-构建嵌入的信任根已经是 Nagram 的（`Telegram/Resources/nagram/update/`，2026-10-04），Telegram 官方签名的更新包不再能通过验证；上游的 `Telegram/Resources/update/` 保持原样，不再被嵌入。发现地址仍是 `td.telegram.org` 和 `tdhbcfeed`，在下面路线的第 2、3 步完成之前不得打开该开关。
+构建嵌入的信任根是 Nagram 的（`Telegram/Resources/nagram/update/`，2026-10-04），Telegram 官方签名的更新包不能通过验证；上游的 `Telegram/Resources/update/` 保持原样，不再被嵌入。发现地址也已改为 Nagram 的 feed，不再向 `td.telegram.org` 和 `tdhbcfeed` 查询。
 
-#### 条件满足后的实现路线
+#### 实现
 
 1. 信任根（已完成，2026-10-04：清单版本 1，发布密钥 `release-2026a`）：新增 `Telegram/Resources/nagram/update/`（Nagram 的根公钥、清单、清单签名），`Telegram/CMakeLists.txt` 中 `generate_update_keys(Telegram ${res_loc}/update)` 一行改指该目录；上游三个文件保持原样，避免 rebase 冲突。
    - 生成：维护者本人运行 `tools/nagram/update_keys.py init --private <仓库外的目录>`（需要支持 Ed25519 的 OpenSSL 3）。它生成根密钥和发布密钥，把三个公开文件写入上述目录，私钥只写到指定目录，不打印，也拒绝写进仓库。
@@ -185,12 +185,20 @@ S31（配置的 load/save/reset/validate 生命周期）不是独立功能：本
    - 轮换：发布密钥泄露或丢失时运行 `update_keys.py rotate --private <目录> --key-id <新 id>`。它生成新密钥，清单版本加 1，把以前的密钥列入 `revoked`；客户端收到带新清单的更新包时采纳新清单。
    - 取舍：上游的 `stable`、`beta` 要求两把密钥同时签名，Nagram 只用 CI 持有的一把，发布不需要人工签名，代价是仓库和 Secret 同时失陷时拦不住恶意更新包。以后要改成两把，用根密钥签发新清单即可，不需要换根。
    - 已核对（2026-10-04）：嵌入提交的信任文件后，上游 `test_update_verify` 58 项全部通过，包括“嵌入的清单通过根公钥验证”和“列全四个通道”。`tools/nagram/test_update_keys.py` 在 `nagram-guards.yml` 里每次检查提交的清单签名和各通道的密钥。
-2. 发现：`HttpChecker::start` 的地址与 `HttpChecker::parseResponse` 的前缀改由 `Nagram::Updates::FeedUrl()`／`Prefix()` 提供（`nagram/core/updates.cpp`），指向 `https://github.com/<owner>/<repo>/releases`：清单为 `latest/download/nagram-updates.json`，`link` 为 `/download/<tag>/<包文件名>`。Qt 6（当前 6.11.2）的 `QNetworkAccessManager` 默认跟随 GitHub 的 302 跳转；`HttpLoaderActor` 的 `Range` 续传在 GitHub 资源域名上是否可用未核实。
-3. 关闭 Telegram 侧来源：`Updater::start` 中 `MtpChecker` 的位置传 `nullptr`（上游对 canary 的 HTTP 通道已用同样方式走 `EmptyChecker`）；`configLoadDone` 中不再调用 `Local::writeAutoupdatePrefix`。
-4. 发行工作流：新增 `.github/workflows/nagram-release.yml`，按标签触发，Release 配置、`-D DESKTOP_APP_DISABLE_AUTOUPDATE=OFF`、`-D TDESKTOP_UPDATE_CHANNEL=stable|beta`，构建 `Packer` 与 `Updater`，用仓库 Secrets 中的发行密钥签名，上传安装包、更新包与 `nagram-updates.json` 到 GitHub Release。现有三个工作流只产出未签名的 Debug 构建并上传为 Actions artifact，不能直接作为更新源。
-5. 手动更新入口：`UpdateApplication()` 在更新器关闭时打开的地址改为本仓库的发行页（当前代码仍是 `https://desktop.telegram.org`，与 `BRANDING.md` 的说明不一致，可先于本包单独修正）。
+2. 发现：`HttpChecker::start` 的地址与 `HttpChecker::parseResponse` 的前缀由 `Nagram::Updates::FeedUrl()`／`DownloadPrefix()` 提供（`nagram/core/updates.cpp`）。
+   - feed 是 `https://github.com/NextAlone/Nagram-qt/releases/download/updates/nagram-updates.json`，即名为 `updates` 的固定 release 里的一个文件，每次发布时覆盖。不用 `releases/latest/download`：它不含 prerelease，测试版用户看不到新的测试版，而且在第一个稳定版之前会是 404。
+   - 格式沿用上游：`{ "<平台键>": { "stable": { "released": 7002010003, "link": "/v7.2.10.3/td-update-mac-arm-7002010" }, "beta": { ... } } }`。`released` 是 `AppVersion × 1000 + N`，`HttpChecker::validateLatestUrl` 拿它与 `Nagram::Updates::FeedVersion()` 比较；上游的 `ParseCommonMap` 会把这个数再乘 1000，所以不能直接放 64 位的更新版本号，`N` 也因此不能超过 999。`link` 拼在 `…/releases/download` 之后。
+   - feed 里的数只决定是否下载；能否安装由签名信封里的 64 位版本号 `(AppVersion << 32) | N` 决定，它必须大于 `Core::RunningUpdateVersion()`（低 32 位取 `Nagram::UpdateRevision()`）。
+   - 已核对（2026-10-04）：GitHub 的发行资源地址返回 302，跳转后的资源域名支持 `Range`（`curl` 取 100–199 字节得到 206）。应用内经 Qt 跟随跳转下载这一步还没有对着 GitHub 实测，本机验证用的是不跳转的本地 HTTP 服务。
+3. 关闭 Telegram 侧来源：`MtpChecker::start` 的第一个判断加上 `Nagram::Updates::SkipTelegramFeed()`，检查器直接报告失败，不向 `tdhbcfeed` 发请求（日志里是一行“MTP is unavailable”）。`configLoadDone` 里的 `Local::writeAutoupdatePrefix` 没有改：它写下的前缀已经没有读取方。
+4. 通道与版本：编译期通道不用（`TDESKTOP_UPDATE_CHANNEL` 保持 `stable`），是否接收测试版由 `Nagram::VersionIsBeta()` 加用户的“安装测试版”开关决定，上游读 `AppBetaVersion` 的四处（`settings.cpp`、`core/launcher.cpp`、`core/update_checker.cpp`、`platform/linux/update_install_linux.cpp`）都改读它。同一上游版本内的更新靠 `N` 区分，所以 `UnpackUpdateV2` 一律把完整的 64 位版本号写进 `tdata/version`（上游只对 canary 这样做），安装前的检查也不再要求 canary 构建。副作用：Windows 的更新器遇到这种版本文件不更新卸载项里的版本号。
+5. 打包：`Packer` 需要 `-counter <N>`（`_other/packer.cpp` 的参数检查改了一行），并以 `PACKER_DISABLE_PRIVATE` 编译，不依赖上游私有仓库里的旧 RSA 密钥。三个平台的更新器都按上游的文件名找文件再改成实际安装的名字，所以 `tools/nagram/pack_update.py` 把文件暂存成 `Telegram.app`、`Telegram.exe`／`Updater.exe`、`Telegram`／`Updater` 再打包，更新器本身不用改。包名是 `td-update-<系统>-<架构>-<AppVersion>[-beta]`。客户端限制压缩后不超过 256 MB、解压后不超过 1 GB，macOS 的 Release 构建因此在签名前去掉符号，包里只支持单一架构。
+6. 发行工作流：三个平台的 Release 构建带 `-D DESKTOP_APP_DISABLE_AUTOUPDATE=OFF`，产物里带上 `Updater`，并在配置了 Secret `NAGRAM_UPDATE_KEY`（发布私钥的 PEM 文本）时打出更新包；没配时只给出警告，这次发布不会推送给已安装的用户。`nagram-release.yml` 的 `Publish` 把更新包传到该版本的 release，再用 `tools/nagram/update_feed.py` 把它们并入 feed 并覆盖 `updates` release 里的文件；其他平台、另一个通道的条目保留，已有条目不会被更旧的版本替换。
+7. 手动更新入口：`UpdateApplication()` 在更新器关闭时打开本仓库的发行页。
 
-预计上游改动：`core/update_checker.cpp`（约 4 处）、`mtproto/mtp_instance.cpp`（1 处）、`Telegram/CMakeLists.txt`（1 行）。
+上游改动：`core/update_checker.cpp`（9 处）、`core/update_channel.h`、`core/launcher.cpp`、`settings.cpp`、`platform/linux/update_install_linux.cpp`、`_other/packer.cpp`，以及根 `CMakeLists.txt`（不再强制关闭更新器）和 `Telegram/CMakeLists.txt`（信任目录、无特殊目标时也构建 `Packer`）。
+
+本机验证（2026-10-04，macOS arm64 Debug）：用一次性密钥和本地 HTTP 服务，装好的 7.2.10.2 读到 feed、下载并校验更新包，重启后由 `Updater` 替换应用并重新启动为 7.2.10.3，再次启动不会重复下载。一次性密钥和临时改动都已清除。
 
 #### 冲突、失败、隐私与关闭行为
 

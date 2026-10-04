@@ -43,7 +43,7 @@ if (NOT DESKTOP_APP_USE_PACKAGED AND WIN32)
     set(Python3_EXECUTABLE ${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/python/Scripts/python)
 endif()
 
-set(DESKTOP_APP_DISABLE_AUTOUPDATE ON CACHE BOOL "Disable upstream updates." FORCE)
+set(DESKTOP_APP_DISABLE_AUTOUPDATE ON CACHE BOOL "Disable automatic updates.")
 set(DESKTOP_APP_DISABLE_CRASH_REPORTS ON CACHE BOOL "Disable upstream crash reports." FORCE)
 
 if (DESKTOP_APP_SPECIAL_TARGET MATCHES "^(macstore|uwp)")

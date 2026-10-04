@@ -38,9 +38,11 @@ Application identity:
 - Portable directory: `NagramForcePortable`.
 - Telegram `tg:` and `tonsite:` protocol compatibility is retained.
 
-Upstream automatic updates and crash submission are disabled at build time.
-Manual release links point to this repository. Store distribution is not
-configured; desktop builds are supported. Internal build targets, resource
-bundle names and Telegram service/protocol names remain compatible with the
-upstream build system. Signing, distribution credentials and an independent
-update service are separate release work.
+Upstream crash submission is disabled at build time. Release builds update
+themselves from this repository's releases and accept only packages signed
+with Nagram keys; the Telegram update feeds are not queried. Other builds
+have automatic updates disabled. Manual release links point to this
+repository. Store distribution is not configured; desktop builds are
+supported. Internal build targets, resource bundle names and Telegram
+service/protocol names remain compatible with the upstream build system.
+Signing and distribution credentials are kept outside the repository.

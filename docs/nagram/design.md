@@ -154,7 +154,7 @@ inline constexpr auto kHideStories = Option<bool>{
 发布版本号是 `<上游版本>.<N>`，例如 `7.2.10.3`。
 
 - **上游版本**取 `Telegram/build/version` 里三段的 `AppVersionStr`，随同步上游变化。Nagram 不改上游的版本文件（`build/version`、`core/version.h`、`.rc`），同步时不会在这些文件上冲突。上游省略补丁号时仍写满三段：基于上游 7.3 的第一个版本是 `7.3.0.1`，写成 `7.3.1` 会与上游的 7.3.1 混淆。
-- **`N`** 是 Nagram 修订号，与通道一起写在 `Telegram/build/nagram_version`，内容是最近一次发布的值。同一上游版本上每发布一次加 1，上游版本变化后的第一次发布重置为 1。稳定版和测试版共用一个序列，所以不带通道的 `7.2.10.3` 就能唯一确定一次发布，包管理器的版本号直接用它。
+- **`N`** 是 Nagram 修订号，与通道一起写在 `Telegram/build/nagram_version`，内容是最近一次发布的值。同一上游版本上每发布一次加 1，上游版本变化后的第一次发布重置为 1，不超过 999（更新 feed 里的版本号是 `AppVersion × 1000 + N`）。稳定版和测试版共用一个序列，所以不带通道的 `7.2.10.3` 就能唯一确定一次发布，包管理器的版本号直接用它。
 - **通道**是 `stable` 或 `beta`，每次发布时按 Nagram 自己的验证程度决定，与上游的 `AppBetaVersion` 无关：三端里有平台没有实际使用过，或刚合入上游的大版本时发 `beta`；三端都实际运行过才发 `stable`。`beta` 不进包管理器，自动更新默认也不推送，只有主动下载或打开“安装测试版”的用户会收到。
 - **tag** 是 `v<版本号>`，测试版加 `-beta`，例如 `v7.2.10.3`、`v7.2.10.4-beta`。带 `-` 的 tag 发布为 GitHub prerelease。
 - 旧 tag `v7.2.10-pre.1`、`v7.2.10-pre.2` 相当于 `N` 为 1 和 2 的测试版，下一次发布是 `7.2.10.3`。
@@ -172,7 +172,7 @@ inline constexpr auto kHideStories = Option<bool>{
 
 `Telegram/cmake/nagram_version.cmake` 把版本号写进生成的头文件 `nagram_version_data.h`，只有 `nagram/core/version.cpp` 包含它，修改 `N` 不会重新编译整个目标。
 
-自动更新启用后（[P3-08](p3-08-sync-services.md) 第 2.4 节），更新包的 64 位版本号取 `(AppVersion << 32) | N`，所以 `N` 在同一上游版本内必须递增。上游更新器读 `AppBetaVersion` 的四处（`settings.cpp`、`core/launcher.cpp`、`core/update_checker.cpp`、`platform/linux/update_install_linux.cpp`）要改读 Nagram 的通道，否则上游版本是 beta 时所有用户都会默认接收测试版。这两步尚未实现。
+自动更新（[P3-08](p3-08-sync-services.md) 第 2.4 节，2026-10-04 接入）：Release 构建启用更新器，其他构建默认关闭（`-D DESKTOP_APP_DISABLE_AUTOUPDATE=OFF` 打开）。更新包的 64 位版本号是 `(AppVersion << 32) | N`，所以 `N` 在同一上游版本内必须递增。上游更新器读 `AppBetaVersion` 的四处都改读 Nagram 的通道：测试版构建默认接收测试版，稳定版构建要用户打开“安装测试版”才接收。发布时需要 Secret `NAGRAM_UPDATE_KEY`（发布私钥的 PEM 文本）才会打出更新包并更新 feed；没配时发布照常进行，只是不推送给已安装的用户。
 
 ## 4. 与旧版本的兼容
 

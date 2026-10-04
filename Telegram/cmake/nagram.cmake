@@ -14,6 +14,7 @@ set(nagram_sources
     nagram/core/regex.cpp
     nagram/core/diagnostics.cpp
     nagram/core/relaunch.cpp
+    nagram/core/updates.cpp
     nagram/core/version.cpp
     nagram/display/view_refresher.cpp
     nagram/export/range_model.cpp
@@ -137,6 +138,13 @@ if (nagram_sources)
 endif()
 
 include(${CMAKE_CURRENT_LIST_DIR}/nagram_version.cmake)
+
+if (NOT DESKTOP_APP_DISABLE_AUTOUPDATE)
+    # The packer signs only v2 packages and needs no upstream private keys.
+    # Its target is created after this file is included.
+    cmake_language(DEFER CALL
+        target_compile_definitions Packer PRIVATE PACKER_DISABLE_PRIVATE)
+endif()
 
 if (APPLE AND NOT DESKTOP_APP_DISABLE_SWIFT6)
     enable_language(Swift)

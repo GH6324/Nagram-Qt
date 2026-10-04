@@ -8,11 +8,12 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "settings.h"
 
 #include "core/version.h"
+#include "nagram/core/version.h"
 #include "ui/emoji_config.h"
 
 Qt::LayoutDirection gLangDir = Qt::LeftToRight;
 
-bool gInstallBetaVersion = AppBetaVersion;
+bool gInstallBetaVersion = Nagram::VersionIsBeta();
 uint64 gAlphaVersion = AppAlphaVersion;
 uint64 gRealAlphaVersion = AppAlphaVersion;
 QByteArray gAlphaPrivateKey;

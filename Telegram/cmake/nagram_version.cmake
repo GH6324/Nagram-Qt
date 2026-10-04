@@ -9,7 +9,7 @@ set(nagram_revision "")
 set(nagram_channel "")
 file(STRINGS ${nagram_version_file} nagram_version_lines)
 foreach (line ${nagram_version_lines})
-    if (line MATCHES "^NagramRevision +([1-9][0-9]*)$" AND nagram_revision STREQUAL "")
+    if (line MATCHES "^NagramRevision +([1-9][0-9]?[0-9]?)$" AND nagram_revision STREQUAL "")
         set(nagram_revision ${CMAKE_MATCH_1})
     elseif (line MATCHES "^NagramChannel +(stable|beta)$" AND nagram_channel STREQUAL "")
         set(nagram_channel ${CMAKE_MATCH_1})
@@ -39,6 +39,7 @@ file(CONFIGURE
 namespace Nagram {
 
 inline constexpr auto kVersionStr = \"@nagram_version_string@\";
+inline constexpr auto kVersionRevision = @nagram_revision@;
 inline constexpr auto kVersionBeta = @nagram_version_beta@;
 
 } // namespace Nagram

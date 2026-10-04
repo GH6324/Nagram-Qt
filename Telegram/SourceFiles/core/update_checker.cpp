@@ -28,6 +28,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "main/main_account.h"
 #include "main/main_session.h"
 #include "main/main_domain.h"
+#include "nagram/core/updates.h"
 #include "info/info_memento.h"
 #include "info/info_controller.h"
 #include "window/window_controller.h"
@@ -478,7 +479,7 @@ enum class ManifestAdoption {
 	const auto verified = Updates::VerifyUpdate(
 		content,
 		BuildUpdateChannel,
-		AppBetaVersion || cInstallBetaVersion(),
+		Nagram::VersionIsBeta() || cInstallBetaVersion(),
 		*target,
 		RunningUpdateVersion(),
 		HeldManifest(),
@@ -519,9 +520,6 @@ enum class ManifestAdoption {
 
 	tempDir.mkdir(tempDir.absolutePath());
 
-	const auto canary
-		= (verified->envelope.channel == Updates::Channel::CanaryPublic)
-		|| (verified->envelope.channel == Updates::Channel::CanaryPrivate);
 	if (!Updates::ExtractUpdateFiles(
 			*uncompressed,
 			verified->envelope.version,
@@ -534,7 +532,7 @@ enum class ManifestAdoption {
 			tempDir,
 			tempDirPath,
 			Updates::UpdateVersionBase(verified->envelope.version),
-			canary ? verified->envelope.version : 0)) {
+			verified->envelope.version)) {
 		return false;
 	}
 
@@ -732,10 +730,7 @@ HttpChecker::HttpChecker(bool testing) : Checker(testing) {
 }
 
 void HttpChecker::start() {
-	const auto updaterVersion = Platform::AutoUpdateVersion();
-	const auto path = Local::readAutoupdatePrefix()
-		+ qstr("/current")
-		+ (updaterVersion > 1 ? QString::number(updaterVersion) : QString());
+	const auto path = Nagram::Updates::FeedUrl();
 	auto url = QUrl(path);
 	DEBUG_LOG(("Update Info: requesting update state"));
 	const auto request = QNetworkRequest(url);
@@ -848,7 +843,7 @@ std::optional<QString> HttpChecker::parseResponse(
 	return validateLatestUrl(
 		bestAvailableVersion,
 		bestIsAvailableAlpha,
-		Local::readAutoupdatePrefix() + bestLink);
+		Nagram::Updates::DownloadPrefix() + bestLink);
 }
 
 QString HttpChecker::validateLatestUrl(
@@ -857,7 +852,7 @@ QString HttpChecker::validateLatestUrl(
 		QString url) const {
 	const auto myVersion = isAvailableAlpha
 		? cAlphaVersion()
-		: uint64(AppVersion);
+		: Nagram::Updates::FeedVersion();
 	const auto validVersion = (cAlphaVersion() || !isAvailableAlpha);
 	if (!validVersion || availableVersion <= myVersion) {
 		return QString();
@@ -1008,7 +1003,7 @@ MtpChecker::MtpChecker(
 }
 
 void MtpChecker::start() {
-	if (!_mtp.valid()) {
+	if (Nagram::Updates::SkipTelegramFeed() || !_mtp.valid()) {
 		LOG(("Update Info: MTP is unavailable."));
 		crl::on_main(this, [=] { fail(); });
 		return;
@@ -2081,7 +2076,7 @@ bool checkReadyUpdate() {
 				ClearAll();
 				return false;
 			}
-			if (!BuildIsCanary || canaryVersion <= RunningUpdateVersion()) {
+			if (canaryVersion <= RunningUpdateVersion()) {
 				LOG(("Update Error: cant install canary version %1 having version %2").arg(canaryVersion).arg(RunningUpdateVersion()));
 				ClearAll();
 				return false;
@@ -2185,7 +2180,7 @@ void UpdateApplication() {
 			} else if (KSandbox::isSnap()) {
 				return "https://snapcraft.io/telegram-desktop";
 			}
-			return "https://desktop.telegram.org";
+			return "https://github.com/NextAlone/Nagram-qt/releases";
 #endif // OS_WIN_STORE || OS_MAC_STORE
 		}();
 		UrlClickHandler::Open(url);

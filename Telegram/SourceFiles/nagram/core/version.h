@@ -9,4 +9,7 @@ namespace Nagram {
 
 [[nodiscard]] bool VersionIsBeta();
 
+// The Nagram revision, the low half of the 64-bit update version.
+[[nodiscard]] quint32 UpdateRevision();
+
 } // namespace Nagram

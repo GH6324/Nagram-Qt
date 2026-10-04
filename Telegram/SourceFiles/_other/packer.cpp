@@ -671,16 +671,14 @@ int main(int argc, char *argv[])
 	if (!V2UnsignedFile.isEmpty()) {
 		return EmbedV2Signatures();
 	} else if (V2Channel) {
-		const auto canary = (*V2Channel == Channel::CanaryPublic)
-			|| (*V2Channel == Channel::CanaryPrivate);
 		if (AlphaVersion || BetaChannel) {
 			cout << "The -channel param cannot be combined with -alpha or -beta!\n";
 			return -1;
 		} else if (V2KeysLoc.isEmpty()) {
 			cout << "The -keys-loc param is required for -channel packing!\n";
 			return -1;
-		} else if (canary != (V2Counter > 0)) {
-			cout << "Canary channels require a positive -counter, others require none!\n";
+		} else if (!V2Counter) {
+			cout << "Nagram packages require the revision as a positive -counter!\n";
 			return -1;
 		} else if (!V2EmbedSignatures.empty()) {
 			cout << "The -embed-signatures param requires -unsigned!\n";
