@@ -11,10 +11,12 @@ on:
         required: true
         type: string
       only:
-        description: Platform to build, for trial runs.
+        description: >-
+          Platform to build, for trial runs; 'packages' builds nothing and
+          updates the package managers for a published release.
         type: choice
         default: all
-        options: [all, macos, windows, linux]
+        options: [all, macos, windows, linux, packages]
       windows_arch:
         description: Windows architecture to build, for trial runs.
         type: choice
@@ -91,7 +93,7 @@ jobs:
     name: Publish
     needs: [version, macos, windows, linux]
     # A platform that fails must not block the packages that were built.
-    if: ${{ !cancelled() && needs.version.result == 'success' }}
+    if: ${{ !cancelled() && needs.version.result == 'success' && inputs.only != 'packages' }}
     runs-on: ubuntu-24.04
     permissions:
       contents: write
@@ -170,9 +172,9 @@ jobs:
 
   aur:
     name: AUR
-    needs: publish
+    needs: [version, publish]
     # Only stable releases go to the package managers.
-    if: ${{ !cancelled() && needs.publish.result == 'success' && !contains(inputs.tag || github.ref_name, '-') }}
+    if: ${{ !cancelled() && needs.version.result == 'success' && (needs.publish.result == 'success' || inputs.only == 'packages') && !contains(inputs.tag || github.ref_name, '-') }}
     runs-on: ubuntu-24.04
     permissions:
       contents: read
@@ -226,9 +228,9 @@ jobs:
 
   nix:
     name: Nix
-    needs: publish
+    needs: [version, publish]
     # Only stable releases go to the package managers.
-    if: ${{ !cancelled() && needs.publish.result == 'success' && !contains(inputs.tag || github.ref_name, '-') }}
+    if: ${{ !cancelled() && needs.version.result == 'success' && (needs.publish.result == 'success' || inputs.only == 'packages') && !contains(inputs.tag || github.ref_name, '-') }}
     runs-on: ubuntu-24.04
     permissions:
       contents: write
@@ -268,6 +270,11 @@ jobs:
           # The package runs the binary under bubblewrap, which needs the
           # user namespaces that the runner image restricts.
           sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+          # A program from Nix takes its OpenGL drivers from where NixOS links
+          # them; the runner is not NixOS, so the Mesa of the flake goes there.
+          MESA=$(nix --extra-experimental-features "nix-command flakes" build \
+            --no-link --print-out-paths --inputs-from . nixpkgs#mesa^out)
+          sudo ln -sfn "$MESA" /run/opengl-driver
           nix --extra-experimental-features "nix-command flakes" build .#nagram-desktop
           tools/nagram/retry.sh 3 30 sudo apt-get install -y -o Acquire::Retries=3 xvfb
           xvfb-run -a python3 tools/nagram/smoke_test.py result/bin/Nagram
@@ -284,9 +291,9 @@ jobs:
 
   homebrew:
     name: Homebrew
-    needs: publish
+    needs: [version, publish]
     # Only stable releases go to the package managers.
-    if: ${{ !cancelled() && needs.publish.result == 'success' && !contains(inputs.tag || github.ref_name, '-') }}
+    if: ${{ !cancelled() && needs.version.result == 'success' && (needs.publish.result == 'success' || inputs.only == 'packages') && !contains(inputs.tag || github.ref_name, '-') }}
     runs-on: macos-26
     permissions:
       contents: read
