@@ -59,7 +59,7 @@ jobs:
       || !contains(github.event.head_commit.message, '-only]')
       || contains(github.event.head_commit.message, '[macos-only]')
     name: MacOS
-    runs-on: macos-latest
+    runs-on: macos-26
 
     # Dropping superseded caches needs to delete them.
     permissions:
@@ -81,7 +81,7 @@ jobs:
         run: echo "REPO_NAME=${GITHUB_REPOSITORY##*/}" >> $GITHUB_ENV
 
       - name: Clone.
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           submodules: recursive
           path: ${{ env.REPO_NAME }}
@@ -111,7 +111,7 @@ jobs:
       # on the old key would keep that rebuild from being saved.
       - name: Libraries cache.
         id: cache-libs
-        uses: actions/cache@v6
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: |
             Libraries
@@ -140,7 +140,7 @@ jobs:
       # would lose hours of libraries to a later failure.
       - name: Save Libraries cache.
         if: steps.cache-libs.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v6
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: |
             Libraries
@@ -199,7 +199,7 @@ jobs:
           else
             mv Nagram.app artifact/
           fi
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: env.UPLOAD_ARTIFACT == 'true'
         name: Upload artifact.
         with:

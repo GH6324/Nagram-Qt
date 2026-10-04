@@ -62,7 +62,7 @@ jobs:
     needs: [macos, windows, linux]
     # A platform that fails must not block the packages that were built.
     if: ${{ !cancelled() }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: write
     env:
@@ -71,13 +71,13 @@ jobs:
 
     steps:
       - name: Clone.
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ env.TAG }}
           sparse-checkout: docs/nagram/releases
 
       - name: Download packages.
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
         with:
           pattern: release-*
           path: packages
