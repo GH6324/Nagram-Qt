@@ -187,13 +187,32 @@ jobs:
           python3 "$REPO_NAME/tools/nagram/smoke_test.py" \
             "$REPO_NAME/out/$CONFIG/Nagram.app/Contents/MacOS/Nagram"
 
+      - name: Sign and notarize.
+        if: env.ONLY_CACHE == 'false' && env.CONFIG == 'Release'
+        env:
+          NAGRAM_MACOS_CERTIFICATE: ${{ secrets.NAGRAM_MACOS_CERTIFICATE }}
+          NAGRAM_MACOS_CERTIFICATE_PASSWORD: ${{ secrets.NAGRAM_MACOS_CERTIFICATE_PASSWORD }}
+          NAGRAM_NOTARY_KEY: ${{ secrets.NAGRAM_NOTARY_KEY }}
+          NAGRAM_NOTARY_KEY_ID: ${{ secrets.NAGRAM_NOTARY_KEY_ID }}
+          NAGRAM_NOTARY_ISSUER_ID: ${{ secrets.NAGRAM_NOTARY_ISSUER_ID }}
+          NAGRAM_NOTARY_APPLE_ID: ${{ secrets.NAGRAM_NOTARY_APPLE_ID }}
+          NAGRAM_NOTARY_PASSWORD: ${{ secrets.NAGRAM_NOTARY_PASSWORD }}
+          NAGRAM_NOTARY_TEAM_ID: ${{ secrets.NAGRAM_NOTARY_TEAM_ID }}
+        run: |
+          bash "$REPO_NAME/tools/nagram/sign_macos.sh" \
+            "$REPO_NAME/out/$CONFIG/Nagram.app" \
+            "$REPO_NAME/Telegram/Telegram/Telegram.entitlements"
+
+          # The hardened runtime must not keep the signed app from starting.
+          python3 "$REPO_NAME/tools/nagram/smoke_test.py" \
+            "$REPO_NAME/out/$CONFIG/Nagram.app/Contents/MacOS/Nagram"
+
       - name: Move artifact.
         if: env.UPLOAD_ARTIFACT == 'true'
         run: |
           cd $REPO_NAME/out/$CONFIG
           mkdir artifact
           if [ "$CONFIG" = "Release" ]; then
-            codesign --force --deep --sign - Nagram.app
             ditto -c -k --keepParent Nagram.app artifact/Nagram-macos.zip
             echo "ARTIFACT_NAME=release-macos" >> $GITHUB_ENV
           else
