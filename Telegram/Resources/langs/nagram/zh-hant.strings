@@ -302,6 +302,8 @@
 "lng_nagram_menu_save_to_saved" = "儲存到收藏夾";
 "lng_nagram_menu_saved_done" = "已儲存到收藏夾。";
 "lng_nagram_menu_select_all" = "選取已載入的全部訊息";
+"lng_nagram_menu_copy_markdown" = "複製為 Markdown";
+"lng_nagram_markdown_copied" = "已複製為 Markdown。";
 "lng_nagram_menu_compact" = "緊湊訊息選單";
 "lng_nagram_menu_repeat_without_quote" = "複讀時傳送不含原傳送者的副本";
 "lng_nagram_menu_no_repeat_channels" = "頻道中不提供複讀";

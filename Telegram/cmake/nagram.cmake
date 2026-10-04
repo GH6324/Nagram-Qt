@@ -56,6 +56,7 @@ set(nagram_sources
     nagram/media/local_faved.cpp
     nagram/media/local_faved_model.cpp
     nagram/messages/format.cpp
+    nagram/messages/markdown.cpp
     nagram/messages/content.cpp
     nagram/messages/badges.cpp
     nagram/messages/effects.cpp
@@ -240,12 +241,14 @@ if (DESKTOP_APP_TEST_APPS)
         nagram/tests/test_media.cpp
         nagram/tests/test_sync.cpp
         nagram/tests/test_export.cpp
+        nagram/tests/test_markdown.cpp
         nagram/compose/spacing.cpp
         nagram/core/exchange.cpp
         nagram/core/regex.cpp
         nagram/export/range_model.cpp
         nagram/interface/main_menu_model.cpp
         nagram/menu/model.cpp
+        nagram/messages/markdown.cpp
         nagram/services/auto_translate_model.cpp
         nagram/services/chat_translation_model.cpp
         nagram/services/context_model.cpp

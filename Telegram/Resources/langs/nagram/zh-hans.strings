@@ -302,6 +302,8 @@
 "lng_nagram_menu_save_to_saved" = "保存到收藏夹";
 "lng_nagram_menu_saved_done" = "已保存到收藏夹。";
 "lng_nagram_menu_select_all" = "选择已加载的全部消息";
+"lng_nagram_menu_copy_markdown" = "复制为 Markdown";
+"lng_nagram_markdown_copied" = "已复制为 Markdown。";
 "lng_nagram_menu_compact" = "紧凑消息菜单";
 "lng_nagram_menu_repeat_without_quote" = "复读时发送不带原发送者的副本";
 "lng_nagram_menu_no_repeat_channels" = "频道中不提供复读";

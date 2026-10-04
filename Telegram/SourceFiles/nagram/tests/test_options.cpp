@@ -101,6 +101,10 @@ void TestOptions() {
 		&& Menu::ValidateConfig(Menu::WriteVisibility(
 			{}, ActionId::Summarize, Visibility::Show)),
 		"summarize is hidden by default");
+	Require(Menu::ReadVisibility({}, ActionId::CopyMarkdown) == Visibility::Hide
+		&& !Menu::IsUpstream(ActionId::CopyMarkdown)
+		&& Menu::ValidateConfig(R"({"version":2,"states":{"E39":"show"}})"),
+		"copy as Markdown is hidden by default");
 	Require(Menu::ReadVisibility({}, ActionId::MessageDetails) == Visibility::Hide
 		&& Menu::ReadVisibility({}, ActionId::SelectAll) == Visibility::Hide,
 		"message tool actions default");

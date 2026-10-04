@@ -24,6 +24,7 @@ void TestSync();
 void TestNetwork();
 void TestMedia();
 void TestExport();
+void TestMarkdown();
 
 namespace {
 
@@ -181,6 +182,7 @@ int main() {
 		TestMedia();
 		TestSync();
 		TestExport();
+		TestMarkdown();
 		const auto root = std::string(NAGRAM_LANG_SOURCE_DIR);
 		const auto upstream = ReadStrings(root + "/lang.strings", false);
 		const auto english = ReadStrings(root + "/nagram/nagram.strings", true);

@@ -1,6 +1,8 @@
 #include "nagram/menu/message_tools.h"
 
 #include "nagram/menu/actions.h"
+#include "nagram/messages/markdown.h"
+#include "nagram/privacy/protection.h"
 #include "api/api_common.h"
 #include "apiwrap.h"
 #include "base/unixtime.h"
@@ -135,6 +137,70 @@ void SaveToSaved(
 		}));
 }
 
+[[nodiscard]] std::optional<Markdown::Style> MarkdownStyle(EntityType type) {
+	using Style = Markdown::Style;
+	switch (type) {
+	case EntityType::Bold:
+	case EntityType::Semibold: return Style::Bold;
+	case EntityType::Italic: return Style::Italic;
+	case EntityType::Underline: return Style::Underline;
+	case EntityType::StrikeOut: return Style::Strike;
+	case EntityType::Spoiler: return Style::Spoiler;
+	case EntityType::CustomUrl:
+	case EntityType::MentionName: return Style::Link;
+	case EntityType::Code: return Style::Code;
+	case EntityType::Pre: return Style::Pre;
+	case EntityType::Blockquote: return Style::Quote;
+	case EntityType::Url:
+	case EntityType::Email:
+	case EntityType::Hashtag:
+	case EntityType::Cashtag:
+	case EntityType::Mention:
+	case EntityType::BotCommand:
+	case EntityType::Phone:
+	case EntityType::BankCard: return Style::Verbatim;
+	default: return std::nullopt;
+	}
+}
+
+[[nodiscard]] QString MarkdownText(const TextWithEntities &text) {
+	auto spans = std::vector<Markdown::Span>();
+	for (const auto &entity : text.entities) {
+		const auto style = MarkdownStyle(entity.type());
+		if (!style) {
+			continue;
+		}
+		auto data = entity.data();
+		if (entity.type() == EntityType::MentionName) {
+			const auto id = TextUtilities::MentionNameDataToFields(
+				data).userId;
+			data = id ? (u"tg://user?id="_q + QString::number(id)) : QString();
+		}
+		spans.push_back({ *style, entity.offset(), entity.length(), data });
+	}
+	return Markdown::Convert(text.text, spans);
+}
+
+[[nodiscard]] bool CanCopyMarkdown(not_null<HistoryItem*> item) {
+	return !item->isService()
+		&& !item->translatedText().text.isEmpty()
+		&& Privacy::AllowsCopy(item->history()->peer)
+		&& !Privacy::ForbidsCopy(item);
+}
+
+void CopyMarkdown(
+		not_null<Window::SessionController*> controller,
+		FullMsgId itemId) {
+	const auto item = controller->session().data().message(itemId);
+	if (!item || !CanCopyMarkdown(item)) {
+		controller->showToast(tr::lng_nagram_menu_batch_unavailable(tr::now));
+		return;
+	}
+	QGuiApplication::clipboard()->setText(
+		MarkdownText(item->translatedText()));
+	controller->showToast(tr::lng_nagram_markdown_copied(tr::now));
+}
+
 void Insert(
 		not_null<Ui::PopupMenu*> menu,
 		int position,
@@ -168,6 +234,11 @@ void InsertMessageToolActions(
 			tr::lng_nagram_menu_save_to_saved(tr::now),
 			&st::menuIconSavedMessages,
 			crl::guard(controller, [=] { SaveToSaved(controller, itemId); }));
+	}
+	if (CanCopyMarkdown(item)) {
+		Insert(menu, position++, ActionId::CopyMarkdown,
+			tr::lng_nagram_menu_copy_markdown(tr::now), &st::menuIconCopy,
+			crl::guard(controller, [=] { CopyMarkdown(controller, itemId); }));
 	}
 	if (select && item->canBeSelected()) {
 		Insert(menu, position, ActionId::SelectAll,
