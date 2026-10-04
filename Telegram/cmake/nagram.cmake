@@ -27,6 +27,8 @@ set(nagram_sources
     nagram/chats/recent_chats.cpp
     nagram/chats/local_pins.cpp
     nagram/chats/local_pins_model.cpp
+    nagram/chats/cleanup.cpp
+    nagram/chats/cleanup_model.cpp
     nagram/chats/reading_position.cpp
     nagram/chats/tools.cpp
     nagram/chats/community.cpp
@@ -242,6 +244,7 @@ if (DESKTOP_APP_TEST_APPS)
         nagram/tests/test_sync.cpp
         nagram/tests/test_export.cpp
         nagram/tests/test_markdown.cpp
+        nagram/tests/test_cleanup.cpp
         nagram/compose/spacing.cpp
         nagram/core/exchange.cpp
         nagram/core/regex.cpp
@@ -262,6 +265,7 @@ if (DESKTOP_APP_TEST_APPS)
         nagram/links/webview.cpp
         nagram/privacy/protection_model.cpp
         nagram/chats/local_pins_model.cpp
+        nagram/chats/cleanup_model.cpp
         nagram/media/local_faved_model.cpp
         nagram/network/model.cpp
         nagram/media/url_template.cpp

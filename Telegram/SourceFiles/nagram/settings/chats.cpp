@@ -1,6 +1,7 @@
 #include "nagram/settings/chats.h"
 
 #include "nagram/chats/options.h"
+#include "nagram/chats/cleanup.h"
 #include "nagram/chats/local_pins.h"
 #include "nagram/chats/local_pins_model.h"
 #include "nagram/chats/sort.h"
@@ -208,6 +209,13 @@ const auto kMeta = BuildHelper({
 		tr::lng_nagram_hide_stories(),
 		u"nagram/chats/hide-stories"_q,
 		{ u"stories"_q });
+	builder.addButton({
+		.id = u"nagram/chats/cleanup"_q,
+		.title = tr::lng_nagram_cleanup(),
+		.st = &st::settingsButtonNoIcon,
+		.onClick = [=] { Chats::ShowCleanup(controller); },
+		.keywords = { u"clean"_q, u"archive"_q, u"delete"_q, u"inactive"_q },
+	});
 	builder.addSubsectionTitle({
 		.id = u"nagram/chats/folders"_q,
 		.title = tr::lng_nagram_folders(),

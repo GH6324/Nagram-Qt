@@ -82,6 +82,8 @@ B25、B26（P3-09 本地置顶）：
 
 不改 `Dialogs::Entry::isPinnedDialog`、`Dialogs::PinnedList`、`ApiWrap::savePinnedOrder`。与服务端的归并订阅上游已有的 `Data::Session::pinnedDialogsOrderUpdated()`，没有新挂钩。
 
+B29（清理聊天）没有上游改动：清理框只调用 `ApiWrap::toggleHistoryArchived`、`leaveChannel`、`deleteConversation`，判定是 `nagram/chats/cleanup_model.cpp` 中的纯函数。
+
 ### 2.3 消息
 
 | 编号 | 上游位置 | 需要处理的上游逻辑 | 方式 |
