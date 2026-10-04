@@ -71,6 +71,7 @@ def update_version(root):
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("tag", nargs="?", help="fail unless this is the tag of the release")
+    parser.add_argument("--version", action="store_true", help="print the version, like 7.2.10.3")
     parser.add_argument("--root", default=ROOT)
     args = parser.parse_args(argv)
     try:
@@ -78,7 +79,9 @@ def main(argv=None):
     except VersionError as error:
         print(error, file=sys.stderr)
         return 2
-    if args.tag is None:
+    if args.version:
+        print(expected[1:].removesuffix("-beta"))
+    elif args.tag is None:
         print(expected)
     elif args.tag != expected:
         print(

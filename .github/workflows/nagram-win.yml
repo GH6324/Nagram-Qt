@@ -417,3 +417,30 @@ jobs:
           name: ${{ env.ARTIFACT_NAME }}
           path: artifact\
           retention-days: 1
+
+      # The portable archive is uploaded by now, so a failing installer
+      # build does not keep it out of the release.
+      - name: Installer.
+        if: env.UPLOAD_ARTIFACT == 'true' && env.BUILD_CONFIG == 'Release'
+        run: |
+          cd %TBUILD%\%REPO_NAME%
+          if not exist Telegram\build\nagram_version (
+            echo ::notice::This ref has no Telegram\build\nagram_version, no installer is built.
+            exit /b 0
+          )
+          for /f %%v in ('python tools\nagram\release_version.py --version') do set NAGRAM_VERSION=%%v
+          if not defined NAGRAM_VERSION exit /b 1
+          set "ISCC=%ProgramFiles(x86)%\Inno Setup 6\ISCC.exe"
+          if not exist "%ISCC%" choco install innosetup --no-progress -y
+          if not exist "%ISCC%" exit /b 1
+          "%ISCC%" /Qp /DMyAppVersion=%NAGRAM_VERSION% /DMyAppVersionFull=%NAGRAM_VERSION% "/DReleasePath=%TBUILD%\%REPO_NAME%\out\%BUILD_CONFIG%" /DMyBuildTarget=${{ matrix.arch == 'arm64' && 'winarm' || 'win64' }} /DMyOutputBaseFilename=Nagram-windows-${{ matrix.arch }}-setup "/O%GITHUB_WORKSPACE%\installer" Telegram\build\setup.iss
+          if errorlevel 1 exit /b 1
+          if not exist "%GITHUB_WORKSPACE%\installer\Nagram-windows-${{ matrix.arch }}-setup.exe" exit /b 1
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        name: Upload installer.
+        if: env.UPLOAD_ARTIFACT == 'true' && env.BUILD_CONFIG == 'Release' && hashFiles('installer/*.exe') != ''
+        with:
+          name: release-windows-${{ matrix.arch }}-setup
+          path: installer\
+          retention-days: 1

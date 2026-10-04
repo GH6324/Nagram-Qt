@@ -29,12 +29,11 @@ Compression=lzma
 SolidCompression=yes
 DisableStartupPrompt=yes
 PrivilegesRequired=lowest
-VersionInfoVersion={#MyAppVersion}.0
+VersionInfoVersion={#MyAppVersion}
 CloseApplications=force
 DisableDirPage=no
 DisableProgramGroupPage=no
 WizardStyle=modern
-SignTool=sha256
 
 #ifndef MyOutputBaseFilename
   #if MyBuildTarget == "winarm"
@@ -79,8 +78,9 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 
 [Files]
 Source: "{#ReleasePath}\Nagram.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#ReleasePath}\Updater.exe"; DestDir: "{app}"; Flags: ignoreversion
 #if MyBuildTarget != "winarm"
-Source: "{#ReleasePath}\{#ModulesFolder}\d3d\d3dcompiler_47.dll"; DestDir: "{app}\{#ModulesFolder}\d3d"; Flags: ignoreversion
+Source: "{#ReleasePath}\{#ModulesFolder}\d3d\d3dcompiler_47.dll"; DestDir: "{app}\{#ModulesFolder}\d3d"; Flags: ignoreversion skipifsourcedoesntexist
 #endif
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 

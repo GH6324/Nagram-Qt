@@ -55,6 +55,10 @@ class ReleaseVersionTest(unittest.TestCase):
         self.assertEqual(self.run_main(UPSTREAM, BETA), (0, "v7.2.10.3-beta\n", ""))
         self.assertEqual(self.run_main(UPSTREAM, STABLE), (0, "v7.2.10.3\n", ""))
 
+    def test_prints_the_version_without_the_tag_decoration(self):
+        self.assertEqual(self.run_main(UPSTREAM, BETA, "--version"), (0, "7.2.10.3\n", ""))
+        self.assertEqual(self.run_main(UPSTREAM, STABLE, "--version"), (0, "7.2.10.3\n", ""))
+
     def test_an_upstream_version_without_a_patch_keeps_three_parts(self):
         nagram = "NagramRevision 1\nNagramChannel stable\n"
         self.assertEqual(self.run_main(MINOR, nagram), (0, "v7.3.0.1\n", ""))
