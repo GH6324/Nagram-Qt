@@ -83,6 +83,7 @@ inline constexpr auto kHideStories = Option<bool>{
 - 值类型限定为 `bool`、有范围的整数、单行字符串和带版本的 JSON 对象（`QByteArray`）。
 - 读写接口：`Get(option)`、`Value(option)`（`rpl::producer`，订阅时先给当前值，之后去重推送）、`Set(option, value)`；账号作用域的读写额外带 `not_null<Main::Session*>`。
 - 设置页、搜索索引、配置交换 allowlist、诊断报告都遍历注册表；未注册的键不会出现在任何界面或交换文件中。
+- 设置搜索在没有窗口的上下文里把每个设置页构建一遍，此时 `SectionBuilder::controller()` 和 `container()` 返回空指针。构建期间用 `builder.session()`，`controller` 只在按值捕获、稍后才执行的回调里解引用；`tools/nagram/check_settings_index.py` 在 CI（`nagram-guards.yml`）检查这一点。
 - 未交付的功能不进入注册表（需求第 2 节“未实现功能不进入开关”）。
 
 ### 3.3 存储

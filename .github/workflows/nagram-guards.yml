@@ -37,6 +37,10 @@ jobs:
           python3 tools/nagram/test_smoke_test.py
           python3 tools/nagram/test_upstream_budget.py
           python3 tools/nagram/test_drop_superseded_caches.py
+          python3 tools/nagram/test_check_settings_index.py
 
       - name: Upstream budget.
         run: python3 tools/nagram/upstream_budget.py
+
+      - name: Settings search index.
+        run: python3 tools/nagram/check_settings_index.py
