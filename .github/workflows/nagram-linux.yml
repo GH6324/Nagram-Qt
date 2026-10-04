@@ -165,6 +165,9 @@ jobs:
         env:
           NAGRAM_API_ID: ${{ secrets.NAGRAM_API_ID }}
           NAGRAM_API_HASH: ${{ secrets.NAGRAM_API_HASH }}
+          # A Debug build reports every failing file in one run; a release
+          # stops at the first one.
+          KEEP_GOING: ${{ env.CONFIG == 'Debug' && '1' || '' }}
         run: |
           # Without the repository secrets, build with the test-only credentials.
           API=""
@@ -189,6 +192,7 @@ jobs:
           -v $PWD:/usr/src/tdesktop \
           -v ${{ env.CCACHE_DIR }}:/var/cache/ccache \
           -e CONFIG \
+          -e KEEP_GOING \
           -e NAGRAM_API_ID \
           -e NAGRAM_API_HASH \
           -e CCACHE_SLOPPINESS=pch_defines,time_macros \

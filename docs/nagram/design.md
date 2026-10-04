@@ -140,6 +140,7 @@ inline constexpr auto kHideStories = Option<bool>{
 - **界面场景**：上游已有 `Test::` 测试代理（Debug 构建加 `-testagent`，使用带 `testing` 标记的独立目录）。场景放在 `nagram/tests/`，按环境变量选择。不得复制已登录的数据目录；需要登录的场景只使用用户专门提供的测试账号目录，不复用 `profile1` 的凭据。
 - **本地登录测试**：使用用户自己的 `api_id` / `api_hash`，从忽略提交的 `Telegram/build/api_credentials.local.cmake` 或 `NAGRAM_API_ID` / `NAGRAM_API_HASH` 读取；本地测试不得使用公开测试凭据 `17349`。凭据不写入文档、日志或提交。
 - 每个功能包的验收沿用需求第 5 节；外部服务测试使用 localhost 桩，不向真实聊天发送消息。
+- **GCC 检查**：只有 Linux 的 CI 用 GCC 并把警告当错误，本机用 clang 编不出这类问题。推送含 C++ 改动之前运行 `bash tools/nagram/gcc_check.sh`：它在 Linux 构建镜像里编译 Nagram 相对上游基准（`tools/nagram/upstream.json` 的 `base`）新增或改动过的全部源文件，再构建并运行 `test_nagram`，一次报出所有失败的文件。参数取 CI 的 Debug 构建（警告当错误），另外打开只有 Release 构建才启用的更新器，所以只在发布时才编译的代码也在检查范围内。它不链接主程序，也不编译未改动的上游源文件，所以链接错误和只影响这些文件的头文件改动仍要靠 CI。需要本机有该镜像和一个保留下来的构建目录（`NAGRAM_LINUX_OUT`）；目录保留时，之后每次只重新编译受改动影响的文件。Linux 的 Debug 构建在 CI 上同样不在第一个错误处停下。
 
 ### 3.8 版本控制与发布
 
