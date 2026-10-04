@@ -79,6 +79,7 @@ class ReleaseVersionTest(unittest.TestCase):
             "NagramChannel beta\n",
             "NagramRevision 0\nNagramChannel beta\n",
             "NagramRevision 03\nNagramChannel beta\n",
+            "NagramRevision 1000\nNagramChannel beta\n",
             "NagramRevision three\nNagramChannel beta\n",
             "NagramRevision 3\nNagramChannel alpha\n",
             "NagramRevision 3\nNagramRevision 4\nNagramChannel beta\n",
@@ -93,6 +94,12 @@ class ReleaseVersionTest(unittest.TestCase):
         code, out, err = self.run_main("AppVersionStrSmall 7.3\nAppVersionStr 7.3\n", BETA)
         self.assertEqual((code, out), (2, ""))
         self.assertIn(str(release.UPSTREAM), err)
+
+    def test_gives_the_numbers_of_the_update_version(self):
+        self.run_main(UPSTREAM, BETA)
+        self.assertEqual(release.update_version(self.root), (7002010, 3, "beta"))
+        self.run_main(MINOR, STABLE)
+        self.assertEqual(release.update_version(self.root), (7003000, 3, "stable"))
 
     def test_the_repository_files_describe_a_release(self):
         self.assertRegex(release.release_tag(release.ROOT), r"^v\d+\.\d+\.\d+\.\d+(-beta)?$")

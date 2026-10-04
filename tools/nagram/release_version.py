@@ -17,7 +17,8 @@ UPSTREAM = Path("Telegram/build/version")
 NAGRAM = Path("Telegram/build/nagram_version")
 # The three-part form, so that 7.3 gives 7.3.0.1 and not the upstream 7.3.1.
 UPSTREAM_VERSION = re.compile(r"^AppVersionStr +(\d+\.\d+\.\d+)$", re.MULTILINE)
-REVISION = re.compile(r"NagramRevision +([1-9][0-9]*)")
+# At most 999: update feeds carry upstream version * 1000 + revision.
+REVISION = re.compile(r"NagramRevision +([1-9][0-9]{0,2})")
 CHANNEL = re.compile(r"NagramChannel +(stable|beta)")
 
 
@@ -58,6 +59,13 @@ def release_tag(root):
     upstream = upstream_version(root / UPSTREAM)
     revision, channel = nagram_version(root / NAGRAM)
     return f"v{upstream}.{revision}" + ("-beta" if channel == "beta" else "")
+
+
+def update_version(root):
+    """The upstream AppVersion number, the revision and the channel."""
+    major, minor, patch = map(int, upstream_version(root / UPSTREAM).split("."))
+    revision, channel = nagram_version(root / NAGRAM)
+    return major * 1000000 + minor * 1000 + patch, int(revision), channel
 
 
 def main(argv=None):

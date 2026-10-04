@@ -377,6 +377,7 @@ jobs:
           -D DESKTOP_APP_TEST_APPS=ON ^
           -D CMAKE_COMPILE_WARNING_AS_ERROR=${{ env.BUILD_CONFIG == 'Debug' && 'ON' || 'OFF' }} ^
           -D CMAKE_MSVC_DEBUG_INFORMATION_FORMAT= ^
+          -D DESKTOP_APP_DISABLE_AUTOUPDATE=${{ env.BUILD_CONFIG == 'Release' && 'OFF' || 'ON' }} ^
           %TDESKTOP_BUILD_DEFINE%
 
           cmake --build ..\out --config %BUILD_CONFIG% --parallel
@@ -391,11 +392,20 @@ jobs:
 
       - name: Move artifact.
         if: env.UPLOAD_ARTIFACT == 'true'
+        env:
+          NAGRAM_UPDATE_KEY: ${{ secrets.NAGRAM_UPDATE_KEY }}
         run: |
           set OUT=%TBUILD%\%REPO_NAME%\out\%BUILD_CONFIG%
           mkdir artifact
           if "%BUILD_CONFIG%"=="Release" (
             powershell -Command "Compress-Archive -Path '%OUT%\Nagram.exe' -DestinationPath 'artifact\Nagram-windows-${{ matrix.arch }}.zip'"
+            if errorlevel 1 exit /b 1
+            if defined NAGRAM_UPDATE_KEY (
+              python %TBUILD%\%REPO_NAME%\tools\nagram\pack_update.py --packer %OUT%\Packer.exe --out artifact --app %OUT%\Nagram.exe --updater %OUT%\Updater.exe --target ${{ matrix.arch == 'arm64' && 'winarm' || 'win64' }}
+              if errorlevel 1 exit /b 1
+            ) else (
+              echo ::warning::NAGRAM_UPDATE_KEY is not set: no update package, this build is not offered to installed copies.
+            )
             echo ARTIFACT_NAME=release-windows-${{ matrix.arch }}>>%GITHUB_ENV%
           ) else (
             move %OUT%\Nagram.exe artifact/

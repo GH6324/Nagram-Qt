@@ -199,6 +199,7 @@ jobs:
           -D CMAKE_C_FLAGS_DEBUG="-O0 -fpch-preprocess" \
           -D CMAKE_CXX_FLAGS_DEBUG="-O0 -fpch-preprocess" \
           -D CMAKE_COMPILE_WARNING_AS_ERROR=${{ env.CONFIG == 'Debug' && 'ON' || 'OFF' }} \
+          -D DESKTOP_APP_DISABLE_AUTOUPDATE=${{ env.CONFIG == 'Release' && 'OFF' || 'ON' }} \
           $API \
           $DEFINE
 
@@ -267,14 +268,22 @@ jobs:
 
       - name: Move artifact.
         if: env.UPLOAD_ARTIFACT == 'true'
+        env:
+          NAGRAM_UPDATE_KEY: ${{ secrets.NAGRAM_UPDATE_KEY }}
         run: |
           cd out/$CONFIG
           mkdir artifact
           if [ "$CONFIG" = "Release" ]; then
             mkdir Nagram-linux
-            cp Nagram Nagram-linux/Nagram
-            strip Nagram-linux/Nagram
-            tar -cJf artifact/Nagram-linux-x86_64.tar.xz -C Nagram-linux Nagram
+            cp Nagram Updater Nagram-linux/
+            strip Nagram-linux/Nagram Nagram-linux/Updater
+            tar -cJf artifact/Nagram-linux-x86_64.tar.xz -C Nagram-linux Nagram Updater
+            if [ -n "$NAGRAM_UPDATE_KEY" ]; then
+              python3 ../../tools/nagram/pack_update.py --packer Packer --out artifact \
+                --app Nagram-linux/Nagram --updater Nagram-linux/Updater
+            else
+              echo "::warning::NAGRAM_UPDATE_KEY is not set: no update package, this build is not offered to installed copies."
+            fi
             echo "ARTIFACT_NAME=release-linux" >> $GITHUB_ENV
           else
             mv Nagram artifact/

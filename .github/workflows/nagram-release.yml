@@ -104,7 +104,10 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ env.TAG }}
-          sparse-checkout: docs/nagram/releases
+          sparse-checkout: |
+            docs/nagram/releases
+            Telegram/build
+            tools/nagram
 
       - name: Download packages.
         uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
@@ -140,3 +143,27 @@ jobs:
               --notes-file "$NOTES" \
               $PRERELEASE
           fi
+
+      # Installed copies read the feed of the 'updates' release, so it is
+      # written only after the packages it links to are published.
+      - name: Update the feed.
+        run: |
+          shopt -s nullglob
+          packages=(upload/td-update-*)
+          if [ ${#packages[@]} -eq 0 ]; then
+            echo "::notice::This run has no update packages, the update feed stays as it is."
+            exit 0
+          fi
+          if ! gh release view updates --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+            gh release create updates \
+              --repo "$GITHUB_REPOSITORY" \
+              --prerelease \
+              --title "Update feed" \
+              --notes "Installed copies of Nagram Desktop read nagram-updates.json from here to find new versions. Download the application from the other releases."
+          fi
+          mkdir feed
+          gh release download updates --repo "$GITHUB_REPOSITORY" \
+            --pattern nagram-updates.json --dir feed || true
+          python3 tools/nagram/update_feed.py \
+            --feed feed/nagram-updates.json --tag "$TAG" "${packages[@]}"
+          gh release upload updates feed/nagram-updates.json --clobber --repo "$GITHUB_REPOSITORY"
