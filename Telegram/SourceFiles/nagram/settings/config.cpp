@@ -3,6 +3,7 @@
 #include "nagram/core/exchange.h"
 #include "nagram/core/diagnostics.h"
 #include "nagram/core/language.h"
+#include "nagram/core/version.h"
 #include "nagram/settings/chats.h"
 #include "nagram/settings/cloud_sync.h"
 #include "nagram/settings/compose.h"
@@ -18,7 +19,6 @@
 #include "nagram/settings/services.h"
 #include "core/application.h"
 #include "core/file_utilities.h"
-#include "core/version.h"
 #include "lang/lang_instance.h"
 #include "lang/lang_keys.h"
 #include "lang_auto_counts.h"
@@ -214,7 +214,7 @@ void CopyDiagnostics(not_null<Window::SessionController*> controller) {
 	});
 	const auto report = tr::lng_nagram_config_diagnostic_report(
 		tr::now,
-		lt_version, QString::fromLatin1(AppVersionStr),
+		lt_version, VersionString(),
 		lt_amount, QString::number(managed),
 		lt_value, QString::number(modified),
 		lt_error, QString::number(exported.invalidKeys.size()));

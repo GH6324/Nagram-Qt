@@ -1,9 +1,9 @@
 #include "nagram/sync/service.h"
 
 #include "nagram/core/exchange.h"
+#include "nagram/core/version.h"
 
 #include "base/unixtime.h"
-#include "core/version.h"
 #include "main/main_session.h"
 
 namespace Nagram::Sync {
@@ -257,7 +257,7 @@ void Service::upload(Fn<void(Error)> done) {
 	const auto data = EncodeEnvelope(
 		exported.data,
 		now,
-		QString::fromLatin1(AppVersionStr));
+		VersionString());
 	_busy = true;
 	_backend->upload(data, [=](Uploaded uploaded) {
 		_busy = false;

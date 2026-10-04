@@ -148,6 +148,31 @@ inline constexpr auto kHideStories = Option<bool>{
 - 发行包只上传 GitHub Releases；`releases/` 等本地产物不进入仓库。
 - CI 使用 `.github/workflows/nagram-{mac,win,linux}.yml`（由上游同名工作流改写，产物为 Nagram，未配置 Secrets 时使用上游测试凭据）；上游原有工作流在 GitHub 仓库设置中停用，不修改其文件以免 rebase 冲突。CI 改动单独成 change；不提交空提交来触发构建。
 
+#### 版本号（2026-10-04）
+
+发布版本号是 `<上游版本>.<N>`，例如 `7.2.10.3`。
+
+- **上游版本**取 `Telegram/build/version` 里三段的 `AppVersionStr`，随同步上游变化。Nagram 不改上游的版本文件（`build/version`、`core/version.h`、`.rc`），同步时不会在这些文件上冲突。上游省略补丁号时仍写满三段：基于上游 7.3 的第一个版本是 `7.3.0.1`，写成 `7.3.1` 会与上游的 7.3.1 混淆。
+- **`N`** 是 Nagram 修订号，与通道一起写在 `Telegram/build/nagram_version`，内容是最近一次发布的值。同一上游版本上每发布一次加 1，上游版本变化后的第一次发布重置为 1。稳定版和测试版共用一个序列，所以不带通道的 `7.2.10.3` 就能唯一确定一次发布，包管理器的版本号直接用它。
+- **通道**是 `stable` 或 `beta`，每次发布时按 Nagram 自己的验证程度决定，与上游的 `AppBetaVersion` 无关：三端里有平台没有实际使用过，或刚合入上游的大版本时发 `beta`；三端都实际运行过才发 `stable`。`beta` 不进包管理器，自动更新默认也不推送，只有主动下载或打开“安装测试版”的用户会收到。
+- **tag** 是 `v<版本号>`，测试版加 `-beta`，例如 `v7.2.10.3`、`v7.2.10.4-beta`。带 `-` 的 tag 发布为 GitHub prerelease。
+- 旧 tag `v7.2.10-pre.1`、`v7.2.10-pre.2` 相当于 `N` 为 1 和 2 的测试版，下一次发布是 `7.2.10.3`。
+
+发布提交修改 `nagram_version` 并加入 `docs/nagram/releases/<tag>.md`，tag 打在这个提交上。`nagram-release.yml` 的 `Version` job 先用 `tools/nagram/release_version.py <tag>` 核对 tag 与两个版本文件，不一致时不启动任何平台的构建；不带参数运行会打印当前文件对应的 tag。
+
+| 位置 | 值 |
+| --- | --- |
+| 关于页、高级设置、Nagram 设置首页 | `7.2.10.3`，测试版后接 ` beta`。`boxes/about_box.cpp` 的 `CurrentVersionText` 改用 `Nagram::VersionString()` 和 `Nagram::VersionIsBeta()` |
+| 诊断报告、云同步备份的 `app` 字段 | `7.2.10.3` |
+| macOS 的 `CFBundleShortVersionString`、`CFBundleVersion` | `7.2.10.3` |
+| 发行包文件名 | tag 去掉 `v`，例如 `Nagram-7.2.10.3-beta-macos.zip` |
+| 发给 Telegram 服务器的 `app_version` | 上游版本，不带 `N` |
+| Windows 文件版本资源 | 上游的 `7.2.10.0`。`set_version.py` 在上游每次升版时重写 `.rc` 里的这几行，改动它们会让每次同步都冲突 |
+
+`Telegram/cmake/nagram_version.cmake` 把版本号写进生成的头文件 `nagram_version_data.h`，只有 `nagram/core/version.cpp` 包含它，修改 `N` 不会重新编译整个目标。
+
+自动更新启用后（[P3-08](p3-08-sync-services.md) 第 2.4 节），更新包的 64 位版本号取 `(AppVersion << 32) | N`，所以 `N` 在同一上游版本内必须递增。上游更新器读 `AppBetaVersion` 的四处（`settings.cpp`、`core/launcher.cpp`、`core/update_checker.cpp`、`platform/linux/update_install_linux.cpp`）要改读 Nagram 的通道，否则上游版本是 beta 时所有用户都会默认接收测试版。这两步尚未实现。
+
 ## 4. 与旧版本的兼容
 
 不做数据迁移（维护者决定，2026-09-26）。旧版 `v0.1.0-pre.1` 是预发布版本：
@@ -472,6 +497,7 @@ Debug 包缺少 `Contents/Frameworks/Updater`，点击“重启”会退出，�
 | 编译验证 | 计划中设置阶段性编译验证点 |
 | 推送 | 暂不推送 |
 | A01 自选等宽字体 | 放弃；不维护 `lib_ui` fork，不注册该设置（维护者决定，2026-09-26） |
+| 版本号 | `<上游版本>.<N>`，`N` 与通道写在 `Telegram/build/nagram_version`；tag 为 `v<版本号>`，测试版加 `-beta`；通道分 `stable` 和 `beta`，按 Nagram 自己的验证程度决定（第 3.8 节；维护者确认保留通道区分，2026-10-04） |
 | `lib_ui` 在 Windows + Qt 6 下的缺陷 | 不改子模块指针。上游只放在 `lib_ui` 的 `win7-qt6` 分支上的修复，以补丁形式存在 `tools/nagram/patches/lib_ui/`（文件名以上游提交号开头），`nagram-win.yml` 检出后用 `git apply` 套用；本地 Windows 构建需手动执行同一条命令。补丁套不上说明上游已合入固定的提交，删除该补丁（维护者决定，2026-10-03） |
 
 ## 7. 待决事项

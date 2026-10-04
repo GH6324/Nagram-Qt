@@ -23,7 +23,35 @@ on:
 
 jobs:
 
+  version:
+    name: Version
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    env:
+      TAG: ${{ inputs.tag || github.ref_name }}
+
+    steps:
+      - name: Clone.
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.TAG }}
+          persist-credentials: false
+          sparse-checkout: |
+            Telegram/build
+            tools/nagram
+
+      - name: Check the tag against the version files.
+        run: |
+          # Tags made before the revision file existed cannot be checked.
+          if [ ! -f Telegram/build/nagram_version ]; then
+            echo "::notice::$TAG has no Telegram/build/nagram_version, its name is not checked."
+            exit 0
+          fi
+          python3 tools/nagram/release_version.py "$TAG"
+
   macos:
+    needs: version
     if: ${{ !inputs.only || inputs.only == 'all' || inputs.only == 'macos' }}
     uses: ./.github/workflows/nagram-mac.yml
     permissions:
@@ -35,6 +63,7 @@ jobs:
     secrets: inherit
 
   windows:
+    needs: version
     if: ${{ !inputs.only || inputs.only == 'all' || inputs.only == 'windows' }}
     uses: ./.github/workflows/nagram-win.yml
     permissions:
@@ -47,6 +76,7 @@ jobs:
     secrets: inherit
 
   linux:
+    needs: version
     if: ${{ !inputs.only || inputs.only == 'all' || inputs.only == 'linux' }}
     uses: ./.github/workflows/nagram-linux.yml
     permissions:
@@ -59,9 +89,9 @@ jobs:
 
   publish:
     name: Publish
-    needs: [macos, windows, linux]
+    needs: [version, macos, windows, linux]
     # A platform that fails must not block the packages that were built.
-    if: ${{ !cancelled() }}
+    if: ${{ !cancelled() && needs.version.result == 'success' }}
     runs-on: ubuntu-24.04
     permissions:
       contents: write
