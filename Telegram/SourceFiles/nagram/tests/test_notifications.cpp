@@ -180,9 +180,10 @@ void TestNotifications() {
 		{ u"fine"_q },
 		{ u"(broken"_q, true, true },
 	});
+	const auto tooLong = CheckKeywordRules({ { QString(257, u'x') } });
 	Require(problem && problem->line == 2 && !problem->text.isEmpty()
 		&& !CheckKeywordRules(rules)
-		&& CheckKeywordRules({ { QString(257, u'x') } })->line == 1,
+		&& tooLong && tooLong->line == 1,
 		"keyword problems name their line");
 
 	auto registry = Registry();
