@@ -223,3 +223,61 @@ jobs:
             -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
             commit -m "Update to $VERSION"
           git push origin HEAD:master
+
+  nix:
+    name: Nix
+    needs: publish
+    # Only stable releases go to the package managers.
+    if: ${{ !cancelled() && needs.publish.result == 'success' && !contains(inputs.tag || github.ref_name, '-') }}
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    env:
+      TAG: ${{ inputs.tag || github.ref_name }}
+      GH_TOKEN: ${{ github.token }}
+      BRANCH: ${{ github.event.repository.default_branch }}
+
+    steps:
+      # The flake of the default branch names the release, not the tag itself.
+      - name: Clone.
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.BRANCH }}
+
+      - uses: cachix/install-nix-action@13d8dd58da0234aa297dedd986986ccb8e7f3e24 # v31.11.1
+
+      - name: Name the release in the flake.
+        run: |
+          if [ ! -f tools/nagram/nix_release.py ]; then
+            echo "::notice::$BRANCH has no tools/nagram/nix_release.py, the Nix package is not updated."
+            exit 0
+          fi
+          VERSION="${TAG#v}"
+          ARCHIVE="Nagram-$VERSION-linux-x86_64.tar.xz"
+          gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --pattern "$ARCHIVE" --dir "$RUNNER_TEMP"
+          python3 tools/nagram/nix_release.py --archive "$RUNNER_TEMP/$ARCHIVE"
+          git add packaging/nix/release.json
+
+      # Nothing is pushed unless the package of this release builds and starts.
+      - name: Build and start the package.
+        run: |
+          if git diff --cached --quiet; then
+            echo "The Nix package already names this release."
+            exit 0
+          fi
+          # The package runs the binary under bubblewrap, which needs the
+          # user namespaces that the runner image restricts.
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+          nix --extra-experimental-features "nix-command flakes" build .#nagram-desktop
+          tools/nagram/retry.sh 3 30 sudo apt-get install -y -o Acquire::Retries=3 xvfb
+          xvfb-run -a python3 tools/nagram/smoke_test.py result/bin/Nagram
+
+      - name: Push the release file.
+        run: |
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git -c user.name="github-actions[bot]" \
+            -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+            commit -m "build(nix): package ${TAG#v}"
+          git push origin "HEAD:$BRANCH"
