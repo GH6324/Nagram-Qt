@@ -167,3 +167,59 @@ jobs:
           python3 tools/nagram/update_feed.py \
             --feed feed/nagram-updates.json --tag "$TAG" "${packages[@]}"
           gh release upload updates feed/nagram-updates.json --clobber --repo "$GITHUB_REPOSITORY"
+
+  aur:
+    name: AUR
+    needs: publish
+    # Only stable releases go to the package managers.
+    if: ${{ !cancelled() && needs.publish.result == 'success' && !contains(inputs.tag || github.ref_name, '-') }}
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    env:
+      TAG: ${{ inputs.tag || github.ref_name }}
+      GH_TOKEN: ${{ github.token }}
+      AUR_SSH_KEY: ${{ secrets.AUR_SSH_KEY }}
+
+    steps:
+      - name: Clone.
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.TAG }}
+          persist-credentials: false
+          sparse-checkout: |
+            Telegram/build
+            tools/nagram
+
+      - name: Publish nagram-desktop-bin.
+        run: |
+          if [ -z "$AUR_SSH_KEY" ]; then
+            echo "::notice::AUR_SSH_KEY is not set, the AUR package is not updated."
+            exit 0
+          fi
+          VERSION="${TAG#v}"
+          ARCHIVE="Nagram-$VERSION-linux-x86_64.tar.xz"
+          gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --pattern "$ARCHIVE" --dir release
+          python3 tools/nagram/aur_package.py --archive "release/$ARCHIVE" --out package
+
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$AUR_SSH_KEY" > ~/.ssh/aur
+          chmod 600 ~/.ssh/aur
+          # The key the AUR publishes on its home page, checked on 2026-10-04.
+          echo "aur.archlinux.org ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEuBKrPzbawxA/k2g6NcyV5jmqwJ2s+zpgZGZ7tpLIcN" > ~/.ssh/known_hosts
+          export GIT_SSH_COMMAND="ssh -i $HOME/.ssh/aur -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes"
+
+          # A package that does not exist yet clones as an empty repository
+          # and is created by the first push.
+          git clone ssh://aur@aur.archlinux.org/nagram-desktop-bin.git aur
+          cp package/PKGBUILD package/.SRCINFO aur/
+          cd aur
+          if [ -z "$(git status --porcelain)" ]; then
+            echo "The AUR package already describes $VERSION."
+            exit 0
+          fi
+          git add PKGBUILD .SRCINFO
+          git -c user.name="github-actions[bot]" \
+            -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+            commit -m "Update to $VERSION"
+          git push origin HEAD:master
