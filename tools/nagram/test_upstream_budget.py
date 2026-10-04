@@ -3,11 +3,13 @@
 import contextlib
 import io
 import json
+import os
 import subprocess
 import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
@@ -26,6 +28,22 @@ def git(root, *args):
         check=True,
         text=True,
     ).stdout.strip()
+
+
+def setUpModule():
+    # Commits start `git maintenance run --auto --detach`, which can still hold
+    # files under .git when a test removes its temporary directory.
+    count = int(os.environ.get("GIT_CONFIG_COUNT", "0"))
+    patcher = mock.patch.dict(
+        os.environ,
+        {
+            "GIT_CONFIG_COUNT": str(count + 1),
+            f"GIT_CONFIG_KEY_{count}": "maintenance.auto",
+            f"GIT_CONFIG_VALUE_{count}": "false",
+        },
+    )
+    patcher.start()
+    unittest.addModuleCleanup(patcher.stop)
 
 
 class UpstreamBudgetTest(unittest.TestCase):
