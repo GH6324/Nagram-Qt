@@ -41,6 +41,7 @@ jobs:
           python3 tools/nagram/test_release_version.py
           python3 tools/nagram/test_update_keys.py
           python3 tools/nagram/test_sign_macos.py
+          python3 tools/nagram/test_macos_dmg.py
           python3 tools/nagram/test_update_feed.py
           python3 tools/nagram/test_pack_update.py
           python3 tools/nagram/test_linux_tree.py

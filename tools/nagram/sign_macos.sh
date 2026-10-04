@@ -1,11 +1,15 @@
 #!/usr/bin/env bash
-# Sign a built Nagram.app for distribution outside the App Store.
+# Sign a built Nagram.app, or the disk image that holds it, for distribution
+# outside the App Store.
 #
 # Usage: sign_macos.sh <Nagram.app> <entitlements>
+#        sign_macos.sh <Nagram.dmg>
 # With the certificate and one set of notary credentials the bundle is signed
 # with the Developer ID certificate under the hardened runtime, notarized and
-# stapled. With none of the variables it is signed ad hoc, which Gatekeeper
-# refuses until the user allows the app. A partial set is an error.
+# stapled; the image is signed, notarized and stapled the same way. With none
+# of the variables the bundle is signed ad hoc, which Gatekeeper refuses until
+# the user allows the app, and the image is left as it is. A partial set is an
+# error.
 #   NAGRAM_MACOS_CERTIFICATE           base64 of the Developer ID Application .p12
 #   NAGRAM_MACOS_CERTIFICATE_PASSWORD  the password of that .p12
 # Notary credentials, either an App Store Connect team API key:
@@ -18,12 +22,18 @@
 #   NAGRAM_NOTARY_TEAM_ID              the id of the team that owns the certificate
 set -euo pipefail
 
-if [ $# -ne 2 ] || [ ! -d "$1/Contents/MacOS" ] || [ ! -f "$2" ]; then
+app=""
+image=""
+if [ $# -eq 1 ] && [ -f "$1" ] && [ "${1%.dmg}" != "$1" ]; then
+	image=$1
+elif [ $# -eq 2 ] && [ -d "$1/Contents/MacOS" ] && [ -f "$2" ]; then
+	app=$1
+	entitlements=$2
+else
 	echo "Usage: $0 <Nagram.app> <entitlements>" >&2
+	echo "       $0 <Nagram.dmg>" >&2
 	exit 2
 fi
-app=$1
-entitlements=$2
 
 certificate=(NAGRAM_MACOS_CERTIFICATE NAGRAM_MACOS_CERTIFICATE_PASSWORD)
 api_key=(NAGRAM_NOTARY_KEY NAGRAM_NOTARY_KEY_ID NAGRAM_NOTARY_ISSUER_ID)
@@ -41,8 +51,12 @@ no_api_key=$(unset_of "${api_key[@]}")
 no_apple_id=$(unset_of "${apple_id[@]}")
 every="${certificate[*]} ${api_key[*]} ${apple_id[*]} "
 if [ "$no_certificate$no_api_key$no_apple_id" = "$every" ]; then
-	echo "::warning::No Developer ID secrets: Nagram.app is signed ad hoc and not notarized."
-	codesign --force --deep --sign - "$app"
+	if [ -n "$image" ]; then
+		echo "::warning::No Developer ID secrets: the disk image is not signed and not notarized."
+	else
+		echo "::warning::No Developer ID secrets: Nagram.app is signed ad hoc and not notarized."
+		codesign --force --deep --sign - "$app"
+	fi
 	exit 0
 elif [ -n "$no_certificate" ]; then
 	echo "Developer ID signing needs ${certificate[*]}; missing: $no_certificate" >&2
@@ -87,21 +101,6 @@ if [ -z "$identity" ]; then
 	exit 1
 fi
 
-sign() {
-	codesign --force --timestamp --options runtime \
-		--keychain "$keychain" --sign "$identity" "$@"
-}
-
-# Nested code is signed before the bundle that seals it.
-if [ -d "$app/Contents/Frameworks" ]; then
-	while IFS= read -r nested; do
-		sign "$nested"
-	done < <(find "$app/Contents/Frameworks" -type f \
-		\( -name '*.dylib' -o -perm -100 \) | sort -r)
-fi
-sign --entitlements "$entitlements" "$app"
-codesign --verify --deep --strict --verbose=2 "$app"
-
 if [ -z "$no_api_key" ]; then
 	printf '%s\n' "$NAGRAM_NOTARY_KEY" > "$work/notary.p8"
 	notary=(--key "$work/notary.p8" --key-id "$NAGRAM_NOTARY_KEY_ID"
@@ -110,21 +109,51 @@ else
 	notary=(--apple-id "$NAGRAM_NOTARY_APPLE_ID" --password "$NAGRAM_NOTARY_PASSWORD"
 		--team-id "$NAGRAM_NOTARY_TEAM_ID")
 fi
-ditto -c -k --keepParent "$app" "$work/notarize.zip"
-xcrun notarytool submit "$work/notarize.zip" "${notary[@]}" \
-	--wait --timeout 45m --output-format json > "$work/notary.json"
-read -r id status < <(python3 -c '
+
+sign() {
+	codesign --force --timestamp --options runtime \
+		--keychain "$keychain" --sign "$identity" "$@"
+}
+
+# Submits the file to the notary service and waits for its verdict.
+notarize() {
+	xcrun notarytool submit "$1" "${notary[@]}" \
+		--wait --timeout 45m --output-format json > "$work/notary.json"
+	read -r id status < <(python3 -c '
 import json, sys
 result = json.load(open(sys.argv[1]))
 print(result.get("id", "-"), result.get("status", "-"))
 ' "$work/notary.json")
-if [ "$status" != "Accepted" ]; then
-	echo "Notarization ended with the status $status." >&2
-	xcrun notarytool log "$id" "${notary[@]}" >&2 || true
-	exit 1
-fi
+	if [ "$status" != "Accepted" ]; then
+		echo "Notarization ended with the status $status." >&2
+		xcrun notarytool log "$id" "${notary[@]}" >&2 || true
+		exit 1
+	fi
+}
 
-xcrun stapler staple "$app"
-xcrun stapler validate "$app"
-spctl --assess --type execute --verbose=2 "$app"
+if [ -n "$image" ]; then
+	# An image holds no code of its own for the hardened runtime.
+	codesign --force --timestamp --keychain "$keychain" --sign "$identity" "$image"
+	codesign --verify --verbose=2 "$image"
+	notarize "$image"
+	xcrun stapler staple "$image"
+	xcrun stapler validate "$image"
+	spctl --assess --type open --context context:primary-signature --verbose=2 "$image"
+else
+	# Nested code is signed before the bundle that seals it.
+	if [ -d "$app/Contents/Frameworks" ]; then
+		while IFS= read -r nested; do
+			sign "$nested"
+		done < <(find "$app/Contents/Frameworks" -type f \
+			\( -name '*.dylib' -o -perm -100 \) | sort -r)
+	fi
+	sign --entitlements "$entitlements" "$app"
+	codesign --verify --deep --strict --verbose=2 "$app"
+
+	ditto -c -k --keepParent "$app" "$work/notarize.zip"
+	notarize "$work/notarize.zip"
+	xcrun stapler staple "$app"
+	xcrun stapler validate "$app"
+	spctl --assess --type execute --verbose=2 "$app"
+fi
 echo "Signed with the Developer ID identity $identity, notarized ($id) and stapled."

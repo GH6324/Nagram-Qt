@@ -193,8 +193,41 @@ class SignMacosTest(unittest.TestCase):
         self.assertEqual(self.calls("codesign"), [])
         self.assertEqual(len(self.calls("security delete-keychain")), 1)
 
+    def image(self):
+        path = self.dir / "Nagram-macos.dmg"
+        path.write_text("image")
+        return path
+
+    def test_without_secrets_the_image_is_left_as_it_is_with_a_warning(self):
+        result = self.sign({}, [str(self.image())])
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("::warning::", result.stdout)
+        self.assertEqual(self.calls(), [])
+
+    def test_signs_notarizes_and_staples_the_image_itself(self):
+        image = self.image()
+        result = self.sign(SECRETS, [str(image)])
+        self.assertEqual(result.returncode, 0, result.stderr)
+        (signed,) = [line for line in self.calls("codesign") if " --sign " in line]
+        self.assertTrue(signed.endswith(f" --sign {IDENTITY} {image}"), signed)
+        self.assertIn("--force --timestamp", signed)
+        self.assertNotIn("--options runtime", signed)
+        self.assertEqual(self.calls("ditto"), [])
+        (submit,) = self.calls("xcrun notarytool submit")
+        self.assertIn(f"submit {image} --key ", submit)
+        self.assertEqual(
+            self.calls("xcrun stapler"),
+            [f"xcrun stapler staple {image}", f"xcrun stapler validate {image}"],
+        )
+        self.assertEqual(
+            self.calls("spctl"),
+            [f"spctl --assess --type open --context context:primary-signature --verbose=2 {image}"],
+        )
+        self.assertEqual(len(self.calls("security delete-keychain")), 1)
+
     def test_rejects_bad_arguments(self):
-        for arguments in ([], [str(self.app)], [str(self.dir), str(self.entitlements)]):
+        missing = str(self.dir / "missing.dmg")
+        for arguments in ([], [str(self.app)], [missing], [str(self.dir), str(self.entitlements)]):
             result = self.sign(SECRETS, arguments)
             self.assertEqual(result.returncode, 2)
             self.assertIn("Usage:", result.stderr)

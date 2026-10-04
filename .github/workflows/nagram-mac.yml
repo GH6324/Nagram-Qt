@@ -212,6 +212,18 @@ jobs:
           python3 "$REPO_NAME/tools/nagram/smoke_test.py" \
             "$REPO_NAME/out/$CONFIG/Nagram.app/Contents/MacOS/Nagram"
 
+          # The disk image takes the signed app and is then signed itself.
+          # Creating an image fails now and then with 'Resource busy'.
+          python3 -m venv "$RUNNER_TEMP/dmg"
+          "$RUNNER_TEMP/dmg/bin/python" -m pip install --quiet --require-hashes \
+            -r "$REPO_NAME/tools/nagram/macos_dmg.txt"
+          bash "$REPO_NAME/tools/nagram/retry.sh" 3 10 \
+            "$RUNNER_TEMP/dmg/bin/python" "$REPO_NAME/tools/nagram/macos_dmg.py" \
+            --app "$REPO_NAME/out/$CONFIG/Nagram.app" \
+            --out "$REPO_NAME/out/$CONFIG/Nagram-macos.dmg"
+          bash "$REPO_NAME/tools/nagram/sign_macos.sh" \
+            "$REPO_NAME/out/$CONFIG/Nagram-macos.dmg"
+
       - name: Move artifact.
         if: env.UPLOAD_ARTIFACT == 'true'
         env:
@@ -221,6 +233,7 @@ jobs:
           mkdir artifact
           if [ "$CONFIG" = "Release" ]; then
             ditto -c -k --keepParent Nagram.app artifact/Nagram-macos.zip
+            mv Nagram-macos.dmg artifact/
             if [ -n "$NAGRAM_UPDATE_KEY" ]; then
               # A universal bundle goes into the package of each architecture
               # as it is: thinning it would break the signature.
