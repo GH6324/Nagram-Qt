@@ -43,6 +43,7 @@ jobs:
           python3 tools/nagram/test_sign_macos.py
           python3 tools/nagram/test_update_feed.py
           python3 tools/nagram/test_pack_update.py
+          python3 tools/nagram/test_linux_tree.py
 
       - name: Upstream budget.
         run: python3 tools/nagram/upstream_budget.py

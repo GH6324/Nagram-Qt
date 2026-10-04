@@ -147,6 +147,7 @@ inline constexpr auto kHideStories = Option<bool>{
 - 同步上游：`jj git fetch --remote upstream` 后 `jj rebase -b nagram-next -d dev`，逐个 change 解决冲突并跑 `test_nagram`。
 - 发行包只上传 GitHub Releases；`releases/` 等本地产物不进入仓库。
 - CI 使用 `.github/workflows/nagram-{mac,win,linux}.yml`（由上游同名工作流改写，产物为 Nagram，未配置 Secrets 时使用上游测试凭据）；上游原有工作流在 GitHub 仓库设置中停用，不修改其文件以免 rebase 冲突。CI 改动单独成 change；不提交空提交来触发构建。
+- Linux 发行包的布局：`Nagram-<版本>-linux-x86_64.tar.xz` 解开是一个 `Nagram/` 目录。`Nagram/Nagram` 和 `Nagram/Updater` 放在任意可写位置即可运行并自行更新；`Nagram/share/` 是打包用的桌面集成文件（桌面入口、D-Bus 服务、各尺寸图标、metainfo），由 `tools/nagram/linux_tree.py` 按 `Telegram/CMakeLists.txt` 里只有系统打包构建才执行的 `install()` 规则生成，D-Bus 服务文件里的路径填 `/usr/bin`。发行版的包把二进制装到 `/usr/bin/Nagram`、把 `share/` 复制到 `/usr/share/`，并用 `externalupdater.d` 关掉内置更新器。metainfo 里没有上游构建时生成的 `<releases>` 段。
 - macOS 发行包的签名：`nagram-mac.yml` 的 Release 构建在打包前运行 `tools/nagram/sign_macos.sh`。仓库配置了证书和一组公证凭据时，用 Developer ID 证书在 hardened runtime 下签名（权限文件为 `Telegram/Telegram/Telegram.entitlements`），提交公证并装订票据。证书是 `NAGRAM_MACOS_CERTIFICATE`（Developer ID Application 证书导出的 `.p12`，base64）和 `NAGRAM_MACOS_CERTIFICATE_PASSWORD`。公证凭据二选一：团队 API 密钥 `NAGRAM_NOTARY_KEY`（`.p8` 文本）、`NAGRAM_NOTARY_KEY_ID`、`NAGRAM_NOTARY_ISSUER_ID`；或团队成员的 `NAGRAM_NOTARY_APPLE_ID`、`NAGRAM_NOTARY_PASSWORD`（App 专用密码）、`NAGRAM_NOTARY_TEAM_ID`。按 Apple 的角色权限表，Developer ID 证书只有账号持有人能创建，团队 API 密钥只有账号持有人和管理员能生成，公证则 App Manager 和 Developer 也能做。一个都没配时退回 ad-hoc 签名并在日志里给出警告，只配了一部分时构建失败。签名后再跑一次启动冒烟测试。Developer ID 这条路径还没有在 CI 上实际运行过（2026-10-04）。
 
 #### 版本号（2026-10-04）
