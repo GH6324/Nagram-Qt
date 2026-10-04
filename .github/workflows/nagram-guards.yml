@@ -46,6 +46,7 @@ jobs:
           python3 tools/nagram/test_linux_tree.py
           python3 tools/nagram/test_aur_package.py
           python3 tools/nagram/test_nix_release.py
+          python3 tools/nagram/test_homebrew_cask.py
 
       - name: Upstream budget.
         run: python3 tools/nagram/upstream_budget.py
