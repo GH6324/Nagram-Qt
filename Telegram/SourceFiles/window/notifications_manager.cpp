@@ -368,6 +368,9 @@ System::SkipState System::computeSkipState(
 	if (notifyBy) {
 		notifySettings->request(notifyBy);
 	}
+	if (const auto review = Nagram::Interface::ReviewNotification(item, messageType)) {
+		return withSilent(*review ? SkipState::DontSkip : SkipState::Skip);
+	}
 
 	if (messageType && notifySettings->muteUnknown(thread)) {
 		return { SkipState::Unknown };

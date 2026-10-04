@@ -5,6 +5,7 @@
 #include "nagram/filters/hidden_messages.h"
 #include "nagram/filters/model.h"
 #include "nagram/links/options.h"
+#include "nagram/notifications/settings.h"
 #include "nagram/links/inline_rules.h"
 #include "nagram/links/inline_settings.h"
 #include "nagram/links/webview.h"
@@ -191,6 +192,16 @@ const auto kMeta = BuildHelper({
 			controller->show(Box(Filters::ScopesSettingsBox, session));
 		},
 		.keywords = { u"filter"_q, u"chat"_q, u"topic"_q },
+	});
+	builder.addButton({
+		.id = u"nagram/rules/keyword-alerts"_q,
+		.title = tr::lng_nagram_keyword_alerts(),
+		.st = &st::settingsButtonNoIcon,
+		.label = Notifications::KeywordAlertsLabel(session),
+		.onClick = [=] {
+			controller->show(Box(Notifications::KeywordAlertsBox, session));
+		},
+		.keywords = { u"keyword"_q, u"notification"_q, u"alert"_q },
 	});
 	AddToggle(builder, Links::kAutoInlineBot,
 		tr::lng_nagram_inline_auto(),

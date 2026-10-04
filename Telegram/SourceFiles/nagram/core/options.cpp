@@ -18,6 +18,7 @@
 #include "nagram/links/options.h"
 #include "nagram/links/inline_rules.h"
 #include "nagram/links/webview.h"
+#include "nagram/notifications/model.h"
 #include "nagram/network/options.h"
 #include "nagram/snapshot/snapshot.h"
 #include "nagram/sync/model.h"
@@ -128,6 +129,7 @@ const Registry &RegisteredOptions() {
 		Links::RegisterInlineOptions(result);
 		Links::RegisterWebviewOptions(result);
 		Network::RegisterOptions(result);
+		Notifications::RegisterOptions(result);
 		Snapshot::RegisterOptions(result);
 		RegisterServiceOptions(result);
 		AutoTranslate::RegisterOptions(result);

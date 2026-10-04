@@ -35,6 +35,7 @@
 
 | 编号 | 上游位置 | 需要处理的上游逻辑 | 方式 |
 | --- | --- | --- | --- |
+| A21、I16 | `window/notifications_manager.cpp`（`System::computeSkipState`） | 在退出与“仅当前账号”检查之后、静音判断之前调用 `Nagram::Interface::ReviewNotification(item, messageType)`：返回 `false` 时跳过通知（免打扰时段），返回 `true` 时不再看静音设置（关键词提醒），无返回值时走上游逻辑 | 拦截 |
 | A02 | `ui/chat/chat_style_radius.cpp`、`core/application.cpp` | 气泡圆角半径由常量改为按比例计算，启动时设定一次 | 替换 |
 | A03、A04 | `ui/userpic_view.cpp`、`ui/controls/userpic_button.cpp`、`ui/peer/video_userpic_player.cpp` | 圆形头像的绘制路径改为圆角矩形；论坛和频道私信的特殊形状按 A04 决定是否统一 | 替换 |
 | A05、A06 | `history/view/history_view_message.cpp`（最大气泡宽度计算） | 纯文字消息的最大宽度乘以比例；频道文字消息使用可用宽度；两者同时设置时 A05 优先 | 替换 |

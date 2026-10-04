@@ -1,5 +1,7 @@
 #include "nagram/settings/interface.h"
 
+#include "nagram/notifications/settings.h"
+
 #include "nagram/interface/app_icon.h"
 #include "nagram/interface/options.h"
 #include "nagram/interface/main_menu.h"
@@ -407,6 +409,16 @@ const auto kMeta = BuildHelper({
 	AddDelay(builder, Interface::kOtherDeviceNotificationDelay,
 		tr::lng_nagram_other_device_notification_delay(),
 		u"nagram/interface/other-device-notification-delay"_q);
+	builder.addButton({
+		.id = u"nagram/interface/quiet-hours"_q,
+		.title = tr::lng_nagram_quiet_hours(),
+		.st = &st::settingsButtonNoIcon,
+		.label = Notifications::QuietHoursLabel(),
+		.onClick = [=] {
+			controller->show(Box(Notifications::QuietHoursBox));
+		},
+		.keywords = { u"notification"_q, u"quiet"_q, u"mute"_q, u"night"_q },
+	});
 	builder.addSubsectionTitle({
 		.id = u"nagram/interface/text"_q,
 		.title = tr::lng_nagram_ui_text(),

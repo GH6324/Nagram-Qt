@@ -81,6 +81,9 @@ set(nagram_sources
     nagram/links/settings.cpp
     nagram/network/model.cpp
     nagram/network/runtime.cpp
+    nagram/notifications/model.cpp
+    nagram/notifications/review.cpp
+    nagram/notifications/settings.cpp
     nagram/snapshot/snapshot.cpp
     nagram/snapshot/cloud_theme.cpp
     nagram/snapshot/cloud_theme_model.cpp
@@ -245,6 +248,7 @@ if (DESKTOP_APP_TEST_APPS)
         nagram/tests/test_export.cpp
         nagram/tests/test_markdown.cpp
         nagram/tests/test_cleanup.cpp
+        nagram/tests/test_notifications.cpp
         nagram/compose/spacing.cpp
         nagram/core/exchange.cpp
         nagram/core/regex.cpp
@@ -268,6 +272,7 @@ if (DESKTOP_APP_TEST_APPS)
         nagram/chats/cleanup_model.cpp
         nagram/media/local_faved_model.cpp
         nagram/network/model.cpp
+        nagram/notifications/model.cpp
         nagram/media/url_template.cpp
         nagram/media/sticker_export_model.cpp
         nagram/snapshot/cloud_theme_model.cpp
