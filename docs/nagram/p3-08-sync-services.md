@@ -159,7 +159,7 @@ S31（配置的 load/save/reset/validate 生命周期）不是独立功能：本
 
 ### 2.4 S18 独立更新服务与发行通道
 
-**结论：条件不满足。** 技术上可以完全基于 GitHub Releases，不需要自建服务器，但缺少只能由维护者提供的信任根、签名密钥和发行流程。
+**结论：信任根已替换（2026-10-04），更新器仍然关闭。** 技术上可以完全基于 GitHub Releases，不需要自建服务器。还缺发行工作流里的更新包签名、feed，以及客户端发现地址的改动。
 
 #### 上游更新检查器的要求（已核对）
 
@@ -174,11 +174,17 @@ S31（配置的 load/save/reset/validate 生命周期）不是独立功能：本
 - **打包**：`_other/packer.cpp`（`-channel`、`-keys-loc`、`-local-key`／`-local-key-id`，或 `-emit-signing-input` ＋ `-embed-signatures`），ES256 签名辅助脚本 `Telegram/build/sign_update.py`。
 - **通道**：编译期 `TDESKTOP_UPDATE_CHANNEL`（`cmake/telegram_options.cmake`、`core/update_channel.h`）；运行期“安装测试版”沿用上游 `cInstallBetaVersion()`。
 
-当前仓库里的 `root-public.pem` 与清单是上游的：直接打开自动更新会让 Nagram 接受 Telegram 官方签名的 Telegram Desktop 更新包，并向 `td.telegram.org` 和 `tdhbcfeed` 查询。因此在信任根替换之前不得打开该开关。
+构建嵌入的信任根已经是 Nagram 的（`Telegram/Resources/nagram/update/`，2026-10-04），Telegram 官方签名的更新包不再能通过验证；上游的 `Telegram/Resources/update/` 保持原样，不再被嵌入。发现地址仍是 `td.telegram.org` 和 `tdhbcfeed`，在下面路线的第 2、3 步完成之前不得打开该开关。
 
 #### 条件满足后的实现路线
 
-1. 信任根：新增 `Telegram/Resources/nagram/update/`（Nagram 的根公钥、清单、清单签名），`Telegram/CMakeLists.txt` 中 `generate_update_keys(Telegram ${res_loc}/update)` 一行改指该目录；上游三个文件保持原样，避免 rebase 冲突。上游的 `test_update_verify` 会校验已提交的信任文件与根公钥一致，需确认其读取的是替换后的目录。
+1. 信任根（已完成，2026-10-04：清单版本 1，发布密钥 `release-2026a`）：新增 `Telegram/Resources/nagram/update/`（Nagram 的根公钥、清单、清单签名），`Telegram/CMakeLists.txt` 中 `generate_update_keys(Telegram ${res_loc}/update)` 一行改指该目录；上游三个文件保持原样，避免 rebase 冲突。
+   - 生成：维护者本人运行 `tools/nagram/update_keys.py init --private <仓库外的目录>`（需要支持 Ed25519 的 OpenSSL 3）。它生成根密钥和发布密钥，把三个公开文件写入上述目录，私钥只写到指定目录，不打印，也拒绝写进仓库。
+   - 保管：根私钥离线保存，只在轮换时使用。发布私钥放进发行工作流的 Secret 用于给更新包签名，另外离线留一份。
+   - 清单：四个通道都只要求发布密钥的签名。Nagram 只发 `stable` 和 `beta`；两个 canary 通道只因上游 `test_update_verify` 要求嵌入的清单列全四个通道而保留，Nagram 不构建 canary 版本，这类更新包不会被接受。清单和密钥都不设过期时间（客户端不检查清单的过期时间），撤销是唯一的停用手段。
+   - 轮换：发布密钥泄露或丢失时运行 `update_keys.py rotate --private <目录> --key-id <新 id>`。它生成新密钥，清单版本加 1，把以前的密钥列入 `revoked`；客户端收到带新清单的更新包时采纳新清单。
+   - 取舍：上游的 `stable`、`beta` 要求两把密钥同时签名，Nagram 只用 CI 持有的一把，发布不需要人工签名，代价是仓库和 Secret 同时失陷时拦不住恶意更新包。以后要改成两把，用根密钥签发新清单即可，不需要换根。
+   - 已核对（2026-10-04）：嵌入提交的信任文件后，上游 `test_update_verify` 58 项全部通过，包括“嵌入的清单通过根公钥验证”和“列全四个通道”。`tools/nagram/test_update_keys.py` 在 `nagram-guards.yml` 里每次检查提交的清单签名和各通道的密钥。
 2. 发现：`HttpChecker::start` 的地址与 `HttpChecker::parseResponse` 的前缀改由 `Nagram::Updates::FeedUrl()`／`Prefix()` 提供（`nagram/core/updates.cpp`），指向 `https://github.com/<owner>/<repo>/releases`：清单为 `latest/download/nagram-updates.json`，`link` 为 `/download/<tag>/<包文件名>`。Qt 6（当前 6.11.2）的 `QNetworkAccessManager` 默认跟随 GitHub 的 302 跳转；`HttpLoaderActor` 的 `Range` 续传在 GitHub 资源域名上是否可用未核实。
 3. 关闭 Telegram 侧来源：`Updater::start` 中 `MtpChecker` 的位置传 `nullptr`（上游对 canary 的 HTTP 通道已用同样方式走 `EmptyChecker`）；`configLoadDone` 中不再调用 `Local::writeAutoupdatePrefix`。
 4. 发行工作流：新增 `.github/workflows/nagram-release.yml`，按标签触发，Release 配置、`-D DESKTOP_APP_DISABLE_AUTOUPDATE=OFF`、`-D TDESKTOP_UPDATE_CHANNEL=stable|beta`，构建 `Packer` 与 `Updater`，用仓库 Secrets 中的发行密钥签名，上传安装包、更新包与 `nagram-updates.json` 到 GitHub Release。现有三个工作流只产出未签名的 Debug 构建并上传为 Actions artifact，不能直接作为更新源。
@@ -355,5 +361,5 @@ S180 与 S181 相互独立，可任意先后；S182 依赖 S181。三步完成�
 | 受阻项 | 需要提供 |
 | --- | --- |
 | S01 iCloud | Apple Developer 团队与 Developer ID 证书；启用 iCloud 键值存储的 App ID 与 provisioning profile；CI 中的签名凭据；确认 `xyz.nextalone.nagram.desktop` 用作 ubiquity 容器标识 |
-| S18 更新服务 | Nagram 的 Ed25519 根密钥对（私钥离线保存）与由它签名的密钥清单；发行签名密钥（放入仓库 Secrets 或外部签名服务）；发行仓库与标签命名约定；是否提供 beta 通道；macOS 是否用 Developer ID 签名并公证、Windows 是否做 Authenticode 签名（未签名的 macOS 更新包能否被系统正常启动未核实）；密钥轮换与撤销流程的负责人 |
+| S18 更新服务 | 根密钥对与密钥清单已生成（2026-10-04）；发行签名密钥已生成，待放入仓库 Secrets；发行仓库与标签命名约定；是否提供 beta 通道；macOS 是否用 Developer ID 签名并公证、Windows 是否做 Authenticode 签名（未签名的 macOS 更新包能否被系统正常启动未核实）；密钥轮换与撤销流程的负责人 |
 | D117 崩溃报告 | 收集端的域名与 HTTPS 服务（兼容上游 `query_report`／`report` 两个请求）；minidump 与符号文件的存储和符号化流程；访问权限、保留期限与数据范围说明；发行构建产出并上传符号文件的流程 |

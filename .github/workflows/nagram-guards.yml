@@ -39,6 +39,7 @@ jobs:
           python3 tools/nagram/test_drop_superseded_caches.py
           python3 tools/nagram/test_check_settings_index.py
           python3 tools/nagram/test_release_version.py
+          python3 tools/nagram/test_update_keys.py
 
       - name: Upstream budget.
         run: python3 tools/nagram/upstream_budget.py
