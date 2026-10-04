@@ -5711,6 +5711,12 @@ void HistoryWidget::send(Api::SendOptions options) {
 	if (_voiceRecordBar->isListenState()) {
 		_voiceRecordBar->requestToSendWithOptions(options);
 		return;
+	} else if (Nagram::Compose::TranslateBeforeSend(
+			controller()->uiShow(),
+			_history->peer,
+			_field,
+			crl::guard(this, [=] { send(options); }))) {
+		return;
 	}
 
 	sendTextWithTags(

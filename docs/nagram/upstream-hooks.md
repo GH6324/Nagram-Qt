@@ -201,6 +201,7 @@ P3-07 外部媒体后端：
 | H02 | `api/api_transcribes.cpp`、`history/view/history_view_transcribe_button.cpp`、`history/view/media/history_view_document.cpp` | `Api::Transcribes` 的 `isRated`／`rate`／`entry` 各一行交给 `Nagram::TranscriptionOverride`；外部转写缓存按会话保存在 `nagram/services/transcription.cpp`，头文件不新增成员 | 替换 |
 | H03（含 P3-04 的预设、Anthropic 协议、配置 v2） | 无上游改动 | — | — |
 | H03（上下文，P3-04） | `boxes/translate_box.cpp` | `TranslateBox()` 内 `State` 的构造改为接收 `peer`、`msgId`、`hasCopyRestriction`，工厂由 `Nagram::CreateInteractiveTranslateProvider` 换成 `Nagram::CreateMessageTranslateProvider`；开关关闭或取不到上下文时后者原样转给前者 | 替换 |
+| H11 | `history/history_widget.cpp`、`history/view/history_view_chat_section.cpp`、`window/window_peer_menu.cpp` | 两处 `send()` 在 `sendTextWithTags` 之前调用 `Nagram::Compose::TranslateBeforeSend`，返回真时由预览框接管并在确认后重新调用 `send(options)`（与贴纸发送确认同一形态）；`Filler` 在自动翻译菜单项之后加一行 `Nagram::SendTranslation::AddPeerMenu` | 拦截、读取 |
 | H10、E36（P3-04） | 无上游改动 | 经已有的 `Nagram::Menu::Apply` 插入“总结”；上游气泡内的摘要按钮不变 | — |
 | E37（P3-04） | 无上游改动 | 经已有的 `Nagram::Menu::Apply` 插入“转写所选语音”；结果写入 H02 已有的外部转写缓存 | — |
 | E39 | 无上游改动 | 经已有的 `Nagram::Menu::Apply` 插入“复制为 Markdown”；转换是 `nagram/messages/markdown.cpp` 中的纯函数 | — |

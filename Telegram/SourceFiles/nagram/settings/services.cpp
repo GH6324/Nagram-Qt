@@ -4,11 +4,14 @@
 #include "core/application.h"
 #include "core/file_utilities.h"
 #include "lang/lang_keys.h"
+#include "main/main_session.h"
 #include "nagram/services/auto_translate.h"
 #include "nagram/services/context_model.h"
 #include "nagram/services/credentials.h"
 #include "nagram/services/presets.h"
 #include "nagram/services/request.h"
+#include "nagram/services/send_translation.h"
+#include "nagram/services/send_translation_model.h"
 #include "nagram/services/summary_model.h"
 #include "nagram/services/system_ai.h"
 #include "platform/platform_translate_provider.h"
@@ -844,6 +847,41 @@ const auto kMeta = BuildHelper({
 				lt_name,
 				TranslationSelectionName(Services()));
 		}));
+	const auto sendButton = builder.addButton({
+		.id = u"nagram/services/send-translation"_q,
+		.title = tr::lng_nagram_send_translation(),
+		.st = &st::settingsButtonNoIcon,
+		.toggled = ForDevice().Value(SendTranslation::kEnabled),
+		.keywords = { u"translate"_q, u"send"_q, u"draft"_q },
+	});
+	if (sendButton) {
+		sendButton->toggledChanges(
+		) | rpl::on_next([](bool value) {
+			Expects(ForDevice().Set(SendTranslation::kEnabled, value));
+		}, sendButton->lifetime());
+	}
+	builder.addButton({
+		.id = u"nagram/services/send-translation-chats"_q,
+		.title = tr::lng_nagram_send_translation_chats(),
+		.st = &st::settingsButtonNoIcon,
+		.label = SendTranslation::ChatsCountValue(
+			session
+		) | rpl::map([](int count) { return QString::number(count); }),
+		.onClick = [=] {
+			const auto weak = base::make_weak(session);
+			controller->show(Ui::MakeConfirmBox({
+				.text = tr::lng_nagram_send_translation_clear(),
+				.confirmed = [=](Fn<void()> close) {
+					if (const auto strong = weak.get()) {
+						SendTranslation::ClearChats(strong);
+					}
+					close();
+				},
+			}));
+		},
+		.keywords = { u"translate"_q, u"send"_q, u"chats"_q },
+	});
+	builder.addDividerText(tr::lng_nagram_send_translation_about());
 });
 
 const SectionBuildMethod ServicesSection::kBuild = kMeta.build;

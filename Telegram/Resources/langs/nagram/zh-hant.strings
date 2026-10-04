@@ -752,6 +752,16 @@
 "lng_nagram_chat_translation" = "對話翻譯";
 "lng_nagram_chat_translation_service" = "翻譯整個對話時使用所選翻譯服務";
 "lng_nagram_chat_translation_service_about" = "開啟後，開著翻譯的對話會把目前檢視中收到的訊息及其回覆對象的文字，傳送到「手動翻譯」所選的服務（目前：{name}）：每批最多 20 則，超過 16 KiB 的訊息不傳送。失敗時保留原文，不改用其他服務；連續三批失敗後暫停，修改服務或在對話中重新切換翻譯後恢復。服務為「跟隨上游」或 Telegram 時不生效。";
+"lng_nagram_send_translation" = "傳送前翻譯";
+"lng_nagram_send_translation_chats" = "傳送前翻譯的聊天";
+"lng_nagram_send_translation_about" = "開啟後，聊天選單中出現「傳送前翻譯」，可為該聊天選擇語言。在這些聊天中傳送文字時，先用「手動翻譯」所選的服務顯示譯文預覽，由你選擇傳送譯文或原文；選擇之前不會送出任何內容。機器人指令和不含文字的內容按原樣傳送。編輯訊息、媒體說明和排程訊息列表不翻譯。";
+"lng_nagram_send_translation_clear" = "關閉此帳號所有聊天的傳送前翻譯？";
+"lng_nagram_send_translation_chat" = "傳往此聊天的文字會先翻譯為{language}。";
+"lng_nagram_send_translation_change" = "更換語言";
+"lng_nagram_send_translation_off" = "關閉";
+"lng_nagram_send_translation_send" = "傳送譯文";
+"lng_nagram_send_translation_original" = "傳送原文";
+"lng_nagram_send_translation_limit" = "無法儲存此設定。最多 {amount} 個聊天可以使用傳送前翻譯。";
 "lng_nagram_chat_translation_paused" = "{name} 連續失敗，翻譯已暫停。請檢查服務，然後在對話中重新開啟翻譯。";
 "lng_nagram_auto_translate" = "自動翻譯對話";
 "lng_nagram_auto_translate_about" = "開啟後，其他語言的對話開啟時自動翻譯；點「顯示原文」後保持原文，直到重新開啟。需要 Telegram Premium、開啟了自動翻譯的頻道，或下方的「翻譯整個對話時使用所選翻譯服務」。關閉只在本機隱藏翻譯列。";

@@ -124,6 +124,8 @@ set(nagram_sources
     nagram/services/request.cpp
     nagram/services/translation.cpp
     nagram/services/draft_translation.cpp
+    nagram/services/send_translation.cpp
+    nagram/services/send_translation_model.cpp
     nagram/services/transcription.cpp
     nagram/services/transcription_queue.cpp
     nagram/services/system_ai.cpp
@@ -249,6 +251,7 @@ if (DESKTOP_APP_TEST_APPS)
         nagram/tests/test_markdown.cpp
         nagram/tests/test_cleanup.cpp
         nagram/tests/test_notifications.cpp
+        nagram/tests/test_send_translation.cpp
         nagram/compose/spacing.cpp
         nagram/core/exchange.cpp
         nagram/core/regex.cpp
@@ -262,6 +265,7 @@ if (DESKTOP_APP_TEST_APPS)
         nagram/services/model.cpp
         nagram/services/presets.cpp
         nagram/services/summary_model.cpp
+        nagram/services/send_translation_model.cpp
         nagram/services/transcription_queue.cpp
         nagram/filters/model.cpp
         nagram/links/model.cpp

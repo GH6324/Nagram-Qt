@@ -752,6 +752,16 @@
 "lng_nagram_chat_translation" = "对话翻译";
 "lng_nagram_chat_translation_service" = "翻译整个对话时使用所选翻译服务";
 "lng_nagram_chat_translation_service_about" = "开启后，开着翻译的对话会把当前视图中收到的消息及其回复对象的文字，发送到“手动翻译”所选的服务（当前：{name}）：每批最多 20 条，超过 16 KiB 的消息不发送。失败时保留原文，不改用其他服务；连续三批失败后暂停，修改服务或在对话中重新切换翻译后恢复。服务为“跟随上游”或 Telegram 时不生效。";
+"lng_nagram_send_translation" = "发送前翻译";
+"lng_nagram_send_translation_chats" = "发送前翻译的聊天";
+"lng_nagram_send_translation_about" = "开启后，聊天菜单中出现“发送前翻译”，可为该聊天选择语言。在这些聊天中发送文字时，先用“手动翻译”所选的服务显示译文预览，由你选择发送译文或原文；选择之前不会发出任何内容。机器人命令和不含文字的内容按原样发送。编辑消息、媒体说明和定时消息列表不翻译。";
+"lng_nagram_send_translation_clear" = "关闭此账号所有聊天的发送前翻译？";
+"lng_nagram_send_translation_chat" = "发往此聊天的文字会先翻译为{language}。";
+"lng_nagram_send_translation_change" = "更换语言";
+"lng_nagram_send_translation_off" = "关闭";
+"lng_nagram_send_translation_send" = "发送译文";
+"lng_nagram_send_translation_original" = "发送原文";
+"lng_nagram_send_translation_limit" = "无法保存此设置。最多 {amount} 个聊天可以使用发送前翻译。";
 "lng_nagram_chat_translation_paused" = "{name} 连续失败，翻译已暂停。请检查服务，然后在对话中重新开启翻译。";
 "lng_nagram_auto_translate" = "自动翻译对话";
 "lng_nagram_auto_translate_about" = "开启后，其他语言的对话打开时自动翻译；点“显示原文”后保持原文，直到重新打开。需要 Telegram Premium、开启了自动翻译的频道，或下方的“翻译整个对话时使用所选翻译服务”。关闭只在本机隐藏翻译栏。";

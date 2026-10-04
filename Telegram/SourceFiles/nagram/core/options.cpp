@@ -13,6 +13,7 @@
 #include "nagram/messages/options.h"
 #include "nagram/services/auto_translate_model.h"
 #include "nagram/services/model.h"
+#include "nagram/services/send_translation_model.h"
 #include "nagram/filters/model.h"
 #include "nagram/links/model.h"
 #include "nagram/links/options.h"
@@ -133,6 +134,7 @@ const Registry &RegisteredOptions() {
 		Snapshot::RegisterOptions(result);
 		RegisterServiceOptions(result);
 		AutoTranslate::RegisterOptions(result);
+		SendTranslation::RegisterOptions(result);
 		RegisterDiagnosticsOptions(result);
 		Sync::RegisterOptions(result);
 		return result;

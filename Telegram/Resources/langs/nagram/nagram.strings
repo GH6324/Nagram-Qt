@@ -756,6 +756,16 @@ Telegram/cmake/td_lang.cmake. Every key uses the lng_nagram_ prefix.
 "lng_nagram_chat_translation" = "Chat translation";
 "lng_nagram_chat_translation_service" = "Use the selected service to translate whole chats";
 "lng_nagram_chat_translation_service_about" = "When on, chats with translation turned on send the text of incoming messages in view, and of the messages they reply to, to the service chosen under “Manual translation” (now: {name}): up to 20 messages per batch, none over 16 KiB. On failure the original stays and no other service is tried; after three failed batches translation pauses until you change the service or toggle translation in the chat. No effect while the service is “Inherit” or Telegram.";
+"lng_nagram_send_translation" = "Translate before sending";
+"lng_nagram_send_translation_chats" = "Chats that translate before sending";
+"lng_nagram_send_translation_about" = "When on, the chat menu gets “Translate before sending” to pick a language for that chat. Sending text there first opens a preview from the service chosen under “Manual translation”, and you send the translation or the original; nothing is sent until you choose. Bot commands and text without letters are sent as typed. Edits, captions and scheduled-messages lists are not translated.";
+"lng_nagram_send_translation_clear" = "Turn off translation before sending for every chat of this account?";
+"lng_nagram_send_translation_chat" = "Text you send to this chat is first translated to {language}.";
+"lng_nagram_send_translation_change" = "Change language";
+"lng_nagram_send_translation_off" = "Turn off";
+"lng_nagram_send_translation_send" = "Send translation";
+"lng_nagram_send_translation_original" = "Send original";
+"lng_nagram_send_translation_limit" = "This setting could not be saved. At most {amount} chats can translate before sending.";
 "lng_nagram_chat_translation_paused" = "Translation paused after repeated failures from {name}. Check the service, then turn translation off and on again in the chat.";
 "lng_nagram_auto_translate" = "Auto-translate chats";
 "lng_nagram_auto_translate_about" = "When on, chats in another language are translated as they open; “Show original” keeps the original until you reopen the chat. Needs Telegram Premium, a channel with automatic translation, or “Use the selected service to translate whole chats” below. Off only hides the translate bar on this device.";
